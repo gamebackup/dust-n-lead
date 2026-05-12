@@ -720,12 +720,11 @@
                 <div class="info-item">Gun: <span class="info-value" id="combat-gun-name">Revolver</span></div>
                 <div class="info-item">Ammo: <span class="info-value" id="combat-ammo">6/6</span></div>
             </div>
-            <div class="hp-bar" style="max-width:300px;"><div class="hp-fill" id="player-hp-fill" style="width:100%;"></div></div>
             <button class="btn small" onclick="cycleAmmoType()" style="margin-top:4px;">Switch Bullet</button>
             <div style="color:#f0d080;font-size:0.9em;letter-spacing:1px;">Select a card to play:</div>
             <div class="card-hand" id="card-hand"></div>
             <div class="combat-log" id="combat-log">The tension crackles in the air...</div>
-            <button class="btn small danger" id="btn-flee" onclick="fleeCombat()">Flee (50% chance)</button>
+            <button class="btn small danger" id="btn-flee" onclick="fleeCombat()">Flee (25% chance)</button>
         </div>
 
         <!-- GAME OVER SCREEN -->
@@ -1544,7 +1543,7 @@
     function fleeCombat() {
         if (!gameState.combatActive || gameState.cardProcessing) return;
         if (gameState.combatEnemy && gameState.combatEnemy.isBounty) return;
-        const fleeChance = 0.5 + (gameState.player.trinkets.some(t=>t.name==='Slick Hat')?0.2:0);
+        const fleeChance = 0.25 + (gameState.player.trinkets.some(t=>t.name==='Slick Hat')?0.2:0);
         if (Math.random()<fleeChance) {
             gameState.combatActive = false;
             document.getElementById('combat-log').textContent = 'You flee successfully.';
