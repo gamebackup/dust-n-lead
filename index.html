@@ -384,6 +384,7 @@
         }
 
         .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 500px; }
+        .location-grid .location-card:last-child:nth-child(odd) { grid-column: 1 / -1; max-width: 240px; margin: 0 auto; }
         .location-card {
             background: linear-gradient(145deg, rgba(22,11,4,0.97) 0%, rgba(15,7,2,0.97) 100%);
             position: relative; border-radius: 4px; padding: 18px 16px;
@@ -576,6 +577,7 @@
         #screen-store     > div:first-child,
         #screen-saloon    > div:first-child,
         #screen-sheriff   > div:first-child,
+        #screen-gunsmith  > div:first-child,
         #screen-wilderness > div:first-child {
             text-shadow: 2px 2px 0 #1a0800, 0 0 22px rgba(200,150,40,0.22) !important;
             letter-spacing: 3px !important;
@@ -622,37 +624,44 @@
 
         <!-- TITLE SCREEN -->
         <div class="screen active" id="screen-title">
-            <div style="font-size:3em;color:#c9a030;letter-spacing:8px;">&#9733;</div>
+            <div style="font-size:3em;color:#c9a030;letter-spacing:8px;text-shadow:0 0 30px rgba(201,160,48,0.55);">&#9733; &#9733; &#9733;</div>
             <div class="game-title">DUST & LEAD</div>
             <div class="game-subtitle">A Western Roguelike</div>
-            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:0.85em;line-height:1.6;">
-                The frontier is unforgiving. Bounties await, outlaws roam, and every sunset could be your last.
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:0.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,0.18);border-bottom:1px solid rgba(201,160,48,0.18);padding:10px 0;">
+                The frontier is unforgiving. Bounties await, outlaws roam,<br>and every sunset could be your last.
             </div>
-            <button class="btn wide" onclick="startGame()">Ride Into Town</button>
-            <div style="color:#8d6e63;font-size:0.75em;">High Score: <span id="high-score-display">0</span> dollars</div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;max-width:340px;">
+                <button class="btn wide" onclick="startGame()">Ride Into Town</button>
+            </div>
+            <div style="color:#8d6e63;font-size:0.73em;letter-spacing:2px;">HIGH SCORE: <span id="high-score-display" style="color:#c9a030;">0</span> dollars</div>
+            <div style="color:#6e5040;font-size:0.7em;text-align:center;max-width:380px;line-height:1.6;margin-top:4px;">
+                Build your deck ✦ Hunt bounties ✦ Upgrade your iron ✦ Survive
+            </div>
         </div>
 
         <!-- TOWN SCREEN -->
         <div class="screen" id="screen-town">
             <div style="font-family:'Rye',serif;font-size:1.8em;color:#f0d080;letter-spacing:3px;">Dustwater Town</div>
+            <div id="town-flavor" style="color:#7a5a30;font-size:0.78em;font-style:italic;text-align:center;letter-spacing:1px;"></div>
             <div class="info-bar">
                 <div class="info-item">HP: <span class="info-value" id="town-hp">20/20</span></div>
                 <div class="info-item">Food: <span class="info-value" id="town-food">5</span></div>
                 <div class="info-item">$: <span class="info-value" id="town-money">50</span></div>
                 <div class="info-item">Day: <span class="info-value" id="town-day">1</span></div>
             </div>
-            <div id="trinkets-display"></div>
-            <div id="gun-parts-display" style="color:#c9a060;margin:4px;"></div>
+            <div id="town-gun-display" style="color:#9a7030;font-size:0.78em;text-align:center;letter-spacing:1px;"></div>
+            <div id="trinkets-display" style="color:#9a7030;font-size:0.78em;text-align:center;"></div>
+            <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:0.78em;text-align:center;"></div>
             <div class="location-grid">
                 <div class="location-card" onclick="goToStore()">
     <span class="location-icon"><img src="general-store.png" alt="Store"></span>
     <span class="location-name">General Store</span>
-    <small style="color:#a08060;">Buy supplies & guns</small>
+    <small style="color:#a08060;">Buy supplies &amp; guns</small>
 </div>
 <div class="location-card" onclick="goToSaloon()">
     <span class="location-icon"><img src="saloon.png" alt="Saloon"></span>
     <span class="location-name">The Dusty Saloon</span>
-    <small style="color:#a08060;">Rest, gamble & drink</small>
+    <small style="color:#a08060;">Rest, gamble &amp; drink</small>
 </div>
 <div class="location-card" onclick="goToSheriff()">
     <span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span>
@@ -663,6 +672,11 @@
     <span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span>
     <span class="location-name">Venture Out</span>
     <small style="color:#a08060;">Into the wild frontier</small>
+</div>
+<div class="location-card" onclick="goToGunsmith()">
+    <span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span>
+    <span class="location-name">Gunsmith</span>
+    <small style="color:#a08060;">Upgrade your weapons</small>
 </div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
@@ -700,6 +714,16 @@
             <div id="sheriff-msg" style="color:#f0d080;text-align:center;"></div>
         </div>
 
+        <!-- GUNSMITH SCREEN -->
+        <div class="screen" id="screen-gunsmith">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Gunsmith's Workshop</div>
+            <div style="color:#c9a060;text-align:center;font-size:0.85em;">The smell of gun oil and hot metal fills the air.</div>
+            <div class="info-bar"><div class="info-item">Your $: <span class="info-value" id="gunsmith-money">50</span></div><div class="info-item">Gun: <span class="info-value" id="gunsmith-gun">Revolver</span></div></div>
+            <div id="gunsmith-items" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="gunsmith-msg" style="color:#f0d080;text-align:center;font-style:italic;"></div>
+        </div>
+
         <!-- WILDERNESS SCREEN -->
         <div class="screen" id="screen-wilderness">
             <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">The Frontier</div>
@@ -728,6 +752,10 @@
                 <div class="info-item">Gun: <span class="info-value" id="combat-gun-name">Revolver</span></div>
                 <div class="info-item">Ammo: <span class="info-value" id="combat-ammo">6/6</span></div>
             </div>
+            <div style="width:100%;max-width:500px;padding:0 4px;">
+                <div style="font-size:0.7em;color:#7a5a30;letter-spacing:1px;margin-bottom:3px;">YOUR HEALTH</div>
+                <div class="hp-bar"><div class="hp-fill" id="player-hp-fill" style="width:100%;"></div></div>
+            </div>
             <button class="btn small" onclick="cycleAmmoType()" style="margin-top:4px;">Switch Bullet</button>
             <div style="color:#f0d080;font-size:0.9em;letter-spacing:1px;">Select a card to play:</div>
             <div class="card-hand" id="card-hand"></div>
@@ -737,13 +765,15 @@
 
         <!-- GAME OVER SCREEN -->
         <div class="screen" id="screen-gameover">
-            <div style="font-family:'Rye',serif;font-size:2em;color:#ff6b4a;letter-spacing:3px;" id="gameover-title">DEAD</div>
+            <div style="font-family:'Rye',serif;font-size:2em;letter-spacing:3px;" id="gameover-title">DEAD</div>
             <div style="color:#f0d080;text-align:center;max-width:400px;line-height:1.6;" id="gameover-desc"></div>
             <div class="info-bar">
-                <div class="info-item">Days Survived: <span class="info-value" id="go-days">1</span></div>
+                <div class="info-item">Days: <span class="info-value" id="go-days">1</span></div>
+                <div class="info-item">Kills: <span class="info-value" id="go-kills">0</span></div>
                 <div class="info-item">Bounties: <span class="info-value" id="go-bounties">0</span></div>
-                <div class="info-item">Final $: <span class="info-value" id="go-money">0</span></div>
+                <div class="info-item">Earned: <span class="info-value" id="go-money">0</span></div>
             </div>
+            <div style="color:#9a7030;font-size:0.75em;">High Score: $<span id="go-highscore">0</span></div>
             <button class="btn wide" onclick="restartGame()">New Gunslinger</button>
         </div>
     </div>
@@ -794,6 +824,10 @@
         'Sucker Punch': { desc:'Hard fist, 4 dmg.', ammoCost:0, effect:'melee', fixedDmg:4, accuracy:80 },
         'Dynamite Toss': { desc:'3x dmg, self 3 dmg.', ammoCost:2, effect:'dynamite', dmgMult:3, selfDmg:3, accuracy:75 },
         'Smokebomb': { desc:'Escape instantly!', ammoCost:0, effect:'smokebomb', accuracy:100 },
+        'Dead Eye': { desc:'100% accuracy, +2 dmg. Costs 2 ammo.', ammoCost:2, effect:'shoot', dmgMult:1, bonusDmg:2, accuracy:100 },
+        'Lasso': { desc:'70% chance to hogtie enemy — skip their turn.', ammoCost:0, effect:'lasso', accuracy:100 },
+        'Last Stand': { desc:'Deal damage = half your missing HP.', ammoCost:1, effect:'laststand', accuracy:85 },
+        'War Cry': { desc:'Heal 4 HP and draw an extra card next turn.', ammoCost:0, effect:'warcry', accuracy:100 },
     };
 
     const trinketDefs = {
@@ -809,6 +843,9 @@
         'Vultures Eye': { desc:'Heal 4 HP on kill.', cost:50 },
         'Canteen': { desc:'+2 max food.', cost:25 },
         'Lucky Dice': { desc:'Better gambling odds.', cost:30 },
+        'Iron Horseshoe': { desc:'Start each combat with 1 cover.', cost:40 },
+        'Medicine Bag': { desc:'Heal 2 HP after each non-combat wilderness event.', cost:35 },
+        'Spare Spurs': { desc:'Last Stand deals +3 bonus damage.', cost:45 },
     };
 
     const partNames = ['barrel','trigger','grip'];
@@ -821,6 +858,7 @@
         add('Reload',2); add('Dodge',1); add('Take Cover',1);
         add('Desperado',1); add('Intimidate',1); add('Bandage',1);
         add('Lucky Shot',1); add('Sucker Punch',2); add('Dynamite Toss',1);
+        add('Dead Eye',1); add('Lasso',1); add('Last Stand',1);
         // Add extra Bandage cards for each Bandage Kit in inventory
         let bandageIdx = -1;
         while ((bandageIdx = gameState.player.inventory.findIndex(i => i.name==='Bandage Kit' && i.type==='heal')) !== -1) {
@@ -831,6 +869,11 @@
         if (smokeIdx >= 0) {
             deck.push({...cardDefs['Smokebomb'], name:'Smokebomb'});
             gameState.player.inventory.splice(smokeIdx,1);
+        }
+        const warCryIdx = gameState.player.inventory.findIndex(i => i.name==='War Cry' && i.type==='card');
+        if (warCryIdx >= 0) {
+            deck.push({...cardDefs['War Cry'], name:'War Cry'});
+            gameState.player.inventory.splice(warCryIdx,1);
         }
         gameState.player.trinkets.forEach(t => { if (t.name === 'Quick Draw') deck.push({...cardDefs['Quick Shot'], name:'Quick Shot'}); });
         return shuffleArray(deck);
@@ -919,6 +962,41 @@
     function goToStore() { updateStoreDisplay(); showScreen('store'); }
     function goToSaloon() { updateSaloonDisplay(); document.getElementById('saloon-result').textContent=''; showScreen('saloon'); }
     function goToSheriff() { updateSheriffDisplay(); document.getElementById('sheriff-msg').textContent=''; showScreen('sheriff'); }
+    function goToGunsmith() { updateGunsmithDisplay(); document.getElementById('gunsmith-msg').textContent=''; showScreen('gunsmith'); }
+
+    function updateGunsmithDisplay() {
+        const p = gameState.player;
+        const gun = getActualGun();
+        document.getElementById('gunsmith-money').textContent = p.money;
+        document.getElementById('gunsmith-gun').textContent = gun ? gun.name+' ('+gun.damage+' dmg, '+gun.capacity+' cap)' : 'None';
+        const container = document.getElementById('gunsmith-items');
+        container.innerHTML = '';
+        if (!gun) { container.innerHTML = '<div style="color:#a08060;padding:10px;">You have no gun to upgrade.</div>'; return; }
+        const msg = id => document.getElementById('gunsmith-msg');
+        const notify = txt => { document.getElementById('gunsmith-msg').textContent = txt; updateGunsmithDisplay(); };
+
+        const items = [
+            { label:`Reinforce Barrel (+2 dmg) — $50`, cost:50, action:()=>{ if(p.money>=50){ p.money-=50; gun.damage+=2; notify(`${gun.name} now deals ${gun.damage} damage!`); } } },
+            { label:`Extend Cylinder (+2 capacity) — $45`, cost:45, action:()=>{ if(p.money>=45){ p.money-=45; gun.capacity+=2; gun.loaded.regular+=2; notify(`${gun.name} now holds ${gun.capacity} rounds!`); } } },
+            { label:`Full Reload & Clean ($15) — Refill gun`, cost:15, action:()=>{ if(p.money>=15){ p.money-=15; const space=gun.capacity-getTotalLoaded(); const amt=Math.min(space,p.bullets.regular+6); gun.loaded.regular=Math.min(gun.capacity,(gun.loaded.regular||0)+amt); notify('Gun cleaned and reloaded!'); } } },
+        ];
+        if (p.guns.length > 1) {
+            const nextIdx = (p.equippedGunIndex+1) % p.guns.length;
+            items.push({ label:`Switch to ${p.guns[nextIdx].name} — Free`, cost:0, action:()=>{ p.equippedGunIndex=nextIdx; notify(`Switched to ${p.guns[p.equippedGunIndex].name}.`); } });
+        }
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
+            const btn = document.createElement('button');
+            btn.className = 'btn small';
+            btn.textContent = 'Upgrade';
+            if (p.money < item.cost && item.cost > 0) btn.disabled = true;
+            btn.addEventListener('click', item.action);
+            div.innerHTML = `<span style="color:#f0d080;">${item.label}</span>`;
+            div.appendChild(btn);
+            container.appendChild(div);
+        });
+    }
 
     function goToWilderness() {
         updateWildernessDisplay();
@@ -931,14 +1009,37 @@
 
     function updateTownDisplay() {
         const p = gameState.player;
+        const flavorMsgs = [
+            'The noon sun hammers the dusty street.',
+            'Somewhere, a piano plays off-key.',
+            'Two horses sleep outside the saloon.',
+            'A wanted poster flaps in the dry wind.',
+            'An old timer spits on the boardwalk.',
+            'Smoke rises from the blacksmith\'s forge.',
+            'The sheriff tips his hat as you pass.',
+            'Day '+p.day+'. Still alive. That counts for something.',
+        ];
+        const flavorEl = document.getElementById('town-flavor');
+        if (flavorEl) {
+            if (gameState.activeBounty) {
+                flavorEl.textContent = `★ HUNTING: ${gameState.activeBounty.name} — $${gameState.activeBounty.reward} reward ★`;
+                flavorEl.style.color = '#c9a030';
+            } else {
+                flavorEl.textContent = flavorMsgs[p.day % flavorMsgs.length];
+                flavorEl.style.color = '#7a5a30';
+            }
+        }
         document.getElementById('town-hp').textContent = p.health+'/'+p.maxHealth;
         document.getElementById('town-food').textContent = p.food;
         document.getElementById('town-money').textContent = p.money;
         document.getElementById('town-day').textContent = p.day;
         if (p.health<=5) document.getElementById('town-hp').classList.add('low'); else document.getElementById('town-hp').classList.remove('low');
         if (p.food<=1) document.getElementById('town-food').classList.add('low'); else document.getElementById('town-food').classList.remove('low');
-        document.getElementById('trinkets-display').innerHTML = p.trinkets.length ? 'Trinkets: ' + p.trinkets.map(t=>`<span>${t.name}</span>`).join(', ') : '';
-        document.getElementById('gun-parts-display').innerHTML = p.gunParts.length ? 'Parts: ' + p.gunParts.map(p=>partLabels[p]).join(', ') : '';
+        const gun = getActualGun();
+        const gunEl = document.getElementById('town-gun-display');
+        if (gunEl && gun) gunEl.textContent = `🔫 ${gun.name} — ${gun.damage} dmg | ${getTotalLoaded()}/${getMaxCapacity()} loaded`;
+        document.getElementById('trinkets-display').innerHTML = p.trinkets.length ? '✦ '+p.trinkets.map(t=>`<span style="color:#c9a060;">${t.name}</span>`).join(' ✦ ')+' ✦' : '';
+        document.getElementById('gun-parts-display').innerHTML = p.gunParts.length ? 'Parts: ' + p.gunParts.map(pt=>partLabels[pt]).join(', ') : '';
     }
 
     function updateStoreDisplay() {
@@ -952,7 +1053,7 @@
         container.appendChild(createStoreItem(
             `Regular Ammo (6) - $${Math.floor(12*discount)}`,
             Math.floor(12*discount),
-            ()=>{ /* ... same action ... */ },
+            ()=>{ if(p.money>=Math.floor(12*discount)){ p.money-=Math.floor(12*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.regular=(gun.loaded.regular||0)+toLoad; p.bullets.regular+=(6-toLoad); } else p.bullets.regular+=6; updateStoreDisplay(); } },
             p.money >= Math.floor(12*discount),
             'A box of 6 regular bullets. Loads into your gun or backpack if full.'
         ));
@@ -978,7 +1079,7 @@
                 container.appendChild(createStoreItem(
                     `${name} - $${Math.floor(def.cost*discount)}`,
                     Math.floor(def.cost*discount),
-                    ()=>{ /* ... */ },
+                    (()=>{ const wName=name, wDef=def; return ()=>{ if(p.money>=Math.floor(wDef.cost*discount)){ p.money-=Math.floor(wDef.cost*discount); p.guns.push({name:wName,damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',...(wDef.onKillHeal?{onKillHeal:wDef.onKillHeal}:{})}); updateStoreDisplay(); } }; })(),
                     p.money>= Math.floor(def.cost*discount),
                     def.desc
                 ));
@@ -999,7 +1100,7 @@
             container.appendChild(createStoreItem(
                 `Repair Broken Gun - $${Math.floor(50*discount)}`,
                 Math.floor(50*discount),
-                ()=>{ /* ... */ },
+                ()=>{ if(p.money>=Math.floor(50*discount)){ p.money-=Math.floor(50*discount); p.gunParts=[]; p.guns.push({name:'Widowmaker',damage:12,capacity:4,loaded:{regular:4,express:0,trick:0},currentType:'regular',onKillHeal:3}); updateStoreDisplay(); } },
                 p.money>= Math.floor(50*discount),
                 'Assemble the legendary Widowmaker (12 dmg, heals 3 HP on kill).'
             ));
@@ -1009,31 +1110,55 @@
     function generateRotatingItems() {
         const p = gameState.player;
         const discount = p.hasStolenBadge ? 0.7 : 1;
-        const possible = [
-            { label:`Express Ammo (6) - $${Math.floor(18*discount)}`, cost:Math.floor(18*discount),
-              action:()=>{ p.money-=Math.floor(18*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.express=(gun.loaded.express||0)+toLoad; p.bullets.express+=(6-toLoad); } else p.bullets.express+=6; updateStoreDisplay(); },
-              desc:'Express bullets give +2 damage and +10% accuracy.' },
-            { label:`Trick Ammo (6) - $${Math.floor(24*discount)}`, cost:Math.floor(24*discount),
-              action:()=>{ p.money-=Math.floor(24*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.trick=(gun.loaded.trick||0)+toLoad; p.bullets.trick+=(6-toLoad); } else p.bullets.trick+=6; updateStoreDisplay(); },
-              desc:'Trick bullets deal half damage even when you miss.' },
-            { label:`Smokebomb - $${Math.floor(20*discount)}`, cost:Math.floor(20*discount),
-              action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); },
-              desc:'Adds a one‑use Smokebomb card to your deck. Guarantees escape.' },
-            { label:`Poncho (2 uses) - $${Math.floor(35*discount)}`, cost:Math.floor(35*discount),
-              action:()=>{ p.ponchoDurability=2; p.money-=Math.floor(35*discount); updateStoreDisplay(); },
-              desc:'Protects you from two sandstorms before wearing out.' },
-        ];
-        if (!p.hasSnakeFlute) possible.push({ label:`Snake Flute - $${Math.floor(25*discount)}`, cost:Math.floor(25*discount),
-            action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); },
-            desc:'Snakes deal only half damage.' });
+        const d = v => Math.floor(v * discount);
+
+        // Full possible pool — built fresh each time so it's different every run & shop refresh
+        const possible = [];
+
+        // Ammo types (always available)
+        possible.push({ label:`Express Ammo (6) - $${d(18)}`, cost:d(18),
+            action:()=>{ p.money-=d(18); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.express=(gun.loaded.express||0)+toLoad; p.bullets.express+=(6-toLoad); } else p.bullets.express+=6; updateStoreDisplay(); },
+            desc:'Express bullets: +2 dmg and +10% accuracy.' });
+        possible.push({ label:`Trick Ammo (6) - $${d(24)}`, cost:d(24),
+            action:()=>{ p.money-=d(24); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.trick=(gun.loaded.trick||0)+toLoad; p.bullets.trick+=(6-toLoad); } else p.bullets.trick+=6; updateStoreDisplay(); },
+            desc:'Trick bullets deal half damage even on a miss.' });
+
+        // Consumables
+        possible.push({ label:`Smokebomb - $${d(20)}`, cost:d(20),
+            action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=d(20); updateStoreDisplay(); },
+            desc:'Adds a Smokebomb card to your deck. Guarantees escape.' });
+        possible.push({ label:`Poncho (2 uses) - $${d(35)}`, cost:d(35),
+            action:()=>{ p.ponchoDurability=(p.ponchoDurability||0)+2; p.money-=d(35); updateStoreDisplay(); },
+            desc:'Protects from two sandstorms before wearing out.' });
+        possible.push({ label:`War Cry Card - $${d(22)}`, cost:d(22),
+            action:()=>{ addToInventory('War Cry','card'); p.money-=d(22); updateStoreDisplay(); },
+            desc:'Adds War Cry to your deck: heal 4 HP and draw an extra card.' });
+        possible.push({ label:`Bandage Kit - $${d(10)}`, cost:d(10),
+            action:()=>{ addToInventory('Bandage Kit','heal'); p.money-=d(10); updateStoreDisplay(); },
+            desc:'Adds an extra Bandage card to your deck (heals 6 HP).' });
+        if (!p.hasSnakeFlute) possible.push({ label:`Snake Flute - $${d(25)}`, cost:d(25),
+            action:()=>{ p.hasSnakeFlute=true; p.money-=d(25); updateStoreDisplay(); },
+            desc:'Snakes deal only half damage to you.' });
+
+        // Gun parts (if any missing)
         const missingParts = partNames.filter(part => !p.gunParts.includes(part));
         if (missingParts.length) {
             const part = missingParts[Math.floor(Math.random()*missingParts.length)];
-            possible.push({ label:`${partLabels[part]} (Gun Part) - $${Math.floor(25*discount)}`, cost:Math.floor(25*discount),
-                action:()=>{ p.gunParts.push(part); p.money-=Math.floor(25*discount); updateStoreDisplay(); },
-                desc:'A rare gun part needed to repair the Widowmaker.' });
+            possible.push({ label:`${partLabels[part]} (Gun Part) - $${d(25)}`, cost:d(25),
+                action:()=>{ p.gunParts.push(part); p.money-=d(25); updateStoreDisplay(); },
+                desc:'A rare part needed to assemble the Widowmaker.' });
         }
-        return shuffleArray(possible).slice(0,3);
+
+        // All trinkets not yet owned — the main source of variety
+        Object.entries(trinketDefs).forEach(([name, def]) => {
+            if (!p.trinkets.find(t => t.name === name)) {
+                possible.push({ label:`${name} - $${d(def.cost)}`, cost:d(def.cost),
+                    action:(()=>{ const n=name, c=d(def.cost); return ()=>{ if(p.money>=c && p.trinkets.length<3){ p.money-=c; p.trinkets.push({name:n}); updateStoreDisplay(); } else if(p.trinkets.length>=3){ alert('You can only carry 3 trinkets.'); } }; })(),
+                    desc: def.desc });
+            }
+        });
+
+        return shuffleArray(possible).slice(0, 3);
     }
 
     function createStoreItem(label, cost, action, enabled, description) {
@@ -1077,11 +1202,15 @@
             { name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3,enemyName:'Slim Cassidy' },
             { name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7,enemyName:'The Rattler' },
             { name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4,enemyName:'Dirty Morgan' },
+            { name:'Two-Face Hank',reward:50,difficulty:'Moderate',enemyHp:21,enemyDmg:6,enemyName:'Two-Face Hank' },
+            { name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9,enemyName:'The Preacher' },
+            { name:'Ghost Canyon Bill',reward:45,difficulty:'Moderate',enemyHp:19,enemyDmg:5,enemyName:'Ghost Canyon Bill' },
         ];
+        const diffColor = { Easy:'#6aaa4a', Moderate:'#c9a030', Hard:'#e07030', Deadly:'#cc2020' };
         bounties.forEach(b=>{
             const div = document.createElement('div');
             div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
-            div.innerHTML = `<div><strong style="color:#f0d080;">${b.name}</strong><br><small style="color:#a08060;">Reward: $${b.reward} | ${b.difficulty}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
+            div.innerHTML = `<div><strong style="color:#f0d080;">${b.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${b.reward}</span> &nbsp;|&nbsp; <span style="color:${diffColor[b.difficulty]||'#c9a030'};">${b.difficulty}</span> &nbsp;|&nbsp; HP: ${b.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
             div.addEventListener('click',()=>acceptBounty(b));
             container.appendChild(div);
         });
@@ -1182,6 +1311,11 @@
                 { name:'Rattlesnake', health:8, maxHealth:8, damage:5 },
                 { name:'Bounty Hunter', health:16, maxHealth:16, damage:5 },
                 { name:'Desert Raider', health:18, maxHealth:18, damage:6 },
+                { name:'Gang Member', health:13, maxHealth:13, damage:4 },
+                { name:'Hired Gun', health:22, maxHealth:22, damage:7 },
+                { name:'Apache Warrior', health:19, maxHealth:19, damage:6 },
+                { name:'Coyote Bandit', health:11, maxHealth:11, damage:5 },
+                { name:'Crooked Lawman', health:17, maxHealth:17, damage:5 },
             ];
             gameState.combatInWilderness = true;
             startCombat(enemies[Math.floor(Math.random()*enemies.length)]);
@@ -1199,17 +1333,28 @@
             showWildChoices();
         } else if (roll < enemyChance + 0.5) {
             const lootRoll = Math.random();
-            if (lootRoll<0.5) { const money=Math.floor(Math.random()*20)+5; p.money+=money; document.getElementById('wild-result').textContent='You find $'+money; }
-            else if (lootRoll<0.8) { p.food+=2; document.getElementById('wild-result').textContent='You find canned goods. +2 Food.'; }
-            else if (lootRoll<0.95) { const heal=Math.floor(Math.random()*5)+3; p.health=Math.min(p.maxHealth,p.health+heal); document.getElementById('wild-result').textContent='Medicinal herbs. +'+heal+' HP.'; }
-            else {
-                if (!p.hasStolenBadge && Math.random()<0.3) { p.hasStolenBadge = true; document.getElementById('wild-result').textContent='You found a STOLEN BADGE! Store prices reduced 30%.'; }
+            if (lootRoll<0.4) { const money=Math.floor(Math.random()*20)+5; p.money+=money; document.getElementById('wild-result').textContent='You find $'+money+' in a dead man\'s saddlebag.'; }
+            else if (lootRoll<0.65) { p.food+=2; document.getElementById('wild-result').textContent='You find canned goods half-buried in the dirt. +2 Food.'; }
+            else if (lootRoll<0.78) { const heal=Math.floor(Math.random()*5)+3; p.health=Math.min(p.maxHealth,p.health+heal); document.getElementById('wild-result').textContent='Medicinal herbs near a dry creek. +'+heal+' HP.'; }
+            else if (lootRoll<0.88) { const cache=Math.floor(Math.random()*30)+20; p.money+=cache; document.getElementById('wild-result').textContent='A hidden cache! You strike $'+cache+'.'; }
+            else if (lootRoll<0.95) {
+                if (!p.hasStolenBadge && Math.random()<0.3) { p.hasStolenBadge = true; document.getElementById('wild-result').textContent='You found a STOLEN BADGE! Store prices cut 30%.'; }
                 else { const money=Math.floor(Math.random()*15)+10; p.money+=money; document.getElementById('wild-result').textContent='You find $'+money; }
-            }
+            } else { p.food+=3; p.health=Math.min(p.maxHealth,p.health+4); document.getElementById('wild-result').textContent='A water hole! You rest and refill. +3 Food, +4 HP.'; }
+            if (p.trinkets.some(t=>t.name==='Medicine Bag')) { p.health=Math.min(p.maxHealth,p.health+2); }
             updateWildernessDisplay();
             showWildChoices();
         } else {
-            document.getElementById('wild-result').textContent = 'The desert is quiet.';
+            const quietMsgs = [
+                'The desert is quiet. Nothing but wind and dust.',
+                'A lone vulture circles overhead. Nothing else moves.',
+                'Tracks in the sand — someone passed through recently.',
+                'The sun beats down mercilessly. You press on.',
+                'In the distance, a coyote howls at the pale sky.',
+                'Tumbleweeds roll past. This land holds its secrets close.',
+                'The ruins of an old homestead. Nobody left to tell its story.',
+            ];
+            document.getElementById('wild-result').textContent = quietMsgs[Math.floor(Math.random()*quietMsgs.length)];
             showWildChoices();
         }
     }
@@ -1231,7 +1376,7 @@
             if (!p.trinkets.find(t=>t.name===tName)) items.push({ name:tName, ...trinketDefs[tName], type:'trinket' });
         }
         if (Math.random()>0.5) items.push({ name:'Smokebomb', desc:'Guaranteed flee', cost:20, type:'consumable' });
-        if (Math.random()>0.7) items.push({ name:'Healing Salve', desc:'Heal 15 HP', cost:12, type:'consumable' });
+        if (Math.random()>0.7) items.push({ name:'Healing Salve', desc:'Heal 15 HP now', cost:12, type:'instant_heal' });
 
         const btnContainer = document.getElementById('wild-buttons');
         btnContainer.innerHTML = '<div style="color:#f0d080;">Buy something? (Your $: '+p.money+')</div>';
@@ -1245,6 +1390,8 @@
                 if (item.type === 'trinket') {
                     if (p.trinkets.length < 3) p.trinkets.push({ name: item.name });
                     else { p.money += item.cost; flashMessage('wild-result','max 3 trinkets!'); return; }
+                } else if (item.type === 'instant_heal') {
+                    p.health = Math.min(p.maxHealth, p.health + 15);
                 } else addToInventory(item.name, 'consumable');
                 updateWildernessDisplay();
                 wildernessShop();
@@ -1270,6 +1417,7 @@
         gameState.player.dodgeActive = false;
         gameState.player.coverActive = 0;
         gameState.player.intimidateUsed = false;
+        if (gameState.player.trinkets.some(t=>t.name==='Iron Horseshoe')) gameState.player.coverActive = 1;
 
         const gun = getActualGun();
         document.getElementById('combat-title').textContent = enemy.isBounty ? 'BOUNTY SHOWDOWN!' : 'Showdown!';
@@ -1295,7 +1443,8 @@
 
     const iconMap = {
         'Quick Shot':'🔫','Aimed Shot':'🎯','Fan the Hammer':'💥','Reload':'🔄','Dodge':'💨','Take Cover':'🛡️',
-        'Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨'
+        'Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨',
+        'Dead Eye':'🔭','Lasso':'🪢','Last Stand':'🌅','War Cry':'🦅'
     };
 
     function renderCombatHand() {
@@ -1449,6 +1598,23 @@
                     logMsg = `BOOM! ${dmg} dmg, self ${card.selfDmg}.`;
                 } else { logMsg = 'Fizzle.'; showMissIndicator(); }
             } else logMsg = 'No ammo.';
+        } else if (card.effect==='lasso') {
+            if (Math.random()<0.7) { gameState.combatEnemy.skipNextTurn = true; logMsg = 'Lassoed! Enemy caught!'; }
+            else { logMsg = 'Lasso missed!'; showMissIndicator(); }
+        } else if (card.effect==='laststand') {
+            if (gun && getAmmoOfType(bulletType) >= card.ammoCost) {
+                gun.loaded[bulletType] -= card.ammoCost;
+                if (hit) {
+                    const hasSpurs = gameState.player.trinkets.some(t=>t.name==='Spare Spurs');
+                    let dmg = Math.max(2, Math.floor((gameState.player.maxHealth - gameState.player.health) / 2)) + (hasSpurs?3:0);
+                    gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - dmg);
+                    logMsg = `Last Stand! ${dmg} desperation dmg!`; triggerScreenFlash();
+                } else { logMsg = 'Last Stand missed!'; showMissIndicator(); }
+            } else logMsg = 'No ammo.';
+        } else if (card.effect==='warcry') {
+            gameState.player.health = Math.min(gameState.player.maxHealth, gameState.player.health + 4);
+            const extra = drawCards(1); if (extra.length) gameState.combatHand.push(...extra);
+            logMsg = '+4 HP. Drew an extra card!';
         }
 
         gameState.firstShotThisCombat = false;
@@ -1543,6 +1709,7 @@
         if (gun && gun.onKillHeal) p.health = Math.min(p.maxHealth, p.health + gun.onKillHeal);
         if (p.trinkets.some(t=>t.name==='Vultures Eye')) p.health = Math.min(p.maxHealth, p.health+4);
         p.health = Math.min(p.maxHealth, p.health+2);
+        p.killCount = (p.killCount||0) + 1;
         document.getElementById('combat-log').textContent = 'VICTORY! '+msg;
         goToTown();
         updateHighScore();
@@ -1571,7 +1738,7 @@
             equippedGunIndex:0,inventory:[], day:1,bountiesCollected:0,totalEarned:0,
             trinkets:[], consumables:[], gunParts:[],
             bullets:{regular:0,express:0,trick:0},
-            ponchoDurability:0, hasSnakeFlute:false, hasStolenBadge:false
+            ponchoDurability:0, hasSnakeFlute:false, hasStolenBadge:false, killCount:0
         };
         gameState.deck = buildDeck(); gameState.discardPile=[];
         gameState.combatEnemy=null; gameState.combatActive=false;
@@ -1584,12 +1751,24 @@
     function endRun(cause) {
         gameState.combatActive = false;
         const p = gameState.player;
-        document.getElementById('gameover-title').textContent = cause==='starved'?'STARVED':cause==='sandstorm'?'BURIED':cause==='retired'?'RETIRED':'DEAD';
-        document.getElementById('gameover-desc').textContent = 'The frontier claims another victim.';
+        const deathMsgs = ['Your story ends here in the dust.','The frontier claims another soul.','They\'ll bury you where you fell.','Nobody left to mourn you out here.','The buzzards circle overhead.'];
+        const titleMap = { starved:'STARVED', sandstorm:'BURIED', retired:'RETIRED', killed:'DEAD' };
+        const descMap = {
+            starved: 'Hunger won in the end. The desert takes what it wants.',
+            sandstorm: 'The sands erase all traces. Buried under the merciless sky.',
+            retired: `You ride into the sunset — $${p.totalEarned} richer and a whole lot wiser.`,
+            killed: deathMsgs[Math.floor(Math.random()*deathMsgs.length)]
+        };
+        const titleEl = document.getElementById('gameover-title');
+        titleEl.textContent = titleMap[cause]||'DEAD';
+        titleEl.style.color = cause==='retired' ? '#f0c840' : '#ff6b4a';
+        document.getElementById('gameover-desc').textContent = descMap[cause]||descMap.killed;
         document.getElementById('go-days').textContent = p.day;
+        document.getElementById('go-kills').textContent = p.killCount||0;
         document.getElementById('go-bounties').textContent = p.bountiesCollected;
         document.getElementById('go-money').textContent = p.totalEarned;
         updateHighScore();
+        document.getElementById('go-highscore').textContent = localStorage.getItem('dustAndLeadHighScore')||'0';
         showScreen('gameover');
     }
 
