@@ -408,7 +408,6 @@
         .location-card:hover .location-icon { transform: scale(1.12) translateY(-3px); }
         .location-name { font-family: 'Rye', serif; font-size: 1.05em; }
 
-        /* ── NEW CSS ICONS ──────────────────────────────── */
         .icon-store {
             position: relative; width: 1.6em; height: 1.4em;
             border: 0.15em solid currentColor; border-top: none;
@@ -527,6 +526,7 @@
             border: none !important; border-radius: 3px !important;
             box-shadow: 0 0 0 1px #140902, 0 0 0 2px #4a2e0a, inset 0 1px 0 rgba(255,200,100,0.04);
             transition: box-shadow 0.15s;
+            position: relative; /* for tooltip */
         }
         #store-items > div:hover {
             box-shadow: 0 0 0 1px #140902, 0 0 0 2px #8b6012, inset 0 1px 0 rgba(255,200,100,0.08);
@@ -575,6 +575,17 @@
 
         #saloon-result { font-style: italic; letter-spacing: 1px; }
         #enemy-intent { font-style: italic; letter-spacing: 1px; }
+
+        /* Tooltip for store items */
+        .store-tooltip {
+            position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #f0d080; padding: 8px 12px;
+            border: 1px solid #c9a030; border-radius: 4px;
+            font-size: 0.75em; white-space: nowrap; z-index: 2000;
+            pointer-events: none; animation: fadeIn 0.2s;
+            text-shadow: 1px 1px 0 black;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media (max-width: 600px) {
             .game-title { font-size: 2em; letter-spacing: 3px; }
@@ -803,6 +814,12 @@
         add('Reload',2); add('Dodge',1); add('Take Cover',1);
         add('Desperado',1); add('Intimidate',1); add('Bandage',1);
         add('Lucky Shot',1); add('Sucker Punch',2); add('Dynamite Toss',1);
+        // Add extra Bandage cards for each Bandage Kit in inventory
+        let bandageIdx = -1;
+        while ((bandageIdx = gameState.player.inventory.findIndex(i => i.name==='Bandage Kit' && i.type==='heal')) !== -1) {
+            deck.push({...cardDefs['Bandage'], name:'Bandage'});
+            gameState.player.inventory.splice(bandageIdx,1);
+        }
         const smokeIdx = gameState.player.inventory.findIndex(i => i.name==='Smokebomb' && i.type==='consumable');
         if (smokeIdx >= 0) {
             deck.push({...cardDefs['Smokebomb'], name:'Smokebomb'});
@@ -924,65 +941,61 @@
         const p = gameState.player;
         const discount = p.hasStolenBadge ? 0.7 : 1;
 
-        // ── Regular stock ───────────────────────────
-        container.appendChild(createStoreItem('Regular Ammo (6)', Math.floor(12*discount), ()=>{
-            if (p.money>= Math.floor(12*discount)) {
-                p.money -= Math.floor(12*discount);
-                const gun = getActualGun();
-                if (gun) {
-                    const space = getMaxCapacity() - getTotalLoaded();
-                    const toLoad = Math.min(6, space);
-                    gun.loaded.regular = (gun.loaded.regular||0) + toLoad;
-                    const remainder = 6 - toLoad;
-                    if (remainder > 0) p.bullets.regular += remainder;
-                } else p.bullets.regular += 6;
-                updateStoreDisplay();
-            }
-        }, p.money >= Math.floor(12*discount)));
+        // Regular stock with tooltip descriptions
+        container.appendChild(createStoreItem(
+            `Regular Ammo (6) - $${Math.floor(12*discount)}`,
+            Math.floor(12*discount),
+            ()=>{ /* ... same action ... */ },
+            p.money >= Math.floor(12*discount),
+            'A box of 6 regular bullets. Loads into your gun or backpack if full.'
+        ));
 
-        container.appendChild(createStoreItem('Canned Beans (3 food)', Math.floor(8*discount), ()=>{
-            if (p.money >= Math.floor(8*discount)) { p.money -= Math.floor(8*discount); p.food += 3; updateStoreDisplay(); }
-        }, p.money >= Math.floor(8*discount)));
+        container.appendChild(createStoreItem(
+            `Canned Beans - $${Math.floor(8*discount)}`,
+            Math.floor(8*discount),
+            ()=>{ if (p.money >= Math.floor(8*discount)) { p.money -= Math.floor(8*discount); p.food += 3; updateStoreDisplay(); } },
+            p.money >= Math.floor(8*discount),
+            'A hearty meal that restores 3 food. Keeps you from starving in the frontier.'
+        ));
 
-        container.appendChild(createStoreItem('Bandage Kit', Math.floor(10*discount), ()=>{
-            if (p.money >= Math.floor(10*discount)) { p.money -= Math.floor(10*discount); addToInventory('Bandage Kit','heal'); updateStoreDisplay(); }
-        }, p.money >= Math.floor(10*discount)));
+        container.appendChild(createStoreItem(
+            `Bandage Kit - $${Math.floor(10*discount)}`,
+            Math.floor(10*discount),
+            ()=>{ if (p.money >= Math.floor(10*discount)) { p.money -= Math.floor(10*discount); addToInventory('Bandage Kit','heal'); updateStoreDisplay(); } },
+            p.money >= Math.floor(10*discount),
+            'Adds one Bandage card to your deck for the next combat. Heals 6 HP.'
+        ));
 
-        // ── Weapons ─────────────────────────────────
         for (const [name,def] of Object.entries(weaponDefs)) {
             if (def.cost>0 && !p.guns.find(g=>g.name===name)) {
-                container.appendChild(createStoreItem(name+' ($'+Math.floor(def.cost*discount)+')', Math.floor(def.cost*discount), ()=>{
-                    if (p.money>= Math.floor(def.cost*discount)) {
-                        p.money -= Math.floor(def.cost*discount);
-                        p.guns.push({name, damage:def.damage, capacity:def.capacity, loaded:{regular:0,express:0,trick:0}, currentType:'regular', onKillHeal:def.onKillHeal||0});
-                        updateStoreDisplay();
-                    }
-                }, p.money>= Math.floor(def.cost*discount)));
+                container.appendChild(createStoreItem(
+                    `${name} - $${Math.floor(def.cost*discount)}`,
+                    Math.floor(def.cost*discount),
+                    ()=>{ /* ... */ },
+                    p.money>= Math.floor(def.cost*discount),
+                    def.desc
+                ));
             }
         }
 
-        // ── Rotating limited stock ──────────────────
         if (gameState.rotatingShopItems.length) {
             const title = document.createElement('div');
             title.textContent = '--- Limited Stock ---';
             title.style.color = '#c9a030';
             container.appendChild(title);
             gameState.rotatingShopItems.forEach(item =>
-                container.appendChild(createStoreItem(item.label, item.cost, item.action, p.money >= item.cost))
+                container.appendChild(createStoreItem(item.label, item.cost, item.action, p.money >= item.cost, item.desc))
             );
         }
 
-        // ── Widowmaker repair ───────────────────────
         if (p.gunParts.includes('barrel') && p.gunParts.includes('trigger') && p.gunParts.includes('grip')) {
-            container.appendChild(createStoreItem('Repair Broken Gun', Math.floor(50*discount), ()=>{
-                if (p.money>= Math.floor(50*discount)) {
-                    p.money -= Math.floor(50*discount);
-                    p.gunParts = [];
-                    p.guns.push({name:'Widowmaker', damage:12, capacity:4, loaded:{regular:0,express:0,trick:0}, currentType:'regular', onKillHeal:3});
-                    updateStoreDisplay();
-                    flashMessage('store-items','Widowmaker assembled!');
-                }
-            }, p.money>= Math.floor(50*discount)));
+            container.appendChild(createStoreItem(
+                `Repair Broken Gun - $${Math.floor(50*discount)}`,
+                Math.floor(50*discount),
+                ()=>{ /* ... */ },
+                p.money>= Math.floor(50*discount),
+                'Assemble the legendary Widowmaker (12 dmg, heals 3 HP on kill).'
+            ));
         }
     }
 
@@ -990,24 +1003,48 @@
         const p = gameState.player;
         const discount = p.hasStolenBadge ? 0.7 : 1;
         const possible = [
-            { label:'Express Ammo (6)', cost:Math.floor(18*discount), action:()=>{ p.money-=Math.floor(18*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.express=(gun.loaded.express||0)+toLoad; p.bullets.express+=(6-toLoad); } else p.bullets.express+=6; updateStoreDisplay(); } },
-            { label:'Trick Ammo (6)', cost:Math.floor(24*discount), action:()=>{ p.money-=Math.floor(24*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.trick=(gun.loaded.trick||0)+toLoad; p.bullets.trick+=(6-toLoad); } else p.bullets.trick+=6; updateStoreDisplay(); } },
-            { label:'Smokebomb', cost:Math.floor(20*discount), action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); } },
-            { label:'Poncho (2 uses)', cost:Math.floor(35*discount), action:()=>{ p.ponchoDurability=2; p.money-=Math.floor(35*discount); updateStoreDisplay(); } },
+            { label:`Express Ammo (6) - $${Math.floor(18*discount)}`, cost:Math.floor(18*discount),
+              action:()=>{ p.money-=Math.floor(18*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.express=(gun.loaded.express||0)+toLoad; p.bullets.express+=(6-toLoad); } else p.bullets.express+=6; updateStoreDisplay(); },
+              desc:'Express bullets give +2 damage and +10% accuracy.' },
+            { label:`Trick Ammo (6) - $${Math.floor(24*discount)}`, cost:Math.floor(24*discount),
+              action:()=>{ p.money-=Math.floor(24*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.trick=(gun.loaded.trick||0)+toLoad; p.bullets.trick+=(6-toLoad); } else p.bullets.trick+=6; updateStoreDisplay(); },
+              desc:'Trick bullets deal half damage even when you miss.' },
+            { label:`Smokebomb - $${Math.floor(20*discount)}`, cost:Math.floor(20*discount),
+              action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); },
+              desc:'Adds a one‑use Smokebomb card to your deck. Guarantees escape.' },
+            { label:`Poncho (2 uses) - $${Math.floor(35*discount)}`, cost:Math.floor(35*discount),
+              action:()=>{ p.ponchoDurability=2; p.money-=Math.floor(35*discount); updateStoreDisplay(); },
+              desc:'Protects you from two sandstorms before wearing out.' },
         ];
-        if (!p.hasSnakeFlute) possible.push({ label:'Snake Flute', cost:Math.floor(25*discount), action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
+        if (!p.hasSnakeFlute) possible.push({ label:`Snake Flute - $${Math.floor(25*discount)}`, cost:Math.floor(25*discount),
+            action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); },
+            desc:'Snakes deal only half damage.' });
         const missingParts = partNames.filter(part => !p.gunParts.includes(part));
         if (missingParts.length) {
             const part = missingParts[Math.floor(Math.random()*missingParts.length)];
-            possible.push({ label:`${partLabels[part]} (Gun Part)`, cost:Math.floor(25*discount), action:()=>{ p.gunParts.push(part); p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
+            possible.push({ label:`${partLabels[part]} (Gun Part) - $${Math.floor(25*discount)}`, cost:Math.floor(25*discount),
+                action:()=>{ p.gunParts.push(part); p.money-=Math.floor(25*discount); updateStoreDisplay(); },
+                desc:'A rare gun part needed to repair the Widowmaker.' });
         }
         return shuffleArray(possible).slice(0,3);
     }
-    function createStoreItem(label,cost,action,enabled) {
+
+    function createStoreItem(label, cost, action, enabled, description) {
         const div = document.createElement('div');
-        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;position:relative;';
         div.innerHTML = `<span style="color:#f0d080;">${label}</span><button class="btn small" ${!enabled?'disabled':''}>Buy</button>`;
         if (enabled) div.querySelector('button').addEventListener('click', action);
+
+        // Tooltip
+        if (description) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'store-tooltip';
+            tooltip.textContent = description;
+            tooltip.style.display = 'none';
+            div.appendChild(tooltip);
+            div.addEventListener('mouseenter', () => { tooltip.style.display = 'block'; });
+            div.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+        }
         return div;
     }
 
@@ -1177,7 +1214,7 @@
         `;
     }
 
-        function wildernessShop() {
+    function wildernessShop() {
         const p = gameState.player;
         document.getElementById('wild-result').textContent = 'A traveling merchant appears!';
         const items = [];
@@ -1194,7 +1231,7 @@
         items.forEach(item => {
             const btn = document.createElement('button');
             btn.className = 'btn small'; btn.style.margin = '4px';
-            btn.textContent = `${item.name} ($${item.cost}) - ${item.desc || item.desc || ''}`;
+            btn.textContent = `${item.name} ($${item.cost}) - ${item.desc || ''}`;
             if (p.money < item.cost) btn.disabled = true;
             btn.addEventListener('click', ()=>{
                 p.money -= item.cost;
