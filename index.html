@@ -977,8 +977,7 @@
 
         const items = [
             { label:`Reinforce Barrel (+2 dmg) — $50`, cost:50, action:()=>{ if(p.money>=50){ p.money-=50; gun.damage+=2; notify(`${gun.name} now deals ${gun.damage} damage!`); } } },
-            { label:`Extend Cylinder (+2 capacity) — $45`, cost:45, action:()=>{ if(p.money>=45){ p.money-=45; gun.capacity+=2; gun.loaded.regular+=2; notify(`${gun.name} now holds ${gun.capacity} rounds!`); } } },
-            { label:`Full Reload & Clean ($15) — Refill gun`, cost:15, action:()=>{ if(p.money>=15){ p.money-=15; const space=gun.capacity-getTotalLoaded(); const amt=Math.min(space,p.bullets.regular+6); gun.loaded.regular=Math.min(gun.capacity,(gun.loaded.regular||0)+amt); notify('Gun cleaned and reloaded!'); } } },
+            { label:`Expanded Cylinder (+2 capacity) — $45`, cost:45, action:()=>{ if(p.money>=45){ p.money-=45; gun.capacity+=2; gun.loaded.regular+=2; notify(`${gun.name} now holds ${gun.capacity} rounds!`); } } },
         ];
         if (p.guns.length > 1) {
             const nextIdx = (p.equippedGunIndex+1) % p.guns.length;
