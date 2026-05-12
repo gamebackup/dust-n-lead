@@ -924,6 +924,7 @@
         const p = gameState.player;
         const discount = p.hasStolenBadge ? 0.7 : 1;
 
+        // ── Regular stock ───────────────────────────
         container.appendChild(createStoreItem('Regular Ammo (6)', Math.floor(12*discount), ()=>{
             if (p.money>= Math.floor(12*discount)) {
                 p.money -= Math.floor(12*discount);
@@ -939,36 +940,15 @@
             }
         }, p.money >= Math.floor(12*discount)));
 
-        container.appendChild(createStoreItem('Express Ammo (6)', Math.floor(18*discount), ()=>{
-            if (p.money>= Math.floor(18*discount)) {
-                p.money -= Math.floor(18*discount);
-                const gun = getActualGun();
-                if (gun) {
-                    const space = getMaxCapacity() - getTotalLoaded();
-                    const toLoad = Math.min(6, space);
-                    gun.loaded.express = (gun.loaded.express||0) + toLoad;
-                    const remainder = 6 - toLoad;
-                    if (remainder > 0) p.bullets.express += remainder;
-                } else p.bullets.express += 6;
-                updateStoreDisplay();
-            }
-        }, p.money >= Math.floor(18*discount)));
+        container.appendChild(createStoreItem('Canned Beans (3 food)', Math.floor(8*discount), ()=>{
+            if (p.money >= Math.floor(8*discount)) { p.money -= Math.floor(8*discount); p.food += 3; updateStoreDisplay(); }
+        }, p.money >= Math.floor(8*discount)));
 
-        container.appendChild(createStoreItem('Trick Ammo (6)', Math.floor(24*discount), ()=>{
-            if (p.money>= Math.floor(24*discount)) {
-                p.money -= Math.floor(24*discount);
-                const gun = getActualGun();
-                if (gun) {
-                    const space = getMaxCapacity() - getTotalLoaded();
-                    const toLoad = Math.min(6, space);
-                    gun.loaded.trick = (gun.loaded.trick||0) + toLoad;
-                    const remainder = 6 - toLoad;
-                    if (remainder > 0) p.bullets.trick += remainder;
-                } else p.bullets.trick += 6;
-                updateStoreDisplay();
-            }
-        }, p.money >= Math.floor(24*discount)));
+        container.appendChild(createStoreItem('Bandage Kit', Math.floor(10*discount), ()=>{
+            if (p.money >= Math.floor(10*discount)) { p.money -= Math.floor(10*discount); addToInventory('Bandage Kit','heal'); updateStoreDisplay(); }
+        }, p.money >= Math.floor(10*discount)));
 
+        // ── Weapons ─────────────────────────────────
         for (const [name,def] of Object.entries(weaponDefs)) {
             if (def.cost>0 && !p.guns.find(g=>g.name===name)) {
                 container.appendChild(createStoreItem(name+' ($'+Math.floor(def.cost*discount)+')', Math.floor(def.cost*discount), ()=>{
@@ -981,23 +961,18 @@
             }
         }
 
-        container.appendChild(createStoreItem('Smokebomb', Math.floor(20*discount), ()=>{
-            if (p.money>= Math.floor(20*discount)) { p.money -= Math.floor(20*discount); addToInventory('Smokebomb','consumable'); updateStoreDisplay(); }
-        }, p.money>= Math.floor(20*discount)));
-
-        container.appendChild(createStoreItem('Poncho (2 uses)', Math.floor(35*discount), ()=>{
-            if (p.money>= Math.floor(35*discount)) { p.money -= Math.floor(35*discount); p.ponchoDurability = 2; updateStoreDisplay(); }
-        }, p.money>= Math.floor(35*discount)));
-
-        container.appendChild(createStoreItem('Snake Flute', Math.floor(25*discount), ()=>{
-            if (p.money>= Math.floor(25*discount) && !p.hasSnakeFlute) { p.money -= Math.floor(25*discount); p.hasSnakeFlute = true; updateStoreDisplay(); }
-        }, p.money>= Math.floor(25*discount) && !p.hasSnakeFlute));
-
+        // ── Rotating limited stock ──────────────────
         if (gameState.rotatingShopItems.length) {
-            const title = document.createElement('div'); title.textContent = '--- Limited Stock ---'; title.style.color='#c9a030'; container.appendChild(title);
-            gameState.rotatingShopItems.forEach(item => container.appendChild(createStoreItem(item.label, item.cost, item.action, p.money>=item.cost)));
+            const title = document.createElement('div');
+            title.textContent = '--- Limited Stock ---';
+            title.style.color = '#c9a030';
+            container.appendChild(title);
+            gameState.rotatingShopItems.forEach(item =>
+                container.appendChild(createStoreItem(item.label, item.cost, item.action, p.money >= item.cost))
+            );
         }
 
+        // ── Widowmaker repair ───────────────────────
         if (p.gunParts.includes('barrel') && p.gunParts.includes('trigger') && p.gunParts.includes('grip')) {
             container.appendChild(createStoreItem('Repair Broken Gun', Math.floor(50*discount), ()=>{
                 if (p.money>= Math.floor(50*discount)) {
@@ -1014,22 +989,20 @@
     function generateRotatingItems() {
         const p = gameState.player;
         const discount = p.hasStolenBadge ? 0.7 : 1;
-        const items = [];
         const possible = [
-            { label:'Regular Ammo (6)', cost:Math.floor(12*discount), action:()=>{ p.money-=Math.floor(12*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.regular+=toLoad; p.bullets.regular+= (6-toLoad); } else p.bullets.regular+=6; updateStoreDisplay(); } },
-            { label:'Canned Beans (3 food)', cost:Math.floor(8*discount), action:()=>{ p.food+=3; p.money-=Math.floor(8*discount); updateStoreDisplay(); } },
-            { label:'Bandage Kit', cost:Math.floor(10*discount), action:()=>{ addToInventory('Bandage Kit','heal'); p.money-=Math.floor(10*discount); updateStoreDisplay(); } },
+            { label:'Express Ammo (6)', cost:Math.floor(18*discount), action:()=>{ p.money-=Math.floor(18*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.express=(gun.loaded.express||0)+toLoad; p.bullets.express+=(6-toLoad); } else p.bullets.express+=6; updateStoreDisplay(); } },
+            { label:'Trick Ammo (6)', cost:Math.floor(24*discount), action:()=>{ p.money-=Math.floor(24*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.trick=(gun.loaded.trick||0)+toLoad; p.bullets.trick+=(6-toLoad); } else p.bullets.trick+=6; updateStoreDisplay(); } },
+            { label:'Smokebomb', cost:Math.floor(20*discount), action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); } },
+            { label:'Poncho (2 uses)', cost:Math.floor(35*discount), action:()=>{ p.ponchoDurability=2; p.money-=Math.floor(35*discount); updateStoreDisplay(); } },
         ];
-        if (Math.random()<0.3) possible.push({ label:'Smokebomb', cost:Math.floor(20*discount), action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); }});
+        if (!p.hasSnakeFlute) possible.push({ label:'Snake Flute', cost:Math.floor(25*discount), action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
         const missingParts = partNames.filter(part => !p.gunParts.includes(part));
         if (missingParts.length) {
             const part = missingParts[Math.floor(Math.random()*missingParts.length)];
             possible.push({ label:`${partLabels[part]} (Gun Part)`, cost:Math.floor(25*discount), action:()=>{ p.gunParts.push(part); p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
         }
-        if (!p.hasSnakeFlute) possible.push({ label:'Snake Flute', cost:Math.floor(25*discount), action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
         return shuffleArray(possible).slice(0,3);
     }
-
     function createStoreItem(label,cost,action,enabled) {
         const div = document.createElement('div');
         div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
@@ -1204,7 +1177,7 @@
         `;
     }
 
-    function wildernessShop() {
+        function wildernessShop() {
         const p = gameState.player;
         document.getElementById('wild-result').textContent = 'A traveling merchant appears!';
         const items = [];
@@ -1216,11 +1189,12 @@
         if (Math.random()>0.5) items.push({ name:'Smokebomb', desc:'Guaranteed flee', cost:20, type:'consumable' });
         if (Math.random()>0.7) items.push({ name:'Healing Salve', desc:'Heal 15 HP', cost:12, type:'consumable' });
 
-        document.getElementById('wild-buttons').innerHTML = '<div style="color:#f0d080;">Buy something? (Your $: '+p.money+')</div>';
+        const btnContainer = document.getElementById('wild-buttons');
+        btnContainer.innerHTML = '<div style="color:#f0d080;">Buy something? (Your $: '+p.money+')</div>';
         items.forEach(item => {
             const btn = document.createElement('button');
             btn.className = 'btn small'; btn.style.margin = '4px';
-            btn.textContent = `${item.name} ($${item.cost}) - ${item.desc}`;
+            btn.textContent = `${item.name} ($${item.cost}) - ${item.desc || item.desc || ''}`;
             if (p.money < item.cost) btn.disabled = true;
             btn.addEventListener('click', ()=>{
                 p.money -= item.cost;
@@ -1231,9 +1205,14 @@
                 updateWildernessDisplay();
                 wildernessShop();
             });
-            document.getElementById('wild-buttons').appendChild(btn);
+            btnContainer.appendChild(btn);
         });
-        document.getElementById('wild-buttons').innerHTML += '<br><button class="btn small" onclick="showWildChoices()">Leave Merchant</button>';
+        const leaveBtn = document.createElement('button');
+        leaveBtn.className = 'btn small';
+        leaveBtn.textContent = 'Leave Merchant';
+        leaveBtn.addEventListener('click', ()=>{ showWildChoices(); });
+        btnContainer.appendChild(document.createElement('br'));
+        btnContainer.appendChild(leaveBtn);
     }
 
     function startCombat(enemy) {
