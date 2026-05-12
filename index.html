@@ -343,6 +343,14 @@
             top: 2px; left: 4px; right: 4px; height: 2px;
             background: rgba(255,200,200,0.24); border-radius: 2px;
         }
+        .location-icon img {
+    width: auto;
+    height: 100%;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55)); /* keeps the same shadow effect */
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
         .screen-flash {
             position: absolute; inset: 0; pointer-events: none; z-index: 998;
@@ -637,25 +645,25 @@
             <div id="gun-parts-display" style="color:#c9a060;margin:4px;"></div>
             <div class="location-grid">
                 <div class="location-card" onclick="goToStore()">
-                    <span class="location-icon"><div class="icon-store"></div></span>
-                    <span class="location-name">General Store</span>
-                    <small style="color:#a08060;">Buy supplies & guns</small>
-                </div>
-                <div class="location-card" onclick="goToSaloon()">
-                    <span class="location-icon"><div class="icon-saloon"></div></span>
-                    <span class="location-name">The Dusty Saloon</span>
-                    <small style="color:#a08060;">Rest, gamble & drink</small>
-                </div>
-                <div class="location-card" onclick="goToSheriff()">
-                    <span class="location-icon"><div class="icon-sheriff"></div></span>
-                    <span class="location-name">Sheriff's Office</span>
-                    <small style="color:#a08060;">Collect bounties</small>
-                </div>
-                <div class="location-card" onclick="goToWilderness()">
-                    <span class="location-icon"><div class="icon-wild"></div></span>
-                    <span class="location-name">Venture Out</span>
-                    <small style="color:#a08060;">Into the wild frontier</small>
-                </div>
+    <span class="location-icon"><img src="general-store.png" alt="Store"></span>
+    <span class="location-name">General Store</span>
+    <small style="color:#a08060;">Buy supplies & guns</small>
+</div>
+<div class="location-card" onclick="goToSaloon()">
+    <span class="location-icon"><img src="saloon.png" alt="Saloon"></span>
+    <span class="location-name">The Dusty Saloon</span>
+    <small style="color:#a08060;">Rest, gamble & drink</small>
+</div>
+<div class="location-card" onclick="goToSheriff()">
+    <span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span>
+    <span class="location-name">Sheriff's Office</span>
+    <small style="color:#a08060;">Collect bounties</small>
+</div>
+<div class="location-card" onclick="goToWilderness()">
+    <span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span>
+    <span class="location-name">Venture Out</span>
+    <small style="color:#a08060;">Into the wild frontier</small>
+</div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
             <button class="btn small" onclick="toggleDeckViewer()">View Deck</button>
