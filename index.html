@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dust & Lead - Western Roguelike</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap');
+
+        :root {
+            --parchment: #f4e4c1;
+            --dark-wood: #3e2723;
+            --medium-wood: #5d4037;
+            --light-wood: #8d6e63;
+            --dust: #c9a96e;
+            --blood: #8b0000;
+            --gold: #c9a030;
+            --dark-bg: #1a1008;
+            --text-dark: #2c1810;
+            --text-light: #f0d9a0;
+            --card-bg: #f5deb3;
+            --card-border: #8b6914;
+            --gunmetal: #4a4a4a;
+            --accent-red: #a03020;
+            --accent-green: #2d5a27;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background:
+                radial-gradient(ellipse at 50% -5%, rgba(90,35,5,0.55) 0%, transparent 55%),
+                radial-gradient(ellipse at 0% 105%, rgba(40,15,0,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 105%, rgba(50,20,0,0.4) 0%, transparent 50%),
+                linear-gradient(180deg, #0c0400 0%, #1a0902 30%, #230d04 60%, #0c0400 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            font-family: 'Special Elite', 'Courier New', monospace;
+            overflow-x: hidden; user-select: none; -webkit-user-select: none;
+        }
+
+        #grain-overlay {
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.038; pointer-events: none; z-index: 9999;
+            animation: grainShift 0.38s steps(2) infinite;
+        }
+        @keyframes grainShift {
+            0%   { transform: translate(0,0); }
+            25%  { transform: translate(-3px, 2px); }
+            50%  { transform: translate(2px,-3px); }
+            75%  { transform: translate(-2px,-1px); }
+            100% { transform: translate(1px, 2px); }
+        }
+
+        .dust-particle {
+            position: fixed; pointer-events: none;
+            background: radial-gradient(circle, rgba(220,180,110,0.85) 0%, rgba(200,160,100,0) 70%);
+            border-radius: 50%; animation: floatDust linear infinite; z-index: 0;
+        }
+        @keyframes floatDust {
+            0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+            8%   { opacity: 0.8; }
+            92%  { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(75px) rotate(180deg); opacity: 0; }
+        }
+
+        #game-container {
+            width: 100%; max-width: 780px; min-height: 600px;
+            background:
+                repeating-linear-gradient(88deg, transparent 0px, transparent 9px, rgba(0,0,0,0.055) 9px, rgba(0,0,0,0.055) 10px),
+                repeating-linear-gradient(180deg, transparent 0px, transparent 52px, rgba(255,175,70,0.018) 52px, rgba(255,175,70,0.018) 54px),
+                linear-gradient(180deg, #201008 0%, #391b0c 2%, #452612 5%, #391b0c 8%, #351708 18%, #3a1c0d 82%, #452612 95%, #201008 100%);
+            border-radius: 10px; position: relative; z-index: 1; overflow: hidden;
+            box-shadow:
+                inset 0 0 0 3px #7c5c28,
+                inset 0 0 0 6px #1c0d04,
+                inset 0 0 0 9px #5c3e18,
+                inset 0 0 0 12px #140a02,
+                0 0 90px rgba(0,0,0,0.92),
+                0 26px 64px rgba(0,0,0,0.72);
+            animation: lanternGlow 5.5s ease-in-out infinite;
+        }
+        @keyframes lanternGlow {
+            0%,100% { box-shadow: inset 0 0 0 3px #7c5c28, inset 0 0 0 6px #1c0d04, inset 0 0 0 9px #5c3e18, inset 0 0 0 12px #140a02, inset 0 60px 120px rgba(140,55,5,0.08), 0 0 90px rgba(0,0,0,0.92), 0 26px 64px rgba(0,0,0,0.72); }
+            50%      { box-shadow: inset 0 0 0 3px #7c5c28, inset 0 0 0 6px #1c0d04, inset 0 0 0 9px #5c3e18, inset 0 0 0 12px #140a02, inset 0 60px 160px rgba(175,80,5,0.16), 0 0 90px rgba(0,0,0,0.92), 0 26px 64px rgba(0,0,0,0.72); }
+        }
+
+        #game-container::before {
+            content: ''; position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.024) 2px, rgba(0,0,0,0.024) 3px);
+            pointer-events: none; z-index: 999; border-radius: 4px;
+        }
+        #game-container::after {
+            content: ''; position: absolute;
+            top: 16px; left: 16px; right: 16px; bottom: 16px;
+            border: 1px solid rgba(201,160,48,0.2);
+            pointer-events: none; z-index: 998;
+        }
+
+        #game-inner {
+            position: relative; z-index: 1; padding: 24px; min-height: 580px;
+            background:
+                radial-gradient(ellipse at 50% -5%,  rgba(95,38,5,0.18) 0%, transparent 58%),
+                radial-gradient(ellipse at 50% 108%, rgba(28,10,0,0.12) 0%, transparent 58%);
+            border-radius: 4px;
+        }
+
+        .screen {
+            display: none; flex-direction: column; align-items: center; gap: 16px;
+            animation: fadeSlideIn 0.48s cubic-bezier(0.22,1,0.36,1);
+        }
+        .screen.active { display: flex; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(22px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+
+        .game-title {
+            font-family: 'Rye', serif; font-size: 3.2em; color: #f2c940;
+            text-shadow:
+                3px 3px 0 #280c00,
+                6px 6px 0 rgba(28,8,0,0.5),
+                0 0 44px rgba(242,200,60,0.52),
+                0 0 90px rgba(200,135,20,0.26);
+            letter-spacing: 6px; text-align: center; line-height: 1.2;
+            animation: titleBreathe 5s ease-in-out infinite;
+        }
+        @keyframes titleBreathe {
+            0%,100% { text-shadow: 3px 3px 0 #280c00, 6px 6px 0 rgba(28,8,0,0.5), 0 0 44px rgba(242,200,60,0.42), 0 0 88px rgba(200,135,20,0.18); }
+            50%     { text-shadow: 3px 3px 0 #280c00, 6px 6px 0 rgba(28,8,0,0.5), 0 0 68px rgba(255,220,80,0.72), 0 0 130px rgba(220,155,30,0.4); }
+        }
+
+        .game-subtitle {
+            font-family: 'Special Elite', monospace; font-size: 0.92em;
+            color: #9a7030; letter-spacing: 7px;
+        }
+        .game-subtitle::before { content: '— '; }
+        .game-subtitle::after  { content: ' —'; }
+
+        #screen-title > div:first-child {
+            font-size: 3.2em; color: #d4a820; letter-spacing: 10px;
+            text-shadow: 0 0 22px rgba(212,168,32,0.65), 0 0 50px rgba(180,125,20,0.32);
+            animation: starPulse 3.5s ease-in-out infinite;
+        }
+        @keyframes starPulse {
+            0%,100% { text-shadow: 0 0 22px rgba(212,168,32,0.6),  0 0 50px rgba(180,125,20,0.28); transform: scale(1); }
+            50%     { text-shadow: 0 0 34px rgba(255,212,60,0.92), 0 0 80px rgba(210,155,30,0.5);  transform: scale(1.06); }
+        }
+
+        .btn {
+            font-family: 'Special Elite', monospace; padding: 13px 28px; font-size: 0.95em;
+            cursor: pointer; border: none; outline: none; position: relative;
+            color: #f0e090; letter-spacing: 2.5px; text-transform: uppercase;
+            transition: all 0.15s ease; min-width: 140px; text-align: center; border-radius: 3px;
+            background: linear-gradient(180deg, #a07c18 0%, #8b6812 30%, #6a500e 60%, #4e3c0a 100%);
+            box-shadow:
+                0 0 0 1px #2e1a04,
+                0 0 0 3px #8b6012,
+                0 0 0 4px #2e1a04,
+                inset 0 1px 0 rgba(255,235,120,0.22),
+                inset 0 -1px 0 rgba(0,0,0,0.45),
+                0 5px 14px rgba(0,0,0,0.65);
+        }
+        .btn::before {
+            content: ''; position: absolute;
+            top: 3px; left: 12px; right: 12px; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,235,130,0.28), transparent);
+        }
+        .btn:hover {
+            background: linear-gradient(180deg, #b88c20 0%, #9c7618 30%, #7a5e14 60%, #5e4a10 100%);
+            color: #fff8c0; transform: translateY(-2px);
+            box-shadow:
+                0 0 0 1px #2e1a04,
+                0 0 0 3px #b08020,
+                0 0 0 4px #2e1a04,
+                inset 0 1px 0 rgba(255,235,120,0.36),
+                inset 0 -1px 0 rgba(0,0,0,0.3),
+                0 9px 22px rgba(0,0,0,0.7),
+                0 0 22px rgba(180,120,20,0.18);
+        }
+        .btn:active {
+            transform: translateY(1px);
+            background: linear-gradient(180deg, #4e3c0a 0%, #6a500e 50%, #8b6812 100%);
+            box-shadow: 0 0 0 1px #2e1a04, 0 0 0 3px #7a5010, 0 0 0 4px #2e1a04,
+                inset 0 3px 6px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.5);
+        }
+        .btn.danger {
+            background: linear-gradient(180deg, #962222 0%, #7c1818 30%, #5e1212 60%, #461010 100%);
+            color: #ffc0c0;
+            box-shadow: 0 0 0 1px #280606, 0 0 0 3px #7c1818, 0 0 0 4px #280606,
+                inset 0 1px 0 rgba(255,190,190,0.18), inset 0 -1px 0 rgba(0,0,0,0.45), 0 5px 14px rgba(0,0,0,0.65);
+        }
+        .btn.danger:hover {
+            background: linear-gradient(180deg, #aa2828 0%, #8e2020 30%, #6e1818 60%, #521414 100%);
+            color: #ffd0d0;
+            box-shadow: 0 0 0 1px #280606, 0 0 0 3px #962222, 0 0 0 4px #280606,
+                inset 0 1px 0 rgba(255,190,190,0.28), 0 9px 22px rgba(0,0,0,0.7), 0 0 22px rgba(150,20,20,0.22);
+        }
+        .btn.small   { padding: 9px 18px; font-size: 0.8em; min-width: 80px; }
+        .btn.wide    { min-width: 220px; }
+        .btn:disabled { opacity: 0.32; cursor: not-allowed; pointer-events: none; filter: grayscale(50%); }
+
+        .info-bar {
+            display: flex; gap: 0; flex-wrap: wrap; justify-content: center;
+            background: linear-gradient(180deg, rgba(5,2,0,0.78) 0%, rgba(10,4,0,0.85) 100%);
+            border-radius: 3px; width: 100%; max-width: 600px; overflow: hidden;
+            box-shadow: 0 0 0 1px #140a02, 0 0 0 2px #7a5820, 0 0 0 3px #140a02, 0 5px 14px rgba(0,0,0,0.55);
+        }
+        .info-item {
+            color: #9a7830; font-size: 0.83em;
+            display: flex; align-items: center; gap: 6px;
+            padding: 10px 16px; border-right: 1px solid rgba(120,80,30,0.26);
+            flex: 1; justify-content: center; min-width: 80px; letter-spacing: 0.5px;
+        }
+        .info-item:last-child { border-right: none; }
+        .info-value {
+            color: #f0d080; font-weight: bold; font-size: 1.1em;
+            text-shadow: 0 0 10px rgba(240,208,128,0.3);
+        }
+        .info-value.low {
+            color: #ff5030; animation: pulse 0.7s infinite;
+            text-shadow: 0 0 12px rgba(255,70,30,0.5);
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.38; } }
+
+        .card-hand { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; padding: 10px; }
+        .card {
+            width: 130px; min-height: 175px; position: relative; cursor: pointer;
+            padding: 14px 10px 20px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; gap: 6px;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            text-align: center; border-radius: 5px; overflow: hidden;
+            background:
+                repeating-linear-gradient(2deg, transparent 0px, transparent 28px, rgba(130,90,30,0.045) 28px, rgba(130,90,30,0.045) 29px),
+                radial-gradient(ellipse at 28% 16%, rgba(255,248,220,0.78) 0%, transparent 56%),
+                linear-gradient(155deg, #f2dca0 0%, #e8cf90 35%, #dcc07c 65%, #ceb068 100%);
+            box-shadow:
+                0 0 0 1px #3e2808,
+                0 0 0 3px #c9a030,
+                0 0 0 4px #3e2808,
+                5px 7px 18px rgba(0,0,0,0.65),
+                inset 0 0 24px rgba(180,120,40,0.08);
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent 8%, rgba(201,160,48,0.58) 50%, transparent 92%);
+        }
+        .card::after {
+            content: ''; position: absolute; bottom: 0; right: 0;
+            width: 0; height: 0; border-style: solid;
+            border-width: 0 0 20px 20px;
+            border-color: transparent transparent rgba(68,44,10,0.48) transparent;
+            transition: all 0.22s;
+        }
+        .card:hover {
+            transform: translateY(-14px) rotate(-1.5deg) scale(1.04);
+            box-shadow:
+                0 0 0 1px #3e2808, 0 0 0 3px #f5c840, 0 0 0 4px #3e2808,
+                10px 18px 30px rgba(0,0,0,0.76),
+                0 0 36px rgba(220,170,40,0.14);
+            z-index: 10;
+        }
+        .card:hover::after { border-width: 0 0 30px 30px; }
+        .card:active { transform: translateY(-4px) scale(0.97); }
+        .card.disabled { opacity: 0.38; cursor: not-allowed; pointer-events: none; filter: grayscale(55%) sepia(25%); }
+        .card-name { font-family: 'Rye', serif; font-size: 0.8em; color: #220c00; font-weight: bold; letter-spacing: 1px; }
+        .card-icon  { font-size: 2em; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.25)); }
+        .card-desc  { font-size: 0.68em; color: #4a2a10; line-height: 1.35; }
+        .card-cost  {
+            font-size: 0.65em; color: #8a1a08; font-weight: bold;
+            background: rgba(0,0,0,0.1); padding: 2px 8px;
+            border-radius: 10px; border: 1px solid rgba(138,26,8,0.26);
+        }
+        .card.played { animation: cardPlay 0.5s ease-out forwards; }
+        @keyframes cardPlay {
+            0%   { transform: scale(1) rotate(0deg); opacity: 1; }
+            40%  { transform: scale(1.2) rotate(6deg) translateY(-45px); opacity: 0.85; }
+            100% { transform: scale(0.15) rotate(20deg) translateY(-110px); opacity: 0; }
+        }
+
+        .enemy-display {
+            background:
+                repeating-linear-gradient(3deg, transparent 0px, transparent 22px, rgba(80,50,10,0.07) 22px, rgba(80,50,10,0.07) 23px),
+                linear-gradient(180deg, #2c1408 0%, #200f05 60%, #180a03 100%);
+            position: relative; min-width: 220px; padding: 22px 18px 16px;
+            text-align: center; color: #f0d080; border-radius: 4px;
+            box-shadow:
+                0 0 0 1px #140902,
+                0 0 0 3px #9a7018,
+                0 0 0 5px #140902,
+                0 0 0 6px #583c0e,
+                0 10px 28px rgba(0,0,0,0.76),
+                inset 0 0 50px rgba(0,0,0,0.45);
+        }
+        .enemy-display::before {
+            content: '— WANTED —';
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(90deg, #180d04, #261408, #180d04);
+            color: #c9a030; font-family: 'Rye', serif;
+            font-size: 0.68em; letter-spacing: 5px;
+            padding: 2px 14px; white-space: nowrap;
+            border: 1px solid #583a0c; border-radius: 2px;
+        }
+        .enemy-name {
+            font-family: 'Rye', serif; font-size: 1.5em; color: #ff6838;
+            letter-spacing: 2px; margin-top: 6px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.88), 0 0 28px rgba(255,80,25,0.42);
+        }
+        .enemy-hp-bar {
+            width: 100%; height: 18px;
+            background: linear-gradient(180deg, #190904 0%, #090400 100%);
+            border-radius: 2px; overflow: hidden; margin: 10px 0 6px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.72), 0 0 0 1px #3c1e08;
+        }
+        .enemy-hp-fill {
+            height: 100%;
+            background: linear-gradient(180deg, #df3030 0%, #9e1818 55%, #be2020 100%);
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+            border-radius: 1px; position: relative;
+        }
+        .enemy-hp-fill::after {
+            content: ''; position: absolute;
+            top: 2px; left: 4px; right: 4px; height: 3px;
+            background: rgba(255,200,200,0.24); border-radius: 2px;
+        }
+
+        .hp-bar {
+            width: 100%; height: 16px;
+            background: linear-gradient(180deg, #190904 0%, #090400 100%);
+            border-radius: 2px; overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.72), 0 0 0 1px #3c1e08;
+        }
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(180deg, #df3030 0%, #9e1818 55%, #be2020 100%);
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+            border-radius: 1px; position: relative;
+        }
+        .hp-fill::after {
+            content: ''; position: absolute;
+            top: 2px; left: 4px; right: 4px; height: 2px;
+            background: rgba(255,200,200,0.24); border-radius: 2px;
+        }
+
+        .screen-flash {
+            position: absolute; inset: 0; pointer-events: none; z-index: 998;
+            animation: muzzleFlash 0.2s ease-out;
+            background: radial-gradient(ellipse at 64% 28%, rgba(255,225,90,0.88) 0%, rgba(255,128,20,0.46) 34%, transparent 68%);
+            border-radius: 4px;
+        }
+        @keyframes muzzleFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        .combat-log {
+            background: linear-gradient(180deg, rgba(0,0,0,0.74) 0%, rgba(4,1,0,0.8) 100%);
+            border-radius: 3px; padding: 12px 18px;
+            color: #c8a850; font-size: 0.86em; max-height: 90px; overflow-y: auto;
+            width: 100%; max-width: 500px;
+            letter-spacing: 1px; line-height: 1.65; text-align: center; font-style: italic;
+            box-shadow: 0 0 0 1px #140902, 0 0 0 2px #583c0c, inset 0 2px 8px rgba(0,0,0,0.46);
+        }
+
+        .miss-indicator {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            font-size: 3.5em; color: #ff2828;
+            font-family: 'Rye', serif; z-index: 1000; pointer-events: none;
+            animation: missFade 0.9s cubic-bezier(0.4,0,0.2,1) forwards;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.88), 0 0 28px rgba(255,0,0,0.48);
+        }
+        @keyframes missFade {
+            0%   { opacity: 1; transform: translate(-50%,-50%) scale(0.75); }
+            25%  { opacity: 1; transform: translate(-50%,-62%) scale(1.12); }
+            100% { opacity: 0; transform: translate(-50%,-100%) scale(1.25); }
+        }
+
+        .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 500px; }
+        .location-card {
+            background: linear-gradient(145deg, rgba(22,11,4,0.97) 0%, rgba(15,7,2,0.97) 100%);
+            position: relative; border-radius: 4px; padding: 18px 16px;
+            cursor: pointer; text-align: center; color: #f0d080;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            letter-spacing: 1px; overflow: hidden;
+            box-shadow: 0 0 0 1px #140a02, 0 0 0 3px #5a3c14, 0 0 0 4px #140a02, 0 5px 14px rgba(0,0,0,0.55);
+        }
+        .location-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,160,48,0.42), transparent);
+        }
+        .location-card::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(201,160,48,0.08) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        .location-card:hover {
+            box-shadow: 0 0 0 1px #140a02, 0 0 0 3px #c9a030, 0 0 0 4px #140a02,
+                0 10px 28px rgba(0,0,0,0.68), 0 0 36px rgba(201,160,48,0.1);
+            transform: translateY(-5px) scale(1.025); color: #fff5c0;
+        }
+        .location-card:hover::after { opacity: 1; }
+        .location-icon {
+            font-size: 2.8em; display: block; margin-bottom: 8px; text-align: center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            height: 2em; position: relative;
+        }
+        .location-card:hover .location-icon { transform: scale(1.12) translateY(-3px); }
+        .location-name { font-family: 'Rye', serif; font-size: 1.05em; }
+
+        /* ── NEW CSS ICONS ──────────────────────────────── */
+        .icon-store {
+            position: relative; width: 1.6em; height: 1.4em;
+            border: 0.15em solid currentColor; border-top: none;
+            margin: 0.4em auto 0; background: transparent;
+        }
+        .icon-store::before {
+            content: ''; position: absolute;
+            top: -0.5em; left: -0.15em; width: 0; height: 0;
+            border-left: 0.95em solid transparent;
+            border-right: 0.95em solid transparent;
+            border-bottom: 0.5em solid currentColor;
+        }
+        .icon-store::after {
+            content: ''; position: absolute;
+            bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 0.5em; height: 0.7em; background: currentColor;
+            border-radius: 0.1em 0.1em 0 0;
+        }
+
+        .icon-saloon {
+            position: relative; width: 1em; height: 1.2em;
+            border: 0.15em solid currentColor; border-top: none;
+            border-radius: 0 0 0.4em 0.4em;
+            margin: 0.5em auto 0;
+        }
+        .icon-saloon::before {
+            content: ''; position: absolute;
+            top: -0.3em; left: -0.15em;
+            width: 1.3em; height: 0.3em;
+            border: 0.15em solid currentColor; border-bottom: none;
+            border-radius: 0.1em 0.1em 0 0;
+        }
+        .icon-saloon::after {
+            content: ''; position: absolute;
+            bottom: 0.15em; left: 0.15em;
+            width: 0.7em; height: 0.6em;
+            background: currentColor; opacity: 0.5;
+        }
+
+        .icon-sheriff {
+            position: relative; width: 1.2em; height: 1.5em;
+            border: 0.15em solid currentColor;
+            border-radius: 0 0 0.5em 0.5em;
+            margin: 0.25em auto 0;
+        }
+        .icon-sheriff::after {
+            content: '★';
+            font-size: 0.8em; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: currentColor; line-height: 1;
+        }
+
+        .icon-wild {
+            position: relative; width: 1.8em; height: 1.8em; margin: 0.1em auto;
+        }
+        .icon-wild::before {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 0.7em; height: 0.7em; background: currentColor; border-radius: 50%;
+        }
+        .icon-wild::after {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 0.15em; height: 0.9em; background: currentColor;
+            box-shadow:
+                -0.5em 0 0 0 currentColor,
+                0.5em 0 0 0 currentColor,
+                -0.35em -0.35em 0 0 currentColor,
+                0.35em 0.35em 0 0 currentColor,
+                -0.35em 0.35em 0 0 currentColor,
+                0.35em -0.35em 0 0 currentColor,
+                0 -0.5em 0 0 currentColor,
+                0 0.5em 0 0 currentColor;
+        }
+
+        #trinkets-display { margin: 4px 0; color: #a07828; font-size: 0.83em; letter-spacing: 1px; }
+
+        #deck-viewer {
+            position: absolute; top: 0; right: -340px; width: 320px; height: 100%;
+            background: linear-gradient(180deg, rgba(18,9,2,0.98) 0%, rgba(12,5,1,0.98) 100%);
+            box-shadow: -2px 0 0 #140a02, -4px 0 0 #6e4c20, -6px 0 0 #140a02, -24px 0 44px rgba(0,0,0,0.55);
+            z-index: 1000; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+            overflow-y: auto; padding: 20px; color: #f0d080; font-size: 0.8em;
+        }
+        #deck-viewer.open { right: 0; }
+        #deck-viewer h3 { font-family: 'Rye', serif; margin-bottom: 12px; color: #f0c840; letter-spacing: 2px; }
+        #deck-viewer h4 { font-family: 'Rye', serif; margin-bottom: 8px; color: #a08030; letter-spacing: 2px; }
+        .deck-mini-card {
+            background: rgba(255,240,200,0.06);
+            border-left: 3px solid #8b6914; border-radius: 0 4px 4px 0;
+            padding: 8px 10px; margin: 4px 0;
+            display: flex; align-items: center; gap: 10px; font-size: 0.75em;
+            transition: background 0.15s;
+        }
+        .deck-mini-card:hover { background: rgba(255,240,200,0.12); }
+        .deck-mini-icon { font-size: 1.5em; }
+        .deck-mini-info { flex: 1; }
+        .deck-mini-name { font-weight: bold; color: #ffe8a0; }
+        .deck-mini-desc { color: #a08050; font-size: 0.9em; }
+
+        #view-deck-btn {
+            position: absolute; top: 14px; right: 14px; z-index: 1001;
+            background: rgba(0,0,0,0.52);
+            border: none; color: #d4a820;
+            box-shadow: 0 0 0 1px #140a02, 0 0 0 2px #6e4c20, 0 0 0 3px #140a02;
+            padding: 6px 14px; font-size: 0.7em; cursor: pointer; border-radius: 3px;
+            font-family: 'Special Elite', monospace; letter-spacing: 1px; transition: all 0.15s;
+        }
+        #view-deck-btn:hover {
+            background: rgba(28,14,4,0.82); color: #f0c840;
+            box-shadow: 0 0 0 1px #140a02, 0 0 0 2px #c9a030, 0 0 0 3px #140a02;
+        }
+
+        #store-items > div {
+            background: linear-gradient(180deg, rgba(5,2,0,0.68) 0%, rgba(8,3,0,0.74) 100%) !important;
+            border: none !important; border-radius: 3px !important;
+            box-shadow: 0 0 0 1px #140902, 0 0 0 2px #4a2e0a, inset 0 1px 0 rgba(255,200,100,0.04);
+            transition: box-shadow 0.15s;
+        }
+        #store-items > div:hover {
+            box-shadow: 0 0 0 1px #140902, 0 0 0 2px #8b6012, inset 0 1px 0 rgba(255,200,100,0.08);
+        }
+        #bounty-list > div {
+            background: linear-gradient(180deg, rgba(5,2,0,0.68) 0%, rgba(8,3,0,0.74) 100%) !important;
+            border: none !important; border-radius: 3px !important;
+            box-shadow: 0 0 0 1px #140902, 0 0 0 2px #4a2e0a;
+            transition: all 0.2s;
+        }
+        #bounty-list > div:hover {
+            box-shadow: 0 0 0 1px #140902, 0 0 0 2px #9a7018, 0 4px 14px rgba(0,0,0,0.45);
+            transform: translateX(4px);
+        }
+
+        #combat-title {
+            font-family: 'Rye', serif !important; font-size: 2em !important;
+            color: #ff5c30 !important; letter-spacing: 3px !important;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.9), 0 0 30px rgba(255,70,20,0.45) !important;
+            animation: combatPulse 2.2s ease-in-out infinite;
+        }
+        @keyframes combatPulse {
+            0%,100% { text-shadow: 2px 2px 0 rgba(0,0,0,0.9), 0 0 28px rgba(255,70,20,0.38); }
+            50%     { text-shadow: 2px 2px 0 rgba(0,0,0,0.9), 0 0 52px rgba(255,90,30,0.72), 0 0 88px rgba(200,40,0,0.32); }
+        }
+
+        #gameover-title {
+            font-family: 'Rye', serif !important; font-size: 3.2em !important;
+            letter-spacing: 4px !important;
+            text-shadow: 4px 4px 0 rgba(0,0,0,0.92), 0 0 44px rgba(200,20,20,0.6) !important;
+            animation: deathPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes deathPulse {
+            0%,100% { opacity: 1;    text-shadow: 4px 4px 0 rgba(0,0,0,0.92), 0 0 40px rgba(200,20,20,0.48); }
+            50%     { opacity: 0.88; text-shadow: 4px 4px 0 rgba(0,0,0,0.92), 0 0 70px rgba(225,30,20,0.82); }
+        }
+
+        #screen-town      > div:first-child,
+        #screen-store     > div:first-child,
+        #screen-saloon    > div:first-child,
+        #screen-sheriff   > div:first-child,
+        #screen-wilderness > div:first-child {
+            text-shadow: 2px 2px 0 #1a0800, 0 0 22px rgba(200,150,40,0.22) !important;
+            letter-spacing: 3px !important;
+        }
+
+        #saloon-result { font-style: italic; letter-spacing: 1px; }
+        #enemy-intent { font-style: italic; letter-spacing: 1px; }
+
+        @media (max-width: 600px) {
+            .game-title { font-size: 2em; letter-spacing: 3px; }
+            .card { width: 98px; min-height: 138px; padding: 8px 6px; }
+            .card-name { font-size: 0.68em; } .card-icon { font-size: 1.4em; } .card-desc { font-size: 0.58em; }
+            .location-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .btn { padding: 10px 18px; font-size: 0.8em; min-width: 100px; }
+            #game-inner { padding: 12px; }
+            #deck-viewer { right: -280px; width: 260px; }
+            #game-container::after { top: 10px; left: 10px; right: 10px; bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div id="grain-overlay"></div>
+<div id="dust-container"></div>
+<div id="game-container">
+    <div id="game-inner">
+        <button id="view-deck-btn" onclick="toggleDeckViewer()">View Deck</button>
+        <div id="deck-viewer">
+            <h3>Your Deck</h3>
+            <div id="deck-contents"></div>
+            <br><h4>Discard Pile</h4>
+            <div id="discard-contents"></div>
+        </div>
+
+        <!-- TITLE SCREEN -->
+        <div class="screen active" id="screen-title">
+            <div style="font-size:3em;color:#c9a030;letter-spacing:8px;">&#9733;</div>
+            <div class="game-title">DUST & LEAD</div>
+            <div class="game-subtitle">A Western Roguelike</div>
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:0.85em;line-height:1.6;">
+                The frontier is unforgiving. Bounties await, outlaws roam, and every sunset could be your last.
+            </div>
+            <button class="btn wide" onclick="startGame()">Ride Into Town</button>
+            <div style="color:#8d6e63;font-size:0.75em;">High Score: <span id="high-score-display">0</span> dollars</div>
+        </div>
+
+        <!-- TOWN SCREEN -->
+        <div class="screen" id="screen-town">
+            <div style="font-family:'Rye',serif;font-size:1.8em;color:#f0d080;letter-spacing:3px;">Dustwater Town</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="town-hp">20/20</span></div>
+                <div class="info-item">Food: <span class="info-value" id="town-food">5</span></div>
+                <div class="info-item">$: <span class="info-value" id="town-money">50</span></div>
+                <div class="info-item">Day: <span class="info-value" id="town-day">1</span></div>
+            </div>
+            <div id="trinkets-display"></div>
+            <div id="gun-parts-display" style="color:#c9a060;margin:4px;"></div>
+            <div class="location-grid">
+                <div class="location-card" onclick="goToStore()">
+                    <span class="location-icon"><div class="icon-store"></div></span>
+                    <span class="location-name">General Store</span>
+                    <small style="color:#a08060;">Buy supplies & guns</small>
+                </div>
+                <div class="location-card" onclick="goToSaloon()">
+                    <span class="location-icon"><div class="icon-saloon"></div></span>
+                    <span class="location-name">The Dusty Saloon</span>
+                    <small style="color:#a08060;">Rest, gamble & drink</small>
+                </div>
+                <div class="location-card" onclick="goToSheriff()">
+                    <span class="location-icon"><div class="icon-sheriff"></div></span>
+                    <span class="location-name">Sheriff's Office</span>
+                    <small style="color:#a08060;">Collect bounties</small>
+                </div>
+                <div class="location-card" onclick="goToWilderness()">
+                    <span class="location-icon"><div class="icon-wild"></div></span>
+                    <span class="location-name">Venture Out</span>
+                    <small style="color:#a08060;">Into the wild frontier</small>
+                </div>
+            </div>
+            <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
+            <button class="btn small" onclick="toggleDeckViewer()">View Deck</button>
+        </div>
+
+        <!-- STORE SCREEN -->
+        <div class="screen" id="screen-store">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">General Store</div>
+            <div class="info-bar"><div class="info-item">Your $: <span class="info-value" id="store-money">50</span></div></div>
+            <div id="store-items" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+        </div>
+
+        <!-- SALOON SCREEN -->
+        <div class="screen" id="screen-saloon">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">The Dusty Saloon</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="saloon-hp">20/20</span></div>
+                <div class="info-item">$: <span class="info-value" id="saloon-money">50</span></div>
+            </div>
+            <button class="btn wide" onclick="saloonRest()">Rest Night ($15) - Heal 8 HP</button>
+            <button class="btn wide" onclick="saloonGamble()">Play Cards ($10) - Win or Lose</button>
+            <button class="btn wide" onclick="saloonDrink()">Whiskey ($5) - Heal 3 HP</button>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="saloon-result" style="color:#f0d080;text-align:center;"></div>
+        </div>
+
+        <!-- SHERIFF SCREEN -->
+        <div class="screen" id="screen-sheriff">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Sheriff's Office</div>
+            <div style="color:#c9a060;text-align:center;">Wanted Posters on the wall...</div>
+            <div id="bounty-list" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="sheriff-msg" style="color:#f0d080;text-align:center;"></div>
+        </div>
+
+        <!-- WILDERNESS SCREEN -->
+        <div class="screen" id="screen-wilderness">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">The Frontier</div>
+            <div id="wild-description" style="color:#c9a060;text-align:center;max-width:400px;">You ride through harsh desert landscape, eyes peeled for trouble and opportunity...</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="wild-hp">20/20</span></div>
+                <div class="info-item">Food: <span class="info-value" id="wild-food">5</span></div>
+                <div class="info-item">$: <span class="info-value" id="wild-money">50</span></div>
+                <div class="info-item">Day: <span class="info-value" id="wild-day">1</span></div>
+            </div>
+            <div id="wild-result" style="color:#f0d080;text-align:center;max-width:400px;line-height:1.6;min-height:40px;"></div>
+            <div id="wild-buttons"></div>
+        </div>
+
+        <!-- COMBAT SCREEN -->
+        <div class="screen" id="screen-combat">
+            <div style="font-family:'Rye',serif;font-size:1.5em;color:#ff6b4a;letter-spacing:2px;" id="combat-title">Showdown!</div>
+            <div class="enemy-display">
+                <div class="enemy-name" id="enemy-name">Bandit</div>
+                <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp-fill" style="width:100%;"></div></div>
+                <div style="font-size:0.85em;">HP: <span id="enemy-hp-text">15/15</span></div>
+                <div style="font-size:0.8em;color:#a08060;" id="enemy-intent">Watching you closely...</div>
+            </div>
+            <div class="info-bar">
+                <div class="info-item">Your HP: <span class="info-value" id="combat-hp">20/20</span></div>
+                <div class="info-item">Gun: <span class="info-value" id="combat-gun-name">Revolver</span></div>
+                <div class="info-item">Ammo: <span class="info-value" id="combat-ammo">6/6</span></div>
+            </div>
+            <div class="hp-bar" style="max-width:300px;"><div class="hp-fill" id="player-hp-fill" style="width:100%;"></div></div>
+            <button class="btn small" onclick="cycleAmmoType()" style="margin-top:4px;">Switch Bullet</button>
+            <div style="color:#f0d080;font-size:0.9em;letter-spacing:1px;">Select a card to play:</div>
+            <div class="card-hand" id="card-hand"></div>
+            <div class="combat-log" id="combat-log">The tension crackles in the air...</div>
+            <button class="btn small danger" id="btn-flee" onclick="fleeCombat()">Flee (50% chance)</button>
+        </div>
+
+        <!-- GAME OVER SCREEN -->
+        <div class="screen" id="screen-gameover">
+            <div style="font-family:'Rye',serif;font-size:2em;color:#ff6b4a;letter-spacing:3px;" id="gameover-title">DEAD</div>
+            <div style="color:#f0d080;text-align:center;max-width:400px;line-height:1.6;" id="gameover-desc"></div>
+            <div class="info-bar">
+                <div class="info-item">Days Survived: <span class="info-value" id="go-days">1</span></div>
+                <div class="info-item">Bounties: <span class="info-value" id="go-bounties">0</span></div>
+                <div class="info-item">Final $: <span class="info-value" id="go-money">0</span></div>
+            </div>
+            <button class="btn wide" onclick="restartGame()">New Gunslinger</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ------------------ FULL GAME SCRIPT ------------------
+    const gameState = {
+        player: {
+            health: 20, maxHealth: 20, money: 50, food: 5,
+            guns: [], equippedGunIndex: 0, inventory: [],
+            day: 1, bountiesCollected: 0, totalEarned: 0,
+            trinkets: [], consumables: [],
+            gunParts: [],
+            bullets: { regular: 0, express: 0, trick: 0 },
+            ponchoDurability: 0,
+            hasSnakeFlute: false,
+            hasStolenBadge: false,
+        },
+        deck: [], discardPile: [], combatHand: [],
+        combatEnemy: null, combatActive: false,
+        currentScreen: 'title', activeBounty: null,
+        wildDepth: 0, firstShotThisCombat: true,
+        cardProcessing: false, combatInWilderness: false,
+        rotatingShopItems: [],
+    };
+
+    const weaponDefs = {
+        'Revolver': { damage: 5, capacity: 6, cost: 0, desc: 'Trusty six-shooter.' },
+        'Shotgun': { damage: 8, capacity: 2, cost: 60, desc: 'Devastating up close.' },
+        'Rifle': { damage: 7, capacity: 5, cost: 80, desc: 'Accurate and powerful.' },
+        'Double-Action': { damage: 4, capacity: 6, cost: 45, desc: 'Fast but weaker.' },
+        'Derringer': { damage: 3, capacity: 2, cost: 25, desc: 'Tiny hideout gun.' },
+        'Widowmaker': { damage: 12, capacity: 4, cost: 0, desc: 'Heals 3 HP on kill.', onKillHeal: 3 },
+    };
+
+    const cardDefs = {
+        'Quick Shot': { desc:'Fire once.', ammoCost:1, effect:'shoot', dmgMult:1, accuracy:90 },
+        'Aimed Shot': { desc:'Careful aim, +3 dmg.', ammoCost:1, effect:'shoot', dmgMult:1, bonusDmg:3, accuracy:75 },
+        'Fan the Hammer': { desc:'Fire 3 rapid shots!', ammoCost:3, effect:'fan', dmgMult:1, shots:3, accuracy:65 },
+        'Reload': { desc:'Reload from inventory.', ammoCost:0, effect:'reload', accuracy:100 },
+        'Dodge': { desc:'50% dodge next attack.', ammoCost:0, effect:'dodge', accuracy:100 },
+        'Take Cover': { desc:'Reduce next dmg by 4.', ammoCost:0, effect:'cover', accuracy:100 },
+        'Desperado': { desc:'Double damage shot!', ammoCost:2, effect:'shoot', dmgMult:2, accuracy:70 },
+        'Intimidate': { desc:'40% skip enemy turn.', ammoCost:0, effect:'intimidate', accuracy:100 },
+        'Bandage': { desc:'Heal 6 HP.', ammoCost:0, effect:'heal', healAmt:6, accuracy:100 },
+        'Lucky Shot': { desc:'Low acc, +5 dmg if hits.', ammoCost:1, effect:'shoot', dmgMult:1, bonusDmg:5, accuracy:50 },
+        'Sucker Punch': { desc:'Hard fist, 4 dmg.', ammoCost:0, effect:'melee', fixedDmg:4, accuracy:80 },
+        'Dynamite Toss': { desc:'3x dmg, self 3 dmg.', ammoCost:2, effect:'dynamite', dmgMult:3, selfDmg:3, accuracy:75 },
+        'Smokebomb': { desc:'Escape instantly!', ammoCost:0, effect:'smokebomb', accuracy:100 },
+    };
+
+    const trinketDefs = {
+        'Lucky Rabbits Foot': { desc:'Accuracy +10%.', cost:45 },
+        'Magnum Rounds': { desc:'All Shoot cards +2 dmg.', cost:55 },
+        'Bandolier': { desc:'+2 ammo capacity.', cost:40 },
+        'Slick Hat': { desc:'Flee chance +20%.', cost:50 },
+        'Double Down': { desc:'50% chance to double effect.', cost:70 },
+        'Sharpshooter': { desc:'First shot 100% acc, +5 dmg.', cost:60 },
+        'Snake Oil': { desc:'Heal 1 HP at turn start.', cost:35 },
+        'Wanted Poster': { desc:'Bounty rewards double, +5 enemy HP.', cost:30 },
+        'Quick Draw': { desc:'Reload also fires a free shot.', cost:65 },
+        'Vultures Eye': { desc:'Heal 4 HP on kill.', cost:50 },
+        'Canteen': { desc:'+2 max food.', cost:25 },
+        'Lucky Dice': { desc:'Better gambling odds.', cost:30 },
+    };
+
+    const partNames = ['barrel','trigger','grip'];
+    const partLabels = { barrel:'Rusty Barrel', trigger:'Bent Trigger', grip:'Cracked Grip' };
+
+    function buildDeck() {
+        const deck = [];
+        const add = (name, count) => { for (let i=0;i<count;i++) deck.push({...cardDefs[name], name}); };
+        add('Quick Shot',3); add('Aimed Shot',2); add('Fan the Hammer',1);
+        add('Reload',2); add('Dodge',1); add('Take Cover',1);
+        add('Desperado',1); add('Intimidate',1); add('Bandage',1);
+        add('Lucky Shot',1); add('Sucker Punch',2); add('Dynamite Toss',1);
+        const smokeIdx = gameState.player.inventory.findIndex(i => i.name==='Smokebomb' && i.type==='consumable');
+        if (smokeIdx >= 0) {
+            deck.push({...cardDefs['Smokebomb'], name:'Smokebomb'});
+            gameState.player.inventory.splice(smokeIdx,1);
+        }
+        gameState.player.trinkets.forEach(t => { if (t.name === 'Quick Draw') deck.push({...cardDefs['Quick Shot'], name:'Quick Shot'}); });
+        return shuffleArray(deck);
+    }
+
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+        return a;
+    }
+
+    function drawCards(count) {
+        const drawn = [];
+        for (let i=0;i<count;i++) {
+            if (gameState.deck.length===0) {
+                if (gameState.discardPile.length===0) break;
+                gameState.deck = shuffleArray(gameState.discardPile);
+                gameState.discardPile = [];
+            }
+            if (gameState.deck.length>0) drawn.push(gameState.deck.pop());
+        }
+        return drawn;
+    }
+
+    function getActualGun() {
+        const guns = gameState.player.guns;
+        if (guns.length===0) return null;
+        return guns[Math.min(gameState.player.equippedGunIndex, guns.length-1)];
+    }
+
+    function getTotalLoaded() {
+        const gun = getActualGun();
+        if (!gun) return 0;
+        return (gun.loaded.regular||0) + (gun.loaded.express||0) + (gun.loaded.trick||0);
+    }
+
+    function getMaxCapacity() {
+        const gun = getActualGun();
+        if (!gun) return 99;
+        let cap = gun.capacity;
+        if (gameState.player.trinkets.some(t=>t.name==='Bandolier')) cap += 2;
+        return cap;
+    }
+
+    function getAmmoOfType(type) {
+        const gun = getActualGun();
+        return gun ? (gun.loaded[type] || 0) : 0;
+    }
+
+    function cycleAmmoType() {
+        const gun = getActualGun();
+        if (!gun) return;
+        const types = ['regular','express','trick'];
+        const currentIdx = types.indexOf(gun.currentType);
+        for (let i=1;i<=3;i++) {
+            const newType = types[(currentIdx+i)%3];
+            if (gun.loaded[newType] > 0) {
+                gun.currentType = newType;
+                updateCombatDisplay();
+                renderCombatHand();
+                return;
+            }
+        }
+    }
+
+    function showScreen(name) {
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+        const screen = document.getElementById('screen-'+name);
+        if (screen) screen.classList.add('active');
+        gameState.currentScreen = name;
+    }
+
+    function goToTown() {
+        updateTownDisplay();
+        showScreen('town');
+        gameState.activeBounty = null;
+        gameState.combatActive = false;
+        gameState.cardProcessing = false;
+        gameState.wildDepth = 0;
+        if (gameState.combatInWilderness) {
+            gameState.rotatingShopItems = generateRotatingItems();
+        }
+        gameState.combatInWilderness = false;
+    }
+
+    function goToStore() { updateStoreDisplay(); showScreen('store'); }
+    function goToSaloon() { updateSaloonDisplay(); document.getElementById('saloon-result').textContent=''; showScreen('saloon'); }
+    function goToSheriff() { updateSheriffDisplay(); document.getElementById('sheriff-msg').textContent=''; showScreen('sheriff'); }
+
+    function goToWilderness() {
+        updateWildernessDisplay();
+        document.getElementById('wild-result').textContent = '';
+        gameState.wildDepth = 0;
+        gameState.combatInWilderness = true;
+        document.getElementById('wild-buttons').innerHTML = '<button class="btn wide" onclick="ventureOut()">Set Out</button>';
+        showScreen('wilderness');
+    }
+
+    function updateTownDisplay() {
+        const p = gameState.player;
+        document.getElementById('town-hp').textContent = p.health+'/'+p.maxHealth;
+        document.getElementById('town-food').textContent = p.food;
+        document.getElementById('town-money').textContent = p.money;
+        document.getElementById('town-day').textContent = p.day;
+        if (p.health<=5) document.getElementById('town-hp').classList.add('low'); else document.getElementById('town-hp').classList.remove('low');
+        if (p.food<=1) document.getElementById('town-food').classList.add('low'); else document.getElementById('town-food').classList.remove('low');
+        document.getElementById('trinkets-display').innerHTML = p.trinkets.length ? 'Trinkets: ' + p.trinkets.map(t=>`<span>${t.name}</span>`).join(', ') : '';
+        document.getElementById('gun-parts-display').innerHTML = p.gunParts.length ? 'Parts: ' + p.gunParts.map(p=>partLabels[p]).join(', ') : '';
+    }
+
+    function updateStoreDisplay() {
+        document.getElementById('store-money').textContent = gameState.player.money;
+        const container = document.getElementById('store-items');
+        container.innerHTML = '';
+        const p = gameState.player;
+        const discount = p.hasStolenBadge ? 0.7 : 1;
+
+        container.appendChild(createStoreItem('Regular Ammo (6)', Math.floor(12*discount), ()=>{
+            if (p.money>= Math.floor(12*discount)) {
+                p.money -= Math.floor(12*discount);
+                const gun = getActualGun();
+                if (gun) {
+                    const space = getMaxCapacity() - getTotalLoaded();
+                    const toLoad = Math.min(6, space);
+                    gun.loaded.regular = (gun.loaded.regular||0) + toLoad;
+                    const remainder = 6 - toLoad;
+                    if (remainder > 0) p.bullets.regular += remainder;
+                } else p.bullets.regular += 6;
+                updateStoreDisplay();
+            }
+        }, p.money >= Math.floor(12*discount)));
+
+        container.appendChild(createStoreItem('Express Ammo (6)', Math.floor(18*discount), ()=>{
+            if (p.money>= Math.floor(18*discount)) {
+                p.money -= Math.floor(18*discount);
+                const gun = getActualGun();
+                if (gun) {
+                    const space = getMaxCapacity() - getTotalLoaded();
+                    const toLoad = Math.min(6, space);
+                    gun.loaded.express = (gun.loaded.express||0) + toLoad;
+                    const remainder = 6 - toLoad;
+                    if (remainder > 0) p.bullets.express += remainder;
+                } else p.bullets.express += 6;
+                updateStoreDisplay();
+            }
+        }, p.money >= Math.floor(18*discount)));
+
+        container.appendChild(createStoreItem('Trick Ammo (6)', Math.floor(24*discount), ()=>{
+            if (p.money>= Math.floor(24*discount)) {
+                p.money -= Math.floor(24*discount);
+                const gun = getActualGun();
+                if (gun) {
+                    const space = getMaxCapacity() - getTotalLoaded();
+                    const toLoad = Math.min(6, space);
+                    gun.loaded.trick = (gun.loaded.trick||0) + toLoad;
+                    const remainder = 6 - toLoad;
+                    if (remainder > 0) p.bullets.trick += remainder;
+                } else p.bullets.trick += 6;
+                updateStoreDisplay();
+            }
+        }, p.money >= Math.floor(24*discount)));
+
+        for (const [name,def] of Object.entries(weaponDefs)) {
+            if (def.cost>0 && !p.guns.find(g=>g.name===name)) {
+                container.appendChild(createStoreItem(name+' ($'+Math.floor(def.cost*discount)+')', Math.floor(def.cost*discount), ()=>{
+                    if (p.money>= Math.floor(def.cost*discount)) {
+                        p.money -= Math.floor(def.cost*discount);
+                        p.guns.push({name, damage:def.damage, capacity:def.capacity, loaded:{regular:0,express:0,trick:0}, currentType:'regular', onKillHeal:def.onKillHeal||0});
+                        updateStoreDisplay();
+                    }
+                }, p.money>= Math.floor(def.cost*discount)));
+            }
+        }
+
+        container.appendChild(createStoreItem('Smokebomb', Math.floor(20*discount), ()=>{
+            if (p.money>= Math.floor(20*discount)) { p.money -= Math.floor(20*discount); addToInventory('Smokebomb','consumable'); updateStoreDisplay(); }
+        }, p.money>= Math.floor(20*discount)));
+
+        container.appendChild(createStoreItem('Poncho (2 uses)', Math.floor(35*discount), ()=>{
+            if (p.money>= Math.floor(35*discount)) { p.money -= Math.floor(35*discount); p.ponchoDurability = 2; updateStoreDisplay(); }
+        }, p.money>= Math.floor(35*discount)));
+
+        container.appendChild(createStoreItem('Snake Flute', Math.floor(25*discount), ()=>{
+            if (p.money>= Math.floor(25*discount) && !p.hasSnakeFlute) { p.money -= Math.floor(25*discount); p.hasSnakeFlute = true; updateStoreDisplay(); }
+        }, p.money>= Math.floor(25*discount) && !p.hasSnakeFlute));
+
+        if (gameState.rotatingShopItems.length) {
+            const title = document.createElement('div'); title.textContent = '--- Limited Stock ---'; title.style.color='#c9a030'; container.appendChild(title);
+            gameState.rotatingShopItems.forEach(item => container.appendChild(createStoreItem(item.label, item.cost, item.action, p.money>=item.cost)));
+        }
+
+        if (p.gunParts.includes('barrel') && p.gunParts.includes('trigger') && p.gunParts.includes('grip')) {
+            container.appendChild(createStoreItem('Repair Broken Gun', Math.floor(50*discount), ()=>{
+                if (p.money>= Math.floor(50*discount)) {
+                    p.money -= Math.floor(50*discount);
+                    p.gunParts = [];
+                    p.guns.push({name:'Widowmaker', damage:12, capacity:4, loaded:{regular:0,express:0,trick:0}, currentType:'regular', onKillHeal:3});
+                    updateStoreDisplay();
+                    flashMessage('store-items','Widowmaker assembled!');
+                }
+            }, p.money>= Math.floor(50*discount)));
+        }
+    }
+
+    function generateRotatingItems() {
+        const p = gameState.player;
+        const discount = p.hasStolenBadge ? 0.7 : 1;
+        const items = [];
+        const possible = [
+            { label:'Regular Ammo (6)', cost:Math.floor(12*discount), action:()=>{ p.money-=Math.floor(12*discount); const gun=getActualGun(); if(gun){ const space=getMaxCapacity()-getTotalLoaded(); const toLoad=Math.min(6,space); gun.loaded.regular+=toLoad; p.bullets.regular+= (6-toLoad); } else p.bullets.regular+=6; updateStoreDisplay(); } },
+            { label:'Canned Beans (3 food)', cost:Math.floor(8*discount), action:()=>{ p.food+=3; p.money-=Math.floor(8*discount); updateStoreDisplay(); } },
+            { label:'Bandage Kit', cost:Math.floor(10*discount), action:()=>{ addToInventory('Bandage Kit','heal'); p.money-=Math.floor(10*discount); updateStoreDisplay(); } },
+        ];
+        if (Math.random()<0.3) possible.push({ label:'Smokebomb', cost:Math.floor(20*discount), action:()=>{ addToInventory('Smokebomb','consumable'); p.money-=Math.floor(20*discount); updateStoreDisplay(); }});
+        const missingParts = partNames.filter(part => !p.gunParts.includes(part));
+        if (missingParts.length) {
+            const part = missingParts[Math.floor(Math.random()*missingParts.length)];
+            possible.push({ label:`${partLabels[part]} (Gun Part)`, cost:Math.floor(25*discount), action:()=>{ p.gunParts.push(part); p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
+        }
+        if (!p.hasSnakeFlute) possible.push({ label:'Snake Flute', cost:Math.floor(25*discount), action:()=>{ p.hasSnakeFlute=true; p.money-=Math.floor(25*discount); updateStoreDisplay(); }});
+        return shuffleArray(possible).slice(0,3);
+    }
+
+    function createStoreItem(label,cost,action,enabled) {
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
+        div.innerHTML = `<span style="color:#f0d080;">${label}</span><button class="btn small" ${!enabled?'disabled':''}>Buy</button>`;
+        if (enabled) div.querySelector('button').addEventListener('click', action);
+        return div;
+    }
+
+    function flashMessage(containerId,msg) {
+        const container = document.getElementById(containerId);
+        const flash = document.createElement('div');
+        flash.textContent = msg;
+        flash.style.cssText = 'color:#ffe8a0;text-align:center;padding:6px;animation:fadeSlideIn 0.3s ease-out;font-size:0.85em;';
+        container.appendChild(flash);
+        setTimeout(()=>flash.remove(),1500);
+    }
+
+    function updateSaloonDisplay() {
+        document.getElementById('saloon-hp').textContent = gameState.player.health+'/'+gameState.player.maxHealth;
+        document.getElementById('saloon-money').textContent = gameState.player.money;
+    }
+
+    function updateSheriffDisplay() {
+        const container = document.getElementById('bounty-list');
+        container.innerHTML = '';
+        const bounties = [
+            { name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5,enemyName:'Black Bart' },
+            { name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3,enemyName:'Slim Cassidy' },
+            { name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7,enemyName:'The Rattler' },
+            { name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4,enemyName:'Dirty Morgan' },
+        ];
+        bounties.forEach(b=>{
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
+            div.innerHTML = `<div><strong style="color:#f0d080;">${b.name}</strong><br><small style="color:#a08060;">Reward: $${b.reward} | ${b.difficulty}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
+            div.addEventListener('click',()=>acceptBounty(b));
+            container.appendChild(div);
+        });
+    }
+
+    function acceptBounty(bounty) {
+        gameState.activeBounty = bounty;
+        document.getElementById('sheriff-msg').textContent = 'Bounty accepted: '+bounty.name+'!';
+        updateSheriffDisplay();
+    }
+
+    function updateWildernessDisplay() {
+        const p = gameState.player;
+        document.getElementById('wild-hp').textContent = p.health+'/'+p.maxHealth;
+        document.getElementById('wild-food').textContent = p.food;
+        document.getElementById('wild-money').textContent = p.money;
+        document.getElementById('wild-day').textContent = p.day;
+        if (p.health<=5) document.getElementById('wild-hp').classList.add('low'); else document.getElementById('wild-hp').classList.remove('low');
+        if (p.food<=1) document.getElementById('wild-food').classList.add('low'); else document.getElementById('wild-food').classList.remove('low');
+    }
+
+    function addToInventory(name,type) {
+        const existing = gameState.player.inventory.find(i=>i.name===name && i.type===type);
+        if (existing) existing.qty++; else gameState.player.inventory.push({name,type,qty:1});
+    }
+
+    function checkStarving() {
+        const p = gameState.player;
+        if (p.food <= 0) { p.health -= 3; if (p.health <= 0) { p.health=0; endRun('starved'); } }
+    }
+
+    function saloonRest() {
+        const p = gameState.player;
+        if (p.money<15) { document.getElementById('saloon-result').textContent='Not enough money.'; return; }
+        p.money-=15; p.health=Math.min(p.maxHealth,p.health+8); p.day++; p.food--;
+        checkStarving(); updateSaloonDisplay();
+        document.getElementById('saloon-result').textContent='You rest peacefully. +8 HP. (Food -1)';
+    }
+
+    function saloonGamble() {
+        const p = gameState.player;
+        if (p.money<10) { document.getElementById('saloon-result').textContent='You need $10.'; return; }
+        p.money-=10; p.day++; p.food--;
+        const luckyDice = p.trinkets.some(t=>t.name==='Lucky Dice');
+        const roll = Math.random();
+        if (roll < (luckyDice?0.5:0.4)) { const w=Math.floor(Math.random()*30)+10; p.money+=w; document.getElementById('saloon-result').textContent='You win $'+w+'! (Food -1)'; }
+        else if (roll < (luckyDice?0.7:0.75)) { document.getElementById('saloon-result').textContent='You lose. (Food -1)'; }
+        else if (roll < (luckyDice?0.85:0.85)) { const w=Math.floor(Math.random()*50)+20; p.money+=w; document.getElementById('saloon-result').textContent='JACKPOT! $'+w+'! (Food -1)'; }
+        else {
+            const missingParts = partNames.filter(part => !p.gunParts.includes(part));
+            if (missingParts.length) {
+                const part = missingParts[Math.floor(Math.random()*missingParts.length)];
+                p.gunParts.push(part);
+                document.getElementById('saloon-result').textContent = 'You won a '+partLabels[part]+'! (Food -1)';
+            } else {
+                const w=Math.floor(Math.random()*20)+5; p.money+=w;
+                document.getElementById('saloon-result').textContent = 'You win $'+w+' (all parts owned). (Food -1)';
+            }
+        }
+        checkStarving(); updateSaloonDisplay();
+    }
+
+    function saloonDrink() {
+        const p = gameState.player;
+        if (p.money<5) { document.getElementById('saloon-result').textContent='Not enough coin.'; return; }
+        p.money-=5; p.health=Math.min(p.maxHealth,p.health+3); updateSaloonDisplay();
+        document.getElementById('saloon-result').textContent='Smooth whiskey. +3 HP.';
+    }
+
+    function ventureOut() {
+        const p = gameState.player;
+        gameState.wildDepth++;
+        p.day++; p.food--;
+        checkStarving();
+        if (p.health <= 0) return;
+        updateWildernessDisplay();
+        document.getElementById('wild-buttons').innerHTML = '';
+
+        if (gameState.wildDepth >= 2 && Math.random() < 0.1) {
+            wildernessShop();
+            return;
+        }
+
+        if (gameState.activeBounty && Math.random() < 0.35) {
+            const b = {...gameState.activeBounty};
+            if (p.trinkets.some(t=>t.name==='Wanted Poster')) b.enemyHp += 5;
+            gameState.combatInWilderness = true;
+            startCombat({ name:b.enemyName, health:b.enemyHp, maxHealth:b.enemyHp, damage:b.enemyDmg, isBounty:true, bountyData:b });
+            return;
+        }
+
+        const enemyChance = Math.min(0.9, 0.4 + (gameState.wildDepth-1)*0.15);
+        const roll = Math.random();
+        if (roll < enemyChance) {
+            const enemies = [
+                { name:'Lone Bandit', health:14, maxHealth:14, damage:4 },
+                { name:'Drunk Outlaw', health:10, maxHealth:10, damage:3 },
+                { name:'Rattlesnake', health:8, maxHealth:8, damage:5 },
+                { name:'Bounty Hunter', health:16, maxHealth:16, damage:5 },
+                { name:'Desert Raider', health:18, maxHealth:18, damage:6 },
+            ];
+            gameState.combatInWilderness = true;
+            startCombat(enemies[Math.floor(Math.random()*enemies.length)]);
+        } else if (roll < enemyChance + 0.25) {
+            if (p.ponchoDurability > 0) {
+                p.ponchoDurability--;
+                document.getElementById('wild-result').textContent = 'Sandstorm hits but your poncho protects you! Durability left: '+p.ponchoDurability;
+            } else {
+                const dmg = Math.floor(Math.random()*3)+1;
+                p.health -= dmg;
+                document.getElementById('wild-result').textContent = 'A brutal sandstorm! -'+dmg+' HP.';
+                if (p.health <= 0) { p.health=0; endRun('sandstorm'); return; }
+            }
+            updateWildernessDisplay();
+            showWildChoices();
+        } else if (roll < enemyChance + 0.5) {
+            const lootRoll = Math.random();
+            if (lootRoll<0.5) { const money=Math.floor(Math.random()*20)+5; p.money+=money; document.getElementById('wild-result').textContent='You find $'+money; }
+            else if (lootRoll<0.8) { p.food+=2; document.getElementById('wild-result').textContent='You find canned goods. +2 Food.'; }
+            else if (lootRoll<0.95) { const heal=Math.floor(Math.random()*5)+3; p.health=Math.min(p.maxHealth,p.health+heal); document.getElementById('wild-result').textContent='Medicinal herbs. +'+heal+' HP.'; }
+            else {
+                if (!p.hasStolenBadge && Math.random()<0.3) { p.hasStolenBadge = true; document.getElementById('wild-result').textContent='You found a STOLEN BADGE! Store prices reduced 30%.'; }
+                else { const money=Math.floor(Math.random()*15)+10; p.money+=money; document.getElementById('wild-result').textContent='You find $'+money; }
+            }
+            updateWildernessDisplay();
+            showWildChoices();
+        } else {
+            document.getElementById('wild-result').textContent = 'The desert is quiet.';
+            showWildChoices();
+        }
+    }
+
+    function showWildChoices() {
+        document.getElementById('wild-buttons').innerHTML = `
+            <button class="btn wide" onclick="ventureOut()">Push Deeper</button>
+            <button class="btn small" onclick="goToTown()">Head Back to Town</button>
+        `;
+    }
+
+    function wildernessShop() {
+        const p = gameState.player;
+        document.getElementById('wild-result').textContent = 'A traveling merchant appears!';
+        const items = [];
+        const trinketNames = Object.keys(trinketDefs);
+        for (let i=0;i<Math.floor(Math.random()*2)+2;i++) {
+            const tName = trinketNames[Math.floor(Math.random()*trinketNames.length)];
+            if (!p.trinkets.find(t=>t.name===tName)) items.push({ name:tName, ...trinketDefs[tName], type:'trinket' });
+        }
+        if (Math.random()>0.5) items.push({ name:'Smokebomb', desc:'Guaranteed flee', cost:20, type:'consumable' });
+        if (Math.random()>0.7) items.push({ name:'Healing Salve', desc:'Heal 15 HP', cost:12, type:'consumable' });
+
+        document.getElementById('wild-buttons').innerHTML = '<div style="color:#f0d080;">Buy something? (Your $: '+p.money+')</div>';
+        items.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'btn small'; btn.style.margin = '4px';
+            btn.textContent = `${item.name} ($${item.cost}) - ${item.desc}`;
+            if (p.money < item.cost) btn.disabled = true;
+            btn.addEventListener('click', ()=>{
+                p.money -= item.cost;
+                if (item.type === 'trinket') {
+                    if (p.trinkets.length < 3) p.trinkets.push({ name: item.name });
+                    else { p.money += item.cost; flashMessage('wild-result','max 3 trinkets!'); return; }
+                } else addToInventory(item.name, 'consumable');
+                updateWildernessDisplay();
+                wildernessShop();
+            });
+            document.getElementById('wild-buttons').appendChild(btn);
+        });
+        document.getElementById('wild-buttons').innerHTML += '<br><button class="btn small" onclick="showWildChoices()">Leave Merchant</button>';
+    }
+
+    function startCombat(enemy) {
+        gameState.combatEnemy = {...enemy};
+        gameState.combatActive = true;
+        gameState.cardProcessing = false;
+        gameState.firstShotThisCombat = true;
+        gameState.deck = buildDeck();
+        gameState.discardPile = [];
+        gameState.combatHand = [];
+        gameState.player.dodgeActive = false;
+        gameState.player.coverActive = 0;
+        gameState.player.intimidateUsed = false;
+
+        const gun = getActualGun();
+        document.getElementById('combat-title').textContent = enemy.isBounty ? 'BOUNTY SHOWDOWN!' : 'Showdown!';
+        document.getElementById('enemy-name').textContent = enemy.name;
+        document.getElementById('enemy-hp-text').textContent = enemy.health+'/'+enemy.maxHealth;
+        document.getElementById('enemy-hp-fill').style.width = (enemy.health/enemy.maxHealth*100)+'%';
+        document.getElementById('combat-hp').textContent = gameState.player.health+'/'+gameState.player.maxHealth;
+        document.getElementById('player-hp-fill').style.width = (gameState.player.health/gameState.player.maxHealth*100)+'%';
+        document.getElementById('combat-gun-name').textContent = gun ? gun.name : 'Fists';
+        updateCombatDisplay();
+        document.getElementById('combat-log').textContent = 'The tension crackles...';
+        document.getElementById('btn-flee').style.display = enemy.isBounty ? 'none' : 'inline-block';
+        document.getElementById('card-hand').innerHTML = '';
+        showScreen('combat');
+        drawNewHand();
+    }
+
+    function drawNewHand() {
+        gameState.combatHand = drawCards(3);
+        gameState.cardProcessing = false;
+        renderCombatHand();
+    }
+
+    const iconMap = {
+        'Quick Shot':'🔫','Aimed Shot':'🎯','Fan the Hammer':'💥','Reload':'🔄','Dodge':'💨','Take Cover':'🛡️',
+        'Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨'
+    };
+
+    function renderCombatHand() {
+        const handDiv = document.getElementById('card-hand');
+        handDiv.innerHTML = '';
+        const gun = getActualGun();
+        gameState.combatHand.forEach((card, index)=>{
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            let disabled = false, reason = '';
+            if (gameState.cardProcessing) { disabled = true; reason = 'Wait'; }
+            else if (card.ammoCost > 0 && (!gun || getAmmoOfType(gun.currentType) < card.ammoCost)) { disabled=true; reason='No ammo of '+gun.currentType; }
+            else if (card.effect==='reload' && gun && getTotalLoaded() >= getMaxCapacity() && gameState.player.bullets.regular === 0) { disabled=true; reason='Full & no regular ammo'; }
+            else if (card.effect==='heal' && gameState.player.health >= gameState.player.maxHealth) { disabled=true; reason='HP full'; }
+            else if (card.effect==='intimidate' && gameState.player.intimidateUsed) { disabled=true; reason='Used'; }
+            if (disabled) cardEl.classList.add('disabled');
+            cardEl.innerHTML = `
+                <div class="card-name">${card.name}</div>
+                <div class="card-icon">${iconMap[card.name]||'🃏'}</div>
+                <div class="card-desc">${card.desc}</div>
+                ${card.ammoCost>0?`<div class="card-cost">Ammo: ${card.ammoCost}</div>`:''}
+                ${disabled?`<div class="card-cost" style="color:#555;">${reason}</div>`:''}
+            `;
+            if (!disabled) cardEl.addEventListener('click', ()=>playCard(index, cardEl));
+            handDiv.appendChild(cardEl);
+        });
+    }
+
+    function showMissIndicator() {
+        const missEl = document.createElement('div');
+        missEl.className = 'miss-indicator';
+        missEl.textContent = 'MISS!';
+        document.getElementById('game-inner').appendChild(missEl);
+        setTimeout(() => missEl.remove(), 1000);
+    }
+
+    function playCard(index, cardEl) {
+        if (!gameState.combatActive || gameState.cardProcessing) return;
+        gameState.cardProcessing = true;
+        const card = gameState.combatHand[index];
+        gameState.combatHand.splice(index,1);
+        if (card.name !== 'Smokebomb') gameState.discardPile.push(card);
+        cardEl.classList.add('played');
+        const gun = getActualGun();
+        let logMsg = '';
+        const hasLuckyFoot = gameState.player.trinkets.some(t=>t.name==='Lucky Rabbits Foot');
+        const hasSharpshooter = gameState.player.trinkets.some(t=>t.name==='Sharpshooter');
+        const hasMagnum = gameState.player.trinkets.some(t=>t.name==='Magnum Rounds');
+        const hasDoubleDown = gameState.player.trinkets.some(t=>t.name==='Double Down');
+        const bulletType = gun ? gun.currentType : 'regular';
+        let accBase = card.accuracy + (hasLuckyFoot?10:0) + (bulletType==='express'?10:0);
+        if (gameState.firstShotThisCombat && hasSharpshooter) accBase = 100;
+        const hit = Math.random()*100 < accBase;
+
+        if (card.effect === 'smokebomb') {
+            gameState.combatActive = false;
+            document.getElementById('combat-log').textContent = 'You vanish in smoke!';
+            setTimeout(()=>goToTown(), 1500);
+            return;
+        }
+
+        if (card.effect==='shoot') {
+            if (gun && getAmmoOfType(bulletType) >= card.ammoCost) {
+                gun.loaded[bulletType] -= card.ammoCost;
+                if (hit) {
+                    let dmg = (gun.damage*card.dmgMult)+(card.bonusDmg||0);
+                    if (bulletType==='express') dmg += 2;
+                    if (hasSharpshooter && gameState.firstShotThisCombat) dmg += 5;
+                    if (hasMagnum) dmg += 2;
+                    if (hasDoubleDown && Math.random()<0.5) dmg *= 2;
+                    gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - dmg);
+                    logMsg = `Hit for ${dmg} damage!`;
+                    triggerScreenFlash();
+                } else {
+                    if (bulletType === 'trick') {
+                        let dmg = Math.floor(((gun.damage*card.dmgMult)+(card.bonusDmg||0))/2);
+                        if (hasMagnum) dmg = Math.floor((dmg+2)/2);
+                        gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - dmg);
+                        logMsg = `Trick shot half damage: ${dmg}!`;
+                    } else {
+                        logMsg = 'Miss!';
+                        showMissIndicator();
+                    }
+                }
+            } else logMsg = 'Not enough ammo!';
+        } else if (card.effect==='fan') {
+            if (gun && getAmmoOfType(bulletType) >= card.ammoCost) {
+                gun.loaded[bulletType] -= card.ammoCost;
+                let totalDmg=0, hits=0, misses=0;
+                for (let s=0;s<card.shots;s++) {
+                    if (Math.random()*100 < accBase) {
+                        let dmg = gun.damage*card.dmgMult;
+                        if (bulletType==='express') dmg += 2;
+                        if (hasSharpshooter && gameState.firstShotThisCombat) dmg += 5;
+                        if (hasMagnum) dmg += 2;
+                        if (hasDoubleDown && Math.random()<0.5) dmg *= 2;
+                        totalDmg += dmg;
+                        hits++;
+                    } else {
+                        if (bulletType === 'trick') {
+                            let dmg = Math.floor((gun.damage*card.dmgMult)/2);
+                            if (hasMagnum) dmg = Math.floor((dmg+2)/2);
+                            totalDmg += dmg;
+                        }
+                        misses++;
+                    }
+                }
+                gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - totalDmg);
+                logMsg = `Fan: ${hits}/${card.shots} hit, ${totalDmg} dmg.`;
+                if (misses > 0 && bulletType!=='trick') showMissIndicator();
+                triggerScreenFlash();
+            } else logMsg = 'Not enough ammo!';
+        } else if (card.effect==='reload') {
+            const space = getMaxCapacity() - getTotalLoaded();
+            const toLoad = Math.min(space, gameState.player.bullets.regular);
+            if (toLoad > 0) {
+                gun.loaded.regular += toLoad;
+                gameState.player.bullets.regular -= toLoad;
+                logMsg = `Reloaded ${toLoad} regular bullets.`;
+            } else logMsg = 'No regular bullets in inventory.';
+            if (gameState.player.trinkets.some(t=>t.name==='Quick Draw') && gun && getAmmoOfType(gun.currentType) >= 1) {
+                gun.loaded[gun.currentType] -= 1;
+                if (Math.random()*100 < (cardDefs['Quick Shot'].accuracy + (hasLuckyFoot?10:0))) {
+                    let dmg = gun.damage;
+                    if (hasMagnum) dmg += 2;
+                    gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - dmg);
+                    logMsg += ' Quick Draw fires! '+dmg+' dmg.';
+                }
+            }
+        } else if (card.effect==='dodge') { gameState.player.dodgeActive = true; logMsg = 'Dodge ready.'; }
+        else if (card.effect==='cover') { gameState.player.coverActive = 4; logMsg = 'Cover taken.'; }
+        else if (card.effect==='intimidate') {
+            gameState.player.intimidateUsed = true;
+            if (Math.random()<0.4) { gameState.combatEnemy.skipNextTurn = true; logMsg = 'Enemy hesitates!'; }
+            else logMsg = 'Stared, no effect.';
+        } else if (card.effect==='heal') {
+            gameState.player.health = Math.min(gameState.player.maxHealth, gameState.player.health+card.healAmt);
+            logMsg = '+'+card.healAmt+' HP.';
+        } else if (card.effect==='melee') {
+            if (hit) { gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - card.fixedDmg); logMsg = `Sucker punch! ${card.fixedDmg} dmg.`; }
+            else { logMsg = 'Missed punch.'; showMissIndicator(); }
+        } else if (card.effect==='dynamite') {
+            if (gun && getAmmoOfType(bulletType) >= card.ammoCost) {
+                gun.loaded[bulletType] -= card.ammoCost;
+                if (hit) {
+                    let dmg = gun.damage*card.dmgMult;
+                    if (hasMagnum) dmg += 2;
+                    if (hasDoubleDown && Math.random()<0.5) dmg *= 2;
+                    gameState.combatEnemy.health = Math.max(0, gameState.combatEnemy.health - dmg);
+                    gameState.player.health = Math.max(0, gameState.player.health - card.selfDmg);
+                    logMsg = `BOOM! ${dmg} dmg, self ${card.selfDmg}.`;
+                } else { logMsg = 'Fizzle.'; showMissIndicator(); }
+            } else logMsg = 'No ammo.';
+        }
+
+        gameState.firstShotThisCombat = false;
+        updateCombatDisplay(logMsg);
+
+        if (gameState.combatEnemy.health <= 0) {
+            gameState.combatEnemy.health = 0;
+            setTimeout(()=>victory(), 400);
+            return;
+        }
+        if (gameState.player.health <= 0) {
+            setTimeout(()=>endRun('killed'), 300);
+            return;
+        }
+        setTimeout(()=>{
+            if (!gameState.combatActive) return;
+            if (gameState.player.trinkets.some(t=>t.name==='Snake Oil')) gameState.player.health = Math.min(gameState.player.maxHealth, gameState.player.health+1);
+            enemyTurn();
+            updateCombatDisplay('');
+            if (gameState.player.health <= 0) setTimeout(()=>endRun('killed'), 300);
+            else setTimeout(()=>{ if(gameState.combatActive) drawNewHand(); }, 500);
+        }, 600);
+    }
+
+    function enemyTurn() {
+        const enemy = gameState.combatEnemy;
+        if (enemy.skipNextTurn) { enemy.skipNextTurn = false; document.getElementById('combat-log').textContent='Enemy hesitates!'; return; }
+        let dmg = enemy.damage;
+        if (enemy.name.toLowerCase().includes('snake') && gameState.player.hasSnakeFlute) dmg = Math.floor(dmg/2);
+        const action = ['attack','attack','heavy_attack','taunt'][Math.floor(Math.random()*4)];
+        if (action==='heavy_attack') dmg = Math.floor(dmg*1.6);
+        else if (action==='taunt') dmg = Math.floor(dmg*0.6);
+        if (gameState.player.dodgeActive && Math.random()<0.5) { gameState.player.dodgeActive=false; document.getElementById('combat-log').textContent='You dodge!'; return; }
+        gameState.player.dodgeActive = false;
+        if (gameState.player.coverActive>0) { dmg = Math.max(0, dmg-gameState.player.coverActive); gameState.player.coverActive=0; }
+        if (Math.random()<0.1) { document.getElementById('combat-log').textContent='Enemy misses!'; return; }
+        gameState.player.health = Math.max(0, gameState.player.health - dmg);
+        document.getElementById('combat-log').textContent = 'Enemy attacks for '+dmg+' damage!';
+    }
+
+    function updateCombatDisplay(logMsg) {
+        const enemy = gameState.combatEnemy;
+        const gun = getActualGun();
+        document.getElementById('enemy-hp-text').textContent = Math.max(0,enemy.health)+'/'+enemy.maxHealth;
+        document.getElementById('enemy-hp-fill').style.width = (Math.max(0,enemy.health)/enemy.maxHealth*100)+'%';
+        document.getElementById('combat-hp').textContent = Math.max(0,gameState.player.health)+'/'+gameState.player.maxHealth;
+        document.getElementById('player-hp-fill').style.width = (Math.max(0,gameState.player.health)/gameState.player.maxHealth*100)+'%';
+        const total = getTotalLoaded();
+        const maxCap = getMaxCapacity();
+        document.getElementById('combat-ammo').textContent = `${total}/${maxCap} (${gun?gun.currentType:'none'})`;
+        if (logMsg) document.getElementById('combat-log').textContent = logMsg;
+    }
+
+    function triggerScreenFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'screen-flash';
+        document.getElementById('game-inner').appendChild(flash);
+        setTimeout(()=>flash.remove(),200);
+    }
+
+    function victory() {
+        gameState.combatActive = false;
+        gameState.cardProcessing = false;
+        const p = gameState.player;
+        let msg = '';
+        if (gameState.combatEnemy.isBounty && gameState.activeBounty) {
+            let reward = gameState.activeBounty.reward;
+            if (p.trinkets.some(t=>t.name==='Wanted Poster')) reward *= 2;
+            p.money += reward; p.bountiesCollected++; p.totalEarned += reward;
+            msg = `Bounty: $${reward}!`;
+            gameState.activeBounty = null;
+        } else {
+            const loot = Math.floor(Math.random()*15)+8;
+            p.money += loot; p.totalEarned += loot;
+            msg = `Looted $${loot}.`;
+            if (gameState.combatInWilderness && Math.random() < 0.25) {
+                const extraRoll = Math.random();
+                if (extraRoll < 0.5) { p.money += 10; msg += ' Found extra $10!'; }
+                else if (extraRoll < 0.8) { p.food += 1; msg += ' Found some food.'; }
+                else {
+                    const missingParts = partNames.filter(part => !p.gunParts.includes(part));
+                    if (missingParts.length) {
+                        const part = missingParts[Math.floor(Math.random()*missingParts.length)];
+                        p.gunParts.push(part);
+                        msg += ` Found a ${partLabels[part]}!`;
+                    }
+                }
+            }
+            if (!p.hasStolenBadge && Math.random()<0.03) { p.hasStolenBadge = true; msg += ' Found a STOLEN BADGE!'; }
+        }
+        const gun = getActualGun();
+        if (gun && gun.onKillHeal) p.health = Math.min(p.maxHealth, p.health + gun.onKillHeal);
+        if (p.trinkets.some(t=>t.name==='Vultures Eye')) p.health = Math.min(p.maxHealth, p.health+4);
+        p.health = Math.min(p.maxHealth, p.health+2);
+        document.getElementById('combat-log').textContent = 'VICTORY! '+msg;
+        goToTown();
+        updateHighScore();
+    }
+
+    function fleeCombat() {
+        if (!gameState.combatActive || gameState.cardProcessing) return;
+        if (gameState.combatEnemy && gameState.combatEnemy.isBounty) return;
+        const fleeChance = 0.5 + (gameState.player.trinkets.some(t=>t.name==='Slick Hat')?0.2:0);
+        if (Math.random()<fleeChance) {
+            gameState.combatActive = false;
+            document.getElementById('combat-log').textContent = 'You flee successfully.';
+            setTimeout(()=>goToTown(), 1500);
+        } else {
+            gameState.player.health = Math.max(0, gameState.player.health - gameState.combatEnemy.damage);
+            updateCombatDisplay('Failed to flee!');
+            if (gameState.player.health<=0) setTimeout(()=>endRun('killed'),500);
+            else setTimeout(()=>{ if(gameState.combatActive) drawNewHand(); },600);
+        }
+    }
+
+    function startGame() {
+        gameState.player = {
+            health:20,maxHealth:20,money:50,food:5,
+            guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0}, currentType:'regular'}],
+            equippedGunIndex:0,inventory:[], day:1,bountiesCollected:0,totalEarned:0,
+            trinkets:[], consumables:[], gunParts:[],
+            bullets:{regular:0,express:0,trick:0},
+            ponchoDurability:0, hasSnakeFlute:false, hasStolenBadge:false
+        };
+        gameState.deck = buildDeck(); gameState.discardPile=[];
+        gameState.combatEnemy=null; gameState.combatActive=false;
+        gameState.activeBounty=null; gameState.wildDepth=0;
+        gameState.cardProcessing = false; gameState.combatInWilderness = false;
+        gameState.rotatingShopItems = generateRotatingItems();
+        goToTown();
+    }
+
+    function endRun(cause) {
+        gameState.combatActive = false;
+        const p = gameState.player;
+        document.getElementById('gameover-title').textContent = cause==='starved'?'STARVED':cause==='sandstorm'?'BURIED':cause==='retired'?'RETIRED':'DEAD';
+        document.getElementById('gameover-desc').textContent = 'The frontier claims another.';
+        document.getElementById('go-days').textContent = p.day;
+        document.getElementById('go-bounties').textContent = p.bountiesCollected;
+        document.getElementById('go-money').textContent = p.totalEarned;
+        updateHighScore();
+        showScreen('gameover');
+    }
+
+    function restartGame() { startGame(); }
+
+    function updateHighScore() {
+        const h = parseInt(localStorage.getItem('dustAndLeadHighScore')||'0');
+        if (gameState.player.totalEarned > h) {
+            localStorage.setItem('dustAndLeadHighScore', gameState.player.totalEarned);
+            document.getElementById('high-score-display').textContent = gameState.player.totalEarned;
+        }
+    }
+
+    function loadHighScore() { document.getElementById('high-score-display').textContent = localStorage.getItem('dustAndLeadHighScore')||'0'; }
+
+    function toggleDeckViewer() { document.getElementById('deck-viewer').classList.toggle('open'); updateDeckViewer(); }
+
+    function updateDeckViewer() {
+        const deckDiv = document.getElementById('deck-contents');
+        const discardDiv = document.getElementById('discard-contents');
+        deckDiv.innerHTML = ''; discardDiv.innerHTML = '';
+        gameState.deck.forEach(card => {
+            const mini = document.createElement('div');
+            mini.className = 'deck-mini-card';
+            mini.innerHTML = `<span class="deck-mini-icon">${iconMap[card.name]||'🃏'}</span><div class="deck-mini-info"><div class="deck-mini-name">${card.name}</div><div class="deck-mini-desc">${card.desc}</div></div>`;
+            deckDiv.appendChild(mini);
+        });
+        gameState.discardPile.forEach(card => {
+            const mini = document.createElement('div');
+            mini.className = 'deck-mini-card';
+            mini.innerHTML = `<span class="deck-mini-icon">${iconMap[card.name]||'🃏'}</span><div class="deck-mini-info"><div class="deck-mini-name">${card.name}</div><div class="deck-mini-desc">${card.desc}</div></div>`;
+            discardDiv.appendChild(mini);
+        });
+    }
+
+    function createDustParticles() {
+        const container = document.getElementById('dust-container');
+        for (let i=0;i<25;i++) {
+            const p = document.createElement('div');
+            p.className = 'dust-particle';
+            p.style.left = Math.random()*100+'%';
+            p.style.width = (Math.random()*4+1)+'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = (Math.random()*12+8)+'s';
+            p.style.animationDelay = (Math.random()*10)+'s';
+            container.appendChild(p);
+        }
+    }
+
+    function init() { createDustParticles(); loadHighScore(); showScreen('title'); }
+    init();
+</script>
+</body>
+</html>
