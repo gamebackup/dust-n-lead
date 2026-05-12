@@ -1577,7 +1577,7 @@
         gameState.combatActive = false;
         const p = gameState.player;
         document.getElementById('gameover-title').textContent = cause==='starved'?'STARVED':cause==='sandstorm'?'BURIED':cause==='retired'?'RETIRED':'DEAD';
-        document.getElementById('gameover-desc').textContent = 'The frontier claims another.';
+        document.getElementById('gameover-desc').textContent = 'The frontier claims another victim.';
         document.getElementById('go-days').textContent = p.day;
         document.getElementById('go-bounties').textContent = p.bountiesCollected;
         document.getElementById('go-money').textContent = p.totalEarned;
