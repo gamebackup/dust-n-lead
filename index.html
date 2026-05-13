@@ -285,7 +285,7 @@ const weaponDefs = {
     "Mare's Leg":    { damage:6, capacity:7, cost:70, desc:'Sawn-off rifle. Balanced and reliable.' }
 };
 
-const rotatingWeapons = new Set(["Mare's Leg"]); // weapons that appear only in rotating stock
+const rotatingWeapons = new Set(["Mare's Leg","Double-Action"]); // weapons that appear only in rotating stock
 
 const cardDefs = {
     'Quick Shot':    { desc:'Fire once.',                            ammoCost:1, effect:'shoot',      dmgMult:1,   accuracy:90 },
@@ -499,17 +499,21 @@ function generateRotatingItems(){
     // Add moved items: Healing Salve, Dried Jerky, Mare's Leg
     tryAdd({label:`Healing Salve — $${d(18)}`,cost:d(18),action:()=>{p.money-=d(18);p.health=Math.min(p.maxHealth,p.health+10);updateStoreDisplay();},desc:'Heal 10 HP now.'});
     tryAdd({label:`Dried Jerky — $${d(14)}`,cost:d(14),action:()=>{p.money-=d(14);p.food+=5;updateStoreDisplay();},desc:'Restores 5 food.'});
-    // Mare's Leg weapon
+    // Rotating Weapons
     if(!p.guns.find(g=>g.name==="Mare's Leg")){
         const wDef=weaponDefs["Mare's Leg"];
         tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
+    }
+    if(!p.guns.find(g=>g.name==="Double-Action")){
+        const wDef=weaponDefs["Double-Action"];
+        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
     }
     // Gun parts
     const missing=partNames.filter(pt=>!p.gunParts.includes(pt));
     if(missing.length){const pt=missing[Math.floor(Math.random()*missing.length)];tryAdd({label:`${partLabels[pt]} — $${d(25)}`,cost:d(25),action:()=>{p.gunParts.push(pt);p.money-=d(25);updateStoreDisplay();},desc:'Rare gun part.'});}
     // Trinkets
     Object.entries(trinketDefs).forEach(([n,def])=>{if(!p.trinkets.find(t=>t.name===n)&&p.trinkets.length<3) tryAdd({label:`${n} — $${d(def.cost)}`,cost:d(def.cost),action:()=>{if(p.money>=d(def.cost)&&p.trinkets.length<3){p.money-=d(def.cost);p.trinkets.push({name:n});updateStoreDisplay();}},desc:def.desc});});
-    return shuffleArray(possible).slice(0,4);
+    return shuffleArray(possible).slice(0,3);
 }
 
 function createStoreItem(label,cost,action,enabled,desc,btnLabel='Buy'){
