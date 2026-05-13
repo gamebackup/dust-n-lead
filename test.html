@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dust & Lead - Western Roguelike</title>
+    <style>
+        /* [all CSS unchanged] */
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap');
+        :root { --parchment:#f4e4c1; --dark-wood:#3e2723; --medium-wood:#5d4037; --light-wood:#8d6e63; --dust:#c9a96e; --blood:#8b0000; --gold:#c9a030; --dark-bg:#1a1008; --text-dark:#2c1810; --text-light:#f0d9a0; --card-bg:#f5deb3; --card-border:#8b6914; --gunmetal:#4a4a4a; --accent-red:#a03020; --accent-green:#2d5a27; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background: radial-gradient(ellipse at 50% -5%, rgba(90,35,5,.55) 0%, transparent 55%), radial-gradient(ellipse at 0% 105%, rgba(40,15,0,.4) 0%, transparent 50%), radial-gradient(ellipse at 100% 105%, rgba(50,20,0,.4) 0%, transparent 50%), linear-gradient(180deg,#0c0400 0%,#1a0902 30%,#230d04 60%,#0c0400 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Special Elite','Courier New',monospace; overflow-x:hidden; user-select:none; -webkit-user-select:none; }
+        #grain-overlay { position:fixed; top:-50%; left:-50%; width:200%; height:200%; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity:.038; pointer-events:none; z-index:9999; animation:grainShift .38s steps(2) infinite; }
+        @keyframes grainShift { 0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(2px,-3px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(1px,2px)} }
+        .dust-particle { position:fixed; pointer-events:none; background:radial-gradient(circle,rgba(220,180,110,.85) 0%,rgba(200,160,100,0) 70%); border-radius:50%; animation:floatDust linear infinite; z-index:0; }
+        @keyframes floatDust { 0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0}8%{opacity:.8}92%{opacity:.5}100%{transform:translateY(-100vh) translateX(75px) rotate(180deg);opacity:0} }
+        #game-container { width:100%; max-width:780px; min-height:600px; background: repeating-linear-gradient(88deg,transparent 0px,transparent 9px,rgba(0,0,0,.055) 9px,rgba(0,0,0,.055) 10px), repeating-linear-gradient(180deg,transparent 0px,transparent 52px,rgba(255,175,70,.018) 52px,rgba(255,175,70,.018) 54px), linear-gradient(180deg,#201008 0%,#391b0c 2%,#452612 5%,#391b0c 8%,#351708 18%,#3a1c0d 82%,#452612 95%,#201008 100%); border-radius:10px; position:relative; z-index:1; overflow:hidden; box-shadow: inset 0 0 0 3px #7c5c28, inset 0 0 0 6px #1c0d04, inset 0 0 0 9px #5c3e18, inset 0 0 0 12px #140a02, 0 0 90px rgba(0,0,0,.92), 0 26px 64px rgba(0,0,0,.72); animation:lanternGlow 5.5s ease-in-out infinite; }
+        @keyframes lanternGlow { 0%,100%{box-shadow:inset 0 0 0 3px #7c5c28,inset 0 0 0 6px #1c0d04,inset 0 0 0 9px #5c3e18,inset 0 0 0 12px #140a02,inset 0 60px 120px rgba(140,55,5,.08),0 0 90px rgba(0,0,0,.92),0 26px 64px rgba(0,0,0,.72)}50%{box-shadow:inset 0 0 0 3px #7c5c28,inset 0 0 0 6px #1c0d04,inset 0 0 0 9px #5c3e18,inset 0 0 0 12px #140a02,inset 0 60px 160px rgba(175,80,5,.16),0 0 90px rgba(0,0,0,.92),0 26px 64px rgba(0,0,0,.72)} }
+        #game-container::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.024) 2px,rgba(0,0,0,.024) 3px); pointer-events:none; z-index:999; border-radius:4px; }
+        #game-container::after { content:''; position:absolute; top:16px; left:16px; right:16px; bottom:16px; border:1px solid rgba(201,160,48,.2); pointer-events:none; z-index:998; }
+        #game-inner { position:relative; z-index:1; padding:24px; min-height:580px; background: radial-gradient(ellipse at 50% -5%,rgba(95,38,5,.18) 0%,transparent 58%), radial-gradient(ellipse at 50% 108%,rgba(28,10,0,.12) 0%,transparent 58%); border-radius:4px; }
+        .screen { display:none; flex-direction:column; align-items:center; gap:16px; animation:fadeSlideIn .48s cubic-bezier(.22,1,.36,1); }
+        .screen.active { display:flex; }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(22px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        .game-title { font-family:'Rye',serif; font-size:3.2em; color:#f2c940; text-shadow:3px 3px 0 #280c00,6px 6px 0 rgba(28,8,0,.5),0 0 44px rgba(242,200,60,.52),0 0 90px rgba(200,135,20,.26); letter-spacing:6px; text-align:center; line-height:1.2; animation:titleBreathe 5s ease-in-out infinite; }
+        @keyframes titleBreathe { 0%,100%{text-shadow:3px 3px 0 #280c00,6px 6px 0 rgba(28,8,0,.5),0 0 44px rgba(242,200,60,.42),0 0 88px rgba(200,135,20,.18)}50%{text-shadow:3px 3px 0 #280c00,6px 6px 0 rgba(28,8,0,.5),0 0 68px rgba(255,220,80,.72),0 0 130px rgba(220,155,30,.4)} }
+        .game-subtitle { font-family:'Special Elite',monospace; font-size:.92em; color:#9a7030; letter-spacing:7px; }
+        .game-subtitle::before{content:'— '}.game-subtitle::after{content:' —'}
+        #screen-title>div:first-child { font-size:3.2em; color:#d4a820; letter-spacing:10px; text-shadow:0 0 22px rgba(212,168,32,.65),0 0 50px rgba(180,125,20,.32); animation:starPulse 3.5s ease-in-out infinite; }
+        @keyframes starPulse { 0%,100%{text-shadow:0 0 22px rgba(212,168,32,.6),0 0 50px rgba(180,125,20,.28);transform:scale(1)}50%{text-shadow:0 0 34px rgba(255,212,60,.92),0 0 80px rgba(210,155,30,.5);transform:scale(1.06)} }
+        .btn { font-family:'Special Elite',monospace; padding:13px 28px; font-size:.95em; cursor:pointer; border:none; outline:none; position:relative; color:#f0e090; letter-spacing:2.5px; text-transform:uppercase; transition:all .15s ease; min-width:140px; text-align:center; border-radius:3px; background:linear-gradient(180deg,#a07c18 0%,#8b6812 30%,#6a500e 60%,#4e3c0a 100%); box-shadow:0 0 0 1px #2e1a04,0 0 0 3px #8b6012,0 0 0 4px #2e1a04,inset 0 1px 0 rgba(255,235,120,.22),inset 0 -1px 0 rgba(0,0,0,.45),0 5px 14px rgba(0,0,0,.65); }
+        .btn::before { content:''; position:absolute; top:3px; left:12px; right:12px; height:1px; background:linear-gradient(90deg,transparent,rgba(255,235,130,.28),transparent); }
+        .btn:hover { background:linear-gradient(180deg,#b88c20 0%,#9c7618 30%,#7a5e14 60%,#5e4a10 100%); color:#fff8c0; transform:translateY(-2px); box-shadow:0 0 0 1px #2e1a04,0 0 0 3px #b08020,0 0 0 4px #2e1a04,inset 0 1px 0 rgba(255,235,120,.36),inset 0 -1px 0 rgba(0,0,0,.3),0 9px 22px rgba(0,0,0,.7),0 0 22px rgba(180,120,20,.18); }
+        .btn:active { transform:translateY(1px); background:linear-gradient(180deg,#4e3c0a 0%,#6a500e 50%,#8b6812 100%); box-shadow:0 0 0 1px #2e1a04,0 0 0 3px #7a5010,0 0 0 4px #2e1a04,inset 0 3px 6px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5); }
+        .btn.danger { background:linear-gradient(180deg,#962222 0%,#7c1818 30%,#5e1212 60%,#461010 100%); color:#ffc0c0; box-shadow:0 0 0 1px #280606,0 0 0 3px #7c1818,0 0 0 4px #280606,inset 0 1px 0 rgba(255,190,190,.18),inset 0 -1px 0 rgba(0,0,0,.45),0 5px 14px rgba(0,0,0,.65); }
+        .btn.danger:hover { background:linear-gradient(180deg,#aa2828 0%,#8e2020 30%,#6e1818 60%,#521414 100%); color:#ffd0d0; box-shadow:0 0 0 1px #280606,0 0 0 3px #962222,0 0 0 4px #280606,inset 0 1px 0 rgba(255,190,190,.28),0 9px 22px rgba(0,0,0,.7),0 0 22px rgba(150,20,20,.22); }
+        .btn.small { padding:9px 18px; font-size:.8em; min-width:80px; }
+        .btn.wide { min-width:220px; }
+        .btn:disabled { opacity:.32; cursor:not-allowed; pointer-events:none; filter:grayscale(50%); }
+        .info-bar { display:flex; gap:0; flex-wrap:wrap; justify-content:center; background:linear-gradient(180deg,rgba(5,2,0,.78) 0%,rgba(10,4,0,.85) 100%); border-radius:3px; width:100%; max-width:600px; overflow:hidden; box-shadow:0 0 0 1px #140a02,0 0 0 2px #7a5820,0 0 0 3px #140a02,0 5px 14px rgba(0,0,0,.55); }
+        .info-item { color:#9a7830; font-size:.83em; display:flex; align-items:center; gap:6px; padding:10px 16px; border-right:1px solid rgba(120,80,30,.26); flex:1; justify-content:center; min-width:80px; letter-spacing:.5px; }
+        .info-item:last-child { border-right:none; }
+        .info-value { color:#f0d080; font-weight:bold; font-size:1.1em; text-shadow:0 0 10px rgba(240,208,128,.3); }
+        .info-value.low { color:#ff5030; animation:pulse .7s infinite; text-shadow:0 0 12px rgba(255,70,30,.5); }
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.38}}
+        .card-hand { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; padding:10px; }
+        .card { width:130px; min-height:175px; position:relative; cursor:pointer; padding:14px 10px 20px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:6px; transition:all .25s cubic-bezier(.34,1.56,.64,1); text-align:center; border-radius:5px; overflow:hidden; background: repeating-linear-gradient(2deg,transparent 0px,transparent 28px,rgba(130,90,30,.045) 28px,rgba(130,90,30,.045) 29px), radial-gradient(ellipse at 28% 16%,rgba(255,248,220,.78) 0%,transparent 56%), linear-gradient(155deg,#f2dca0 0%,#e8cf90 35%,#dcc07c 65%,#ceb068 100%); box-shadow:0 0 0 1px #3e2808,0 0 0 3px #c9a030,0 0 0 4px #3e2808,5px 7px 18px rgba(0,0,0,.65),inset 0 0 24px rgba(180,120,40,.08); }
+        .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent 8%,rgba(201,160,48,.58) 50%,transparent 92%); }
+        .card::after { content:''; position:absolute; bottom:0; right:0; width:0; height:0; border-style:solid; border-width:0 0 20px 20px; border-color:transparent transparent rgba(68,44,10,.48) transparent; transition:all .22s; }
+        .card:hover { transform:translateY(-14px) rotate(-1.5deg) scale(1.04); box-shadow:0 0 0 1px #3e2808,0 0 0 3px #f5c840,0 0 0 4px #3e2808,10px 18px 30px rgba(0,0,0,.76),0 0 36px rgba(220,170,40,.14); z-index:10; }
+        .card:hover::after{border-width:0 0 30px 30px}
+        .card:active{transform:translateY(-4px) scale(.97)}
+        .card.disabled{opacity:.38;cursor:not-allowed;pointer-events:none;filter:grayscale(55%) sepia(25%)}
+        .card-name{font-family:'Rye',serif;font-size:.8em;color:#220c00;font-weight:bold;letter-spacing:1px}
+        .card-icon{font-size:2em;filter:drop-shadow(1px 2px 2px rgba(0,0,0,.25))}
+        .card-desc{font-size:.68em;color:#4a2a10;line-height:1.35}
+        .card-cost{font-size:.65em;color:#8a1a08;font-weight:bold;background:rgba(0,0,0,.1);padding:2px 8px;border-radius:10px;border:1px solid rgba(138,26,8,.26)}
+        .card.played{animation:cardPlay .5s ease-out forwards}
+        @keyframes cardPlay{0%{transform:scale(1) rotate(0deg);opacity:1}40%{transform:scale(1.2) rotate(6deg) translateY(-45px);opacity:.85}100%{transform:scale(.15) rotate(20deg) translateY(-110px);opacity:0}}
+        .enemy-display { background: repeating-linear-gradient(3deg,transparent 0px,transparent 22px,rgba(80,50,10,.07) 22px,rgba(80,50,10,.07) 23px), linear-gradient(180deg,#2c1408 0%,#200f05 60%,#180a03 100%); position:relative; min-width:220px; padding:22px 18px 16px; text-align:center; color:#f0d080; border-radius:4px; box-shadow:0 0 0 1px #140902,0 0 0 3px #9a7018,0 0 0 5px #140902,0 0 0 6px #583c0e,0 10px 28px rgba(0,0,0,.76),inset 0 0 50px rgba(0,0,0,.45); }
+        .enemy-display::before { content:'— WANTED —'; position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg,#180d04,#261408,#180d04); color:#c9a030; font-family:'Rye',serif; font-size:.68em; letter-spacing:5px; padding:2px 14px; white-space:nowrap; border:1px solid #583a0c; border-radius:2px; }
+        .enemy-name{font-family:'Rye',serif;font-size:1.5em;color:#ff6838;letter-spacing:2px;margin-top:6px;text-shadow:2px 2px 0 rgba(0,0,0,.88),0 0 28px rgba(255,80,25,.42)}
+        .enemy-hp-bar{width:100%;height:18px;background:linear-gradient(180deg,#190904 0%,#090400 100%);border-radius:2px;overflow:hidden;margin:10px 0 6px;box-shadow:inset 0 2px 5px rgba(0,0,0,.72),0 0 0 1px #3c1e08}
+        .enemy-hp-fill{height:100%;background:linear-gradient(180deg,#df3030 0%,#9e1818 55%,#be2020 100%);transition:width .5s cubic-bezier(.4,0,.2,1);border-radius:1px;position:relative}
+        .enemy-hp-fill::after{content:'';position:absolute;top:2px;left:4px;right:4px;height:3px;background:rgba(255,200,200,.24);border-radius:2px}
+        .hp-bar{width:100%;height:16px;background:linear-gradient(180deg,#190904 0%,#090400 100%);border-radius:2px;overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.72),0 0 0 1px #3c1e08}
+        .hp-fill{height:100%;background:linear-gradient(180deg,#df3030 0%,#9e1818 55%,#be2020 100%);transition:width .5s cubic-bezier(.4,0,.2,1);border-radius:1px;position:relative}
+        .hp-fill::after{content:'';position:absolute;top:2px;left:4px;right:4px;height:2px;background:rgba(255,200,200,.24);border-radius:2px}
+        .location-icon img{width:auto;height:100%;display:block;margin:0 auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+        .location-card:hover .location-icon img{transform:scale(1.12) translateY(-3px)}
+        .screen-flash{position:absolute;inset:0;pointer-events:none;z-index:998;animation:muzzleFlash .2s ease-out;background:radial-gradient(ellipse at 64% 28%,rgba(255,225,90,.88) 0%,rgba(255,128,20,.46) 34%,transparent 68%);border-radius:4px}
+        @keyframes muzzleFlash{0%{opacity:1}100%{opacity:0}}
+        .combat-log{background:linear-gradient(180deg,rgba(0,0,0,.74) 0%,rgba(4,1,0,.8) 100%);border-radius:3px;padding:12px 18px;color:#c8a850;font-size:.86em;max-height:90px;overflow-y:auto;width:100%;max-width:500px;letter-spacing:1px;line-height:1.65;text-align:center;font-style:italic;box-shadow:0 0 0 1px #140902,0 0 0 2px #583c0c,inset 0 2px 8px rgba(0,0,0,.46)}
+        .miss-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3.5em;color:#ff2828;font-family:'Rye',serif;z-index:1000;pointer-events:none;animation:missFade .9s cubic-bezier(.4,0,.2,1) forwards;text-shadow:3px 3px 0 rgba(0,0,0,.88),0 0 28px rgba(255,0,0,.48)}
+        @keyframes missFade{0%{opacity:1;transform:translate(-50%,-50%) scale(.75)}25%{opacity:1;transform:translate(-50%,-62%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-100%) scale(1.25)}}
+        .location-grid{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:500px}
+        .location-row{display:flex;justify-content:center;gap:14px;width:100%}
+        .location-card{background:linear-gradient(145deg,rgba(22,11,4,.97) 0%,rgba(15,7,2,.97) 100%);position:relative;border-radius:4px;padding:18px 16px;cursor:pointer;text-align:center;color:#f0d080;transition:all .25s cubic-bezier(.34,1.56,.64,1);letter-spacing:1px;overflow:hidden;box-shadow:0 0 0 1px #140a02,0 0 0 3px #5a3c14,0 0 0 4px #140a02,0 5px 14px rgba(0,0,0,.55);flex:1 1 0;min-width:0}
+        .location-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,160,48,.42),transparent)}
+        .location-card::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(201,160,48,.08) 0%,transparent 70%);opacity:0;transition:opacity .2s;pointer-events:none}
+        .location-card:hover{box-shadow:0 0 0 1px #140a02,0 0 0 3px #c9a030,0 0 0 4px #140a02,0 10px 28px rgba(0,0,0,.68),0 0 36px rgba(201,160,48,.1);transform:translateY(-5px) scale(1.025);color:#fff5c0}
+        .location-card:hover::after{opacity:1}
+        .location-icon{font-size:2.8em;display:block;margin-bottom:8px;text-align:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));transition:transform .25s cubic-bezier(.34,1.56,.64,1);height:2em;position:relative}
+        .location-card:hover .location-icon{transform:scale(1.12) translateY(-3px)}
+        .location-name{font-family:'Rye',serif;font-size:1.05em}
+        #trinkets-display{margin:4px 0;color:#a07828;font-size:.83em;letter-spacing:1px}
+        #deck-viewer{position:absolute;top:0;right:-400px;width:380px;height:100%;background:linear-gradient(180deg,rgba(18,9,2,.98) 0%,rgba(12,5,1,.98) 100%);box-shadow:-2px 0 0 #140a02,-4px 0 0 #6e4c20,-6px 0 0 #140a02,-24px 0 44px rgba(0,0,0,.55);z-index:1000;transition:right .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding:24px;color:#f0d080;font-size:.88em}
+        #deck-viewer.open{right:0}
+        #deck-viewer h3{font-family:'Rye',serif;margin-bottom:14px;color:#f0c840;letter-spacing:2px;font-size:1.1em}
+        #deck-viewer h4{font-family:'Rye',serif;margin-bottom:10px;color:#a08030;letter-spacing:2px;font-size:1em}
+        .deck-mini-card{background:rgba(255,240,200,.06);border-left:4px solid #8b6914;border-radius:0 6px 6px 0;padding:12px 14px;margin:6px 0;display:flex;align-items:flex-start;gap:12px;font-size:.88em;transition:background .15s;line-height:1.4}
+        .deck-mini-card:hover{background:rgba(255,240,200,.12)}
+        .deck-mini-icon{font-size:2em;min-width:32px;text-align:center;line-height:1}
+        .deck-mini-info{flex:1;min-width:0}
+        .deck-mini-name{font-weight:bold;color:#ffe8a0;font-size:1em;display:block}
+        .deck-mini-desc{color:#a08050;font-size:.82em;display:block;margin-top:2px}
+        .deck-mini-cost{color:#8a1a08;font-size:.75em;font-weight:bold;background:rgba(0,0,0,.15);padding:1px 6px;border-radius:6px;display:inline-block;margin-top:2px}
+        #view-deck-btn{position:absolute;top:14px;right:14px;z-index:1001;background:rgba(0,0,0,.52);border:none;color:#d4a820;box-shadow:0 0 0 1px #140a02,0 0 0 2px #6e4c20,0 0 0 3px #140a02;padding:6px 14px;font-size:.7em;cursor:pointer;border-radius:3px;font-family:'Special Elite',monospace;letter-spacing:1px;transition:all .15s}
+        #view-deck-btn:hover{background:rgba(28,14,4,.82);color:#f0c840;box-shadow:0 0 0 1px #140a02,0 0 0 2px #c9a030,0 0 0 3px #140a02}
+        #store-items>div,#bounty-list>div{background:linear-gradient(180deg,rgba(5,2,0,.68) 0%,rgba(8,3,0,.74) 100%)!important;border:none!important;border-radius:3px!important;box-shadow:0 0 0 1px #140902,0 0 0 2px #4a2e0a,inset 0 1px 0 rgba(255,200,100,.04);transition:box-shadow .15s;position:relative}
+        #store-items>div:hover{box-shadow:0 0 0 1px #140902,0 0 0 2px #8b6012,inset 0 1px 0 rgba(255,200,100,.08)}
+        #bounty-list>div:hover{box-shadow:0 0 0 1px #140902,0 0 0 2px #9a7018,0 4px 14px rgba(0,0,0,.45);transform:translateX(4px)}
+        #combat-title{font-family:'Rye',serif!important;font-size:2em!important;color:#ff5c30!important;letter-spacing:3px!important;text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 30px rgba(255,70,20,.45)!important;animation:combatPulse 2.2s ease-in-out infinite}
+        @keyframes combatPulse{0%,100%{text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 28px rgba(255,70,20,.38)}50%{text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 52px rgba(255,90,30,.72),0 0 88px rgba(200,40,0,.32)}}
+        #gameover-title{font-family:'Rye',serif!important;font-size:3.2em!important;letter-spacing:4px!important;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 44px rgba(200,20,20,.6)!important;animation:deathPulse 1.6s ease-in-out infinite}
+        @keyframes deathPulse{0%,100%{opacity:1;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 40px rgba(200,20,20,.48)}50%{opacity:.88;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 70px rgba(225,30,20,.82)}}
+        #screen-town>div:first-child,#screen-store>div:first-child,#screen-saloon>div:first-child,#screen-sheriff>div:first-child,#screen-gunsmith>div:first-child,#screen-wilderness>div:first-child{text-shadow:2px 2px 0 #1a0800,0 0 22px rgba(200,150,40,.22)!important;letter-spacing:3px!important}
+        #saloon-result,#enemy-intent{font-style:italic;letter-spacing:1px}
+        .store-tooltip{position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);color:#f0d080;padding:8px 12px;border:1px solid #c9a030;border-radius:4px;font-size:.75em;white-space:nowrap;z-index:2000;pointer-events:none;animation:fadeIn .2s;text-shadow:1px 1px 0 black}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .meta-equip-slot{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.4);padding:8px 16px;border-radius:4px;border:1px solid #5a3c14;min-height:48px;justify-content:center;margin-bottom:8px}
+        .meta-equip-slot.equipped{border-color:#c9a030;box-shadow:0 0 12px rgba(201,160,48,.15)}
+        .meta-equip-icon{font-size:1.6em}.meta-equip-name{color:#f0d080;font-size:.85em;letter-spacing:1px}
+        .meta-equip-empty{color:#6e5040;font-size:.75em;font-style:italic}
+        .ach-list{display:flex;flex-direction:column;gap:6px;width:100%;max-width:500px;max-height:360px;overflow-y:auto;padding-right:4px}
+        .ach-item{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.3);padding:8px 12px;border-radius:4px;border-left:3px solid #5a3c14;transition:all .15s}
+        .ach-item.unlocked{border-left-color:#c9a030;background:rgba(201,160,48,.08)}
+        .ach-item.locked{opacity:.55}
+        .ach-icon{font-size:1.4em;min-width:28px;text-align:center}
+        .ach-info{flex:1}.ach-name{color:#f0d080;font-size:.82em;letter-spacing:1px;font-weight:bold}
+        .ach-desc{color:#8a7030;font-size:.72em}.ach-reward{color:#6e5040;font-size:.68em;font-style:italic}
+        .ach-badge{font-size:.7em;padding:2px 8px;border-radius:8px;background:#2a1a04;color:#5a3c14}
+        .ach-badge.unlocked{background:#3a2a08;color:#c9a030}
+        @media(max-width:600px){.game-title{font-size:2em;letter-spacing:3px}.card{width:98px;min-height:138px;padding:8px 6px}.card-name{font-size:.68em}.card-icon{font-size:1.4em}.card-desc{font-size:.58em}.location-row{gap:10px}.btn{padding:10px 18px;font-size:.8em;min-width:100px}#game-inner{padding:12px}#deck-viewer{right:-320px;width:300px}#game-container::after{top:10px;left:10px;right:10px;bottom:10px}}
+    </style>
+</head>
+<body>
+<div id="grain-overlay"></div>
+<div id="dust-container"></div>
+<div id="game-container">
+    <div id="game-inner">
+        <button id="view-deck-btn" onclick="toggleDeckViewer()">View Deck</button>
+        <div id="deck-viewer">
+            <h3>Your Deck</h3>
+            <div id="deck-contents"></div>
+            <br><h4>Discard Pile</h4>
+            <div id="discard-contents"></div>
+        </div>
+
+        <!-- screens unchanged -->
+        <div class="screen active" id="screen-title">
+            <div style="font-size:3em;color:#c9a030;letter-spacing:8px;text-shadow:0 0 30px rgba(201,160,48,.55);">&#9733; &#9733; &#9733;</div>
+            <div class="game-title">DUST &amp; LEAD</div>
+            <div class="game-subtitle">A Western Roguelike</div>
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,.18);border-bottom:1px solid rgba(201,160,48,.18);padding:10px 0;">The frontier is unforgiving. Bounties await, outlaws roam, and every sunset could be your last.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;max-width:340px;">
+                <button class="btn wide" onclick="startGame()">Ride Into Town</button>
+                <br>
+                <div style="display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
+                    <label for="diff-select" style="color:#a08060;font-size:.85em;">Difficulty:</label>
+                    <select id="diff-select" onchange="selectedDifficulty=this.value" style="background:#1a0e04;color:#f0d080;border:2px solid #4a3020;border-radius:4px;padding:4px 8px;font-family:'Rye',serif;font-size:.85em;cursor:pointer;">
+                        <option value="easy" style="background:#1a0e04;color:#b0d090;">Easy</option>
+                        <option value="medium" style="background:#1a0e04;color:#c9a030;">Medium</option>
+                        <option value="hard" style="background:#1a0e04;color:#e07030;">Hard</option>
+                        <option value="extreme" style="background:#1a0e04;color:#ff6060;">Extreme</option>
+                    </select>
+                </div>
+            </div>
+            <div class="meta-equip-slot" id="title-equipped"><span class="meta-equip-empty">No heirloom equipped</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <button class="btn small" onclick="showScreen('achievements');updateAchievementsScreen()">Achievements</button>
+                <button class="btn small" onclick="showScreen('equipment');updateEquipmentScreen()">Equipment</button>
+            </div>
+            <div style="color:#8d6e63;font-size:.73em;letter-spacing:2px;">HIGH SCORE: <span id="high-score-display" style="color:#c9a030;">0</span> dollars</div>
+            <div style="color:#6e5040;font-size:.7em;text-align:center;max-width:380px;line-height:1.6;margin-top:4px;">Build your deck ✦ Hunt bounties ✦ Sell your loot ✦ Survive</div>
+        </div>
+        <div class="screen" id="screen-town">
+            <div style="font-family:'Rye',serif;font-size:1.8em;color:#f0d080;letter-spacing:3px;">Dustwater Town</div>
+            <div id="town-flavor" style="color:#7a5a30;font-size:.78em;font-style:italic;text-align:center;letter-spacing:1px;"></div>
+            <div id="region-progress" style="color:#c9a060;font-size:.72em;text-align:center;letter-spacing:1px;"></div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="town-hp">20/20</span></div>
+                <div class="info-item">Food: <span class="info-value" id="town-food">5</span></div>
+                <div class="info-item">$: <span class="info-value" id="town-money">50</span></div>
+                <div class="info-item">Day: <span class="info-value" id="town-day">1</span></div>
+            </div>
+            <div id="town-gun-display" style="color:#9a7030;font-size:.78em;text-align:center;letter-spacing:1px;"></div>
+            <div id="trinkets-display" style="color:#9a7030;font-size:.78em;text-align:center;"></div>
+            <div id="town-sell-display" style="color:#c9a060;font-size:.75em;text-align:center;letter-spacing:1px;"></div>
+            <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:.78em;text-align:center;"></div>
+            <div class="location-grid">
+                <div class="location-row">
+                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
+                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
+                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
+                </div>
+                <div class="location-row">
+                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
+                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
+                </div>
+            </div>
+            <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
+            <button class="btn small" onclick="toggleDeckViewer()">View Deck</button>
+        </div>
+        <div class="screen" id="screen-store">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">General Store</div>
+            <div class="info-bar"><div class="info-item">Your $: <span class="info-value" id="store-money">50</span></div></div>
+            <div id="store-items" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+        </div>
+        <div class="screen" id="screen-saloon">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">The Dusty Saloon</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="saloon-hp">20/20</span></div>
+                <div class="info-item">$: <span class="info-value" id="saloon-money">50</span></div>
+            </div>
+            <button class="btn wide" onclick="saloonRest()">Rest Night ($15) — Heal 8 HP</button>
+            <button class="btn wide" onclick="saloonGamble()">Play Cards ($10) — Win or Lose</button>
+            <button class="btn wide" onclick="saloonDrink()">Whiskey ($5) — Heal 3 HP</button>
+            <button class="btn wide" onclick="saloonDoctorVisit()">See the Doc ($20) — Heal 12 HP</button>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="saloon-result" style="color:#f0d080;text-align:center;"></div>
+        </div>
+        <div class="screen" id="screen-sheriff">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Sheriff's Office</div>
+            <div style="color:#c9a060;text-align:center;">Wanted Posters on the wall...</div>
+            <div id="bounty-list" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="sheriff-msg" style="color:#f0d080;text-align:center;"></div>
+        </div>
+        <div class="screen" id="screen-gunsmith">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Gunsmith's Workshop</div>
+            <div style="color:#c9a060;text-align:center;font-size:.85em;">The smell of gun oil and hot metal fills the air.</div>
+            <div class="info-bar">
+                <div class="info-item">Your $: <span class="info-value" id="gunsmith-money">50</span></div>
+                <div class="info-item">Gun: <span class="info-value" id="gunsmith-gun">Revolver</span></div>
+            </div>
+            <div id="gunsmith-items" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
+            <button class="btn small" onclick="goToTown()">Back to Town</button>
+            <div id="gunsmith-msg" style="color:#f0d080;text-align:center;font-style:italic;"></div>
+        </div>
+        <div class="screen" id="screen-wilderness">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">The Frontier</div>
+            <div id="wild-description" style="color:#c9a060;text-align:center;max-width:400px;">You ride through harsh desert landscape, eyes peeled for trouble...</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="wild-hp">20/20</span></div>
+                <div class="info-item">Food: <span class="info-value" id="wild-food">5</span></div>
+                <div class="info-item">$: <span class="info-value" id="wild-money">50</span></div>
+                <div class="info-item">Day: <span class="info-value" id="wild-day">1</span></div>
+            </div>
+            <div id="wild-result" style="color:#f0d080;text-align:center;max-width:440px;line-height:1.6;min-height:40px;font-style:italic;"></div>
+            <div id="wild-buttons" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+        </div>
+        <div class="screen" id="screen-combat">
+            <div style="font-family:'Rye',serif;font-size:1.5em;color:#ff6b4a;letter-spacing:2px;" id="combat-title">Showdown!</div>
+            <div class="enemy-display">
+                <div class="enemy-name" id="enemy-name">Bandit</div>
+                <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp-fill" style="width:100%;"></div></div>
+                <div style="font-size:.85em;">HP: <span id="enemy-hp-text">15/15</span></div>
+                <div style="font-size:.8em;color:#a08060;" id="enemy-intent">Watching you closely...</div>
+            </div>
+            <div id="combat-status" style="color:#b0d090;font-size:.78em;text-align:center;letter-spacing:1px;min-height:18px;"></div>
+            <div class="info-bar">
+                <div class="info-item">Your HP: <span class="info-value" id="combat-hp">20/20</span></div>
+                <div class="info-item">Gun: <span class="info-value" id="combat-gun-name">Revolver</span></div>
+                <div class="info-item">Ammo: <span class="info-value" id="combat-ammo">6/6</span></div>
+            </div>
+            <div style="width:100%;max-width:500px;padding:0 4px;">
+                <div style="font-size:.7em;color:#7a5a30;letter-spacing:1px;margin-bottom:3px;">YOUR HEALTH</div>
+                <div class="hp-bar"><div class="hp-fill" id="player-hp-fill" style="width:100%;"></div></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <button class="btn small" onclick="cycleAmmoType()">Switch Bullet</button>
+                <button class="btn small" id="btn-switch-gun" onclick="cycleGun()" style="display:none;">Switch Gun</button>
+            </div>
+            <div style="color:#f0d080;font-size:.9em;letter-spacing:1px;">Select a card to play:</div>
+            <div class="card-hand" id="card-hand"></div>
+            <div class="combat-log" id="combat-log">The tension crackles in the air...</div>
+            <button class="btn small danger" id="btn-flee" onclick="fleeCombat()">Flee (25% chance)</button>
+        </div>
+        <div class="screen" id="screen-gameover">
+            <div style="font-family:'Rye',serif;font-size:2em;letter-spacing:3px;" id="gameover-title">DEAD</div>
+            <div style="color:#f0d080;text-align:center;max-width:400px;line-height:1.6;" id="gameover-desc"></div>
+            <div class="info-bar">
+                <div class="info-item">Days: <span class="info-value" id="go-days">1</span></div>
+                <div class="info-item">Kills: <span class="info-value" id="go-kills">0</span></div>
+                <div class="info-item">Bounties: <span class="info-value" id="go-bounties">0</span></div>
+                <div class="info-item">Earned: <span class="info-value" id="go-money">0</span></div>
+            </div>
+            <div style="color:#9a7030;font-size:.75em;">High Score: $<span id="go-highscore">0</span></div>
+            <button class="btn wide" onclick="restartGame()">New Gunslinger</button>
+        </div>
+        <div class="screen" id="screen-win">
+            <div style="font-family:'Rye',serif;font-size:2em;letter-spacing:3px;color:#f0c840;text-shadow:0 0 40px rgba(240,200,64,.5),4px 4px 0 rgba(0,0,0,.8);animation:starPulse 3s ease-in-out infinite;">&#9733; VICTORY &#9733;</div>
+            <div id="win-title" style="font-family:'Rye',serif;font-size:1.4em;color:#f0d080;text-align:center;letter-spacing:2px;"></div>
+            <div id="win-desc" style="color:#c9a060;text-align:center;max-width:420px;line-height:1.6;font-style:italic;"></div>
+            <div class="info-bar">
+                <div class="info-item">Days: <span class="info-value" id="win-days">1</span></div>
+                <div class="info-item">Kills: <span class="info-value" id="win-kills">0</span></div>
+                <div class="info-item">Bounties: <span class="info-value" id="win-bounties">0</span></div>
+                <div class="info-item">Earned: <span class="info-value" id="win-money">0</span></div>
+            </div>
+            <div id="win-next-diff" style="color:#a08060;font-size:.78em;text-align:center;"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                <button class="btn wide" id="btn-continue" onclick="continueRun()">Continue On</button>
+                <button class="btn small danger" onclick="endRun('retired')">Retire</button>
+            </div>
+        </div>
+        <div class="screen" id="screen-achievements">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Achievements</div>
+            <div style="color:#c9a060;font-size:.78em;text-align:center;">Feats and milestones across all your runs</div>
+            <div class="info-bar">
+                <div class="info-item">Unlocked: <span class="info-value" id="ach-unlocked-count">0</span></div>
+                <div class="info-item">Total: <span class="info-value" id="ach-total-count">0</span></div>
+            </div>
+            <div class="ach-list" id="ach-list"></div>
+            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+        </div>
+        <div class="screen" id="screen-equipment">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Equipment</div>
+            <div style="color:#c9a060;font-size:.78em;text-align:center;">Equip cosmetic rewards from achievements</div>
+            <div style="margin:8px 0;width:100%;max-width:400px;">
+                <div style="color:#a08060;font-size:.75em;letter-spacing:1px;margin-bottom:4px;">— EQUIPPED —</div>
+                <div class="meta-equip-slot" id="equip-current"><span class="meta-equip-empty">Nothing equipped</span></div>
+            </div>
+            <div style="color:#a08060;font-size:.75em;letter-spacing:1px;margin-bottom:4px;">— UNLOCKED ITEMS —</div>
+            <div class="ach-list" id="equip-list"></div>
+            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== DEFINITIONS ====================
+const sellableItemDefs = {
+    'Gold Nugget':       { sellPrice:35, desc:'Pure frontier gold. Worth real money.' },
+    'Silver Locket':     { sellPrice:18, desc:'A tarnished locket with a photograph inside.' },
+    'Coin Satchel':      { sellPrice:28, desc:'Someone else\'s coin purse — heavy.' },
+    'Pocket Watch':      { sellPrice:20, desc:'A well-made gentleman\'s timepiece.' },
+    'Outlaw Map':        { sellPrice:32, desc:'A map to a bandit hideout. Somebody will pay.' },
+    'Confederate Gold':  { sellPrice:45, desc:'Old war coins, still pure gold.' },
+    'Native Artifact':   { sellPrice:24, desc:'An ancient relic of the frontier peoples.' },
+    'Whiskey Flask':     { sellPrice:10, desc:'Still full of aged whiskey.' },
+    'Old Pistol':        { sellPrice:30, desc:'A beat-up iron in salvageable condition.' },
+    'Turquoise Stone':   { sellPrice:14, desc:'A pretty blue stone from the desert floor.' },
+    'Leather Satchel':   { sellPrice:16, desc:'Well-made and barely worn.' },
+    'Powder Horn':       { sellPrice:22, desc:'Old powder horn with fine brass fittings.' },
+    'Cavalry Sabre':     { sellPrice:38, desc:'A US cavalry sabre in fine condition.' },
+    'Spanish Doubloon':  { sellPrice:50, desc:'An old Spanish coin. Very rare out here.' },
+    'Snake Skin':        { sellPrice:12, desc:'A freshly shed rattlesnake skin.' },
+    "Drifter's Hat":     { sellPrice:15, desc:'A battered but stylish hat.' },
+    "Bandit's Journal":  { sellPrice:26, desc:'Coded entries — could be useful to the sheriff.' },
+    'Mining Claim':      { sellPrice:40, desc:'A signed mining claim deed. Could be legitimate.' },
+    'Wanted Poster':     { sellPrice:8,  desc:'A poster for an outlaw. Worth something at the sheriff\'s.' },
+};
+
+const weaponDefs = {
+    'Revolver':      { damage:5, capacity:6, cost:0,  desc:'Trusty six-shooter.' },
+    'Shotgun':       { damage:8, capacity:2, cost:60, desc:'Devastating up close.' },
+    'Rifle':         { damage:7, capacity:5, cost:80, desc:'Accurate and powerful.' },
+    'Double-Action': { damage:4, capacity:6, cost:45, desc:'Fast but weaker.' },
+    'Derringer':     { damage:3, capacity:2, cost:25, desc:'Tiny hideout gun.' },
+    'Widowmaker':    { damage:12,capacity:4, cost:0,  desc:'Heals 3 HP on kill.', onKillHeal:3 },
+    "Mare's Leg":    { damage:6, capacity:7, cost:70, desc:'Sawn-off rifle. Balanced and reliable.' }
+};
+
+const rotatingWeapons = new Set(["Mare's Leg","Double-Action"]);
+
+// ==================== REGIONS & DIFFICULTY ====================
+const diffConfig = {
+    easy:   { regions:3, label:'Easy',   enemyMult:0.8, moneyMult:1.2, labelColor:'#6aaa4a' },
+    medium: { regions:5, label:'Medium', enemyMult:1.0, moneyMult:1.0, labelColor:'#c9a030' },
+    hard:   { regions:7, label:'Hard',   enemyMult:1.2, moneyMult:0.8, labelColor:'#e07030' },
+    extreme:{ regions:10,label:'Extreme',enemyMult:1.5, moneyMult:0.6, labelColor:'#cc2020' },
+};
+const diffOrder = ['easy','medium','hard','extreme'];
+const regionDefs = [
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
+];
+const bossDefs = [
+    { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
+    { name:'Doc Holliday',     hp:32, dmg:7,  reward:45,  desc:'Consumptive gambler and gunslinger' },
+    { name:'Jesse James',      hp:35, dmg:7,  reward:50,  desc:'The most famous outlaw of them all' },
+    { name:'Wyatt Earp',       hp:38, dmg:8,  reward:55,  desc:'The toughest lawman west of the Mississippi' },
+    { name:'Wild Bill Hickok', hp:40, dmg:8,  reward:60,  desc:'Legendary gunfighter and scout' },
+    { name:'Buffalo Bill',     hp:42, dmg:9,  reward:70,  desc:'Showman and buffalo hunter' },
+    { name:'Butch Cassidy',    hp:45, dmg:10, reward:80,  desc:'Leader of the Wild Bunch' },
+    { name:'Calamity Jane',    hp:48, dmg:11, reward:90,  desc:'Scout and frontierswoman' },
+    { name:'Clint Eastwood',   hp:50, dmg:12, reward:100, desc:'The Man with No Name' },
+    { name:'El Diablo',        hp:70, dmg:16, reward:150, desc:'The devil himself' },
+];
+const VENTURES_PER_REGION = 2; // normal ventures before boss
+
+const cardDefs = {
+    'Quick Shot':    { desc:'Fire once.',                            ammoCost:1, effect:'shoot',      dmgMult:1,   accuracy:90 },
+    'Aimed Shot':    { desc:'Careful aim, +3 dmg.',                 ammoCost:1, effect:'shoot',      dmgMult:1,   bonusDmg:3,  accuracy:75 },
+    'Fan the Hammer':{ desc:'Fire 3 rapid shots!',                  ammoCost:3, effect:'fan',        dmgMult:1,   shots:3,     accuracy:65 },
+    'Reload':        { desc:'Reload regular ammo from inventory.',  ammoCost:0, effect:'reload',                  accuracy:100 },
+    'Dodge':         { desc:'50% chance to dodge next attack.',     ammoCost:0, effect:'dodge',                   accuracy:100 },
+    'Take Cover':    { desc:'Reduce next enemy hit by 4 dmg.',      ammoCost:0, effect:'cover',                   accuracy:100 },
+    'Desperado':     { desc:'Double damage shot!',                  ammoCost:2, effect:'shoot',      dmgMult:2,               accuracy:70 },
+    'Intimidate':    { desc:'40% chance — skip enemy\'s turn.',     ammoCost:0, effect:'intimidate',              accuracy:100 },
+    'Bandage':       { desc:'Heal 6 HP.',                           ammoCost:0, effect:'heal',       healAmt:6,   accuracy:100 },
+    'Lucky Shot':    { desc:'Low accuracy, +5 dmg if it hits.',     ammoCost:1, effect:'shoot',      dmgMult:1,   bonusDmg:5,  accuracy:50 },
+    'Sucker Punch':  { desc:'Hard fist, 4 dmg. No ammo.',           ammoCost:0, effect:'melee',      fixedDmg:4,  accuracy:80 },
+    'Dynamite Toss': { desc:'3× dmg, self 3 dmg. Costs 2 ammo.',   ammoCost:2, effect:'dynamite',   dmgMult:3,   selfDmg:3,   accuracy:75 },
+    'Smokebomb':     { desc:'Escape instantly!',                    ammoCost:0, effect:'smokebomb',               accuracy:100 },
+    'Dead Eye':      { desc:'100% accuracy, +2 dmg. Costs 2 ammo.',ammoCost:2, effect:'shoot',      dmgMult:1,   bonusDmg:2,  accuracy:100 },
+    'Lasso':         { desc:'70% chance to hogtie — skip their turn.',ammoCost:0,effect:'lasso',                 accuracy:100 },
+    'Last Stand':    { desc:'Deal damage = half your missing HP.',  ammoCost:1, effect:'laststand',               accuracy:85 },
+    'War Cry':       { desc:'Heal 4 HP and draw an extra card.',    ammoCost:0, effect:'warcry',                  accuracy:100 },
+    'Double Tap':    { desc:'Two quick shots at reduced dmg.',      ammoCost:2, effect:'doubletap',  dmgMult:0.8, shots:2,     accuracy:82 },
+    'Headshot':      { desc:'Massive dmg (+10), low accuracy.',     ammoCost:1, effect:'shoot',      dmgMult:1,   bonusDmg:10, accuracy:35 },
+    'Poison Dart':   { desc:'Poison enemy: 3 dmg/turn for 3 turns.',ammoCost:0, effect:'poison',                 accuracy:85 },
+    'Ricochet':      { desc:'Bullet bounces — hits twice at 70% dmg.',ammoCost:1,effect:'ricochet',  dmgMult:0.7, shots:2,     accuracy:72 },
+    'Bolas':         { desc:'Entangle: 70% chance enemy skips turn.',ammoCost:0, effect:'bolas',                 accuracy:100 },
+};
+
+const trinketDefs = {
+    'Lucky Rabbits Foot':  { desc:'Accuracy +10%.', cost:45 },
+    'Magnum Rounds':       { desc:'All Shoot cards +2 dmg.', cost:55 },
+    'Bandolier':           { desc:'+2 ammo capacity.', cost:40 },
+    'Slick Hat':           { desc:'Flee chance +20%.', cost:50 },
+    'Double Down':         { desc:'50% chance to double any damage.', cost:70 },
+    'Sharpshooter':        { desc:'First shot: 100% acc +5 dmg.', cost:60 },
+    'Snake Oil':           { desc:'Heal 1 HP at the start of each enemy turn.', cost:35 },
+    'Wanted Poster':       { desc:'Bounty rewards doubled, +5 enemy HP.', cost:30 },
+    'Quick Draw':          { desc:'Reload also fires a free shot.', cost:65 },
+    'Vultures Eye':        { desc:'Heal 4 HP on kill.', cost:50 },
+    'Canteen':             { desc:'+2 max food.', cost:25 },
+    'Lucky Dice':          { desc:'Better gambling odds.', cost:30 },
+    'Iron Horseshoe':      { desc:'Start each combat with 1 cover.', cost:40 },
+    'Medicine Bag':        { desc:'Heal 2 HP after each non-combat wilderness event.', cost:35 },
+    'Spare Spurs':         { desc:'Last Stand deals +3 bonus damage.', cost:45 },
+    'Blood Moon':          { desc:'Below 25% HP: all damage you deal +50%.', cost:55 },
+    'Frontier Scout':      { desc:'10% less combat chance. More loot.', cost:40 },
+    'Gunslingers Gloves':  { desc:'Accuracy +5%. Fan the Hammer costs 1 less ammo.', cost:50 },
+    'Bowie Knife':         { desc:'Melee cards (Sucker Punch) deal +4 extra damage.', cost:38 },
+    'Coyote Pelt':         { desc:'10% chance enemy attacks miss you entirely.', cost:42 },
+    'Desert Rose':         { desc:'Find sellable items more often in the frontier.', cost:30 },
+};
+
+const partNames = ['barrel','trigger','grip'];
+const partLabels = { barrel:'Rusty Barrel', trigger:'Bent Trigger', grip:'Cracked Grip' };
+
+// Safe localStorage
+function safeGet(k,f){ try{ return localStorage.getItem(k) || f; }catch(e){ return f; } }
+function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function safeGetObj(k,def){try{const d=localStorage.getItem(k);return d?JSON.parse(d):def;}catch(e){return def;}}
+function safeSetObj(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+// ==================== ACHIEVEMENTS (Meta Progression) ====================
+const achievementDefs = [
+    { id:'first_blood',    name:'First Blood',      desc:'Kill your first outlaw',                     icon:'💀', check:s=>s.kills>=1,     reward:{name:'Broken Bottle',icon:'🍾'} },
+    { id:'kills10',        name:'Gunslinger',        desc:'Kill 10 outlaws',                            icon:'⚔️', check:s=>s.kills>=10,   reward:{name:'Spur Set',icon:'🔔'} },
+    { id:'kills25',        name:'Gunslinger XXV',    desc:'Kill 25 outlaws',                            icon:'⚔️', check:s=>s.kills>=25,   reward:{name:'Rifle Scabbard',icon:'🎯'} },
+    { id:'kills50',        name:'Gunslinger L',      desc:'Kill 50 outlaws',                            icon:'⚔️', check:s=>s.kills>=50,   reward:{name:'Bandolier Belt',icon:'🪖'} },
+    { id:'kills100',       name:'High Noon',         desc:'Kill 100 outlaws',                           icon:'💀', check:s=>s.kills>=100,  reward:{name:'Widowmaker Hat',icon:'🎩'} },
+    { id:'bounty1',        name:'Bounty Hunter',     desc:'Collect 1 bounty',                           icon:'⭐', check:s=>s.bounties>=1,  reward:{name:'Tin Star',icon:'🌟'} },
+    { id:'bounty5',        name:'Bounty Hunter V',   desc:'Collect 5 bounties',                         icon:'⭐', check:s=>s.bounties>=5,  reward:{name:'Silver Star',icon:'✨'} },
+    { id:'bounty10',       name:'Bounty Hunter X',   desc:'Collect 10 bounties',                        icon:'⭐', check:s=>s.bounties>=10, reward:{name:'Gold Star',icon:'🌠'} },
+    { id:'survive10',      name:'Survivor',          desc:'Reach day 10 in one run',                    icon:'🌵', check:s=>s.bestDay>=10,  reward:{name:'Canteen',icon:'🧴'} },
+    { id:'survive20',      name:'Survivor XX',       desc:'Reach day 20 in one run',                    icon:'🌵', check:s=>s.bestDay>=20,  reward:{name:'Frontier Hat',icon:'🎩'} },
+    { id:'survive30',      name:'Survivor XXX',      desc:'Reach day 30 in one run',                    icon:'🌵', check:s=>s.bestDay>=30,  reward:{name:'Duster Coat',icon:'🧥'} },
+    { id:'survive50',      name:'Survivor L',        desc:'Reach day 50 in one run',                    icon:'🌵', check:s=>s.bestDay>=50,  reward:{name:'Legendary Poncho',icon:'🏆'} },
+    { id:'money100',       name:'High Roller',       desc:'Earn $100 in a single run',                  icon:'💰', check:s=>s.earned>=100,  reward:{name:'Money Bag',icon:'🪙'} },
+    { id:'money500',       name:'High Roller D',     desc:'Earn $500 in a single run',                  icon:'💰', check:s=>s.earned>=500,  reward:{name:'Gold Pouch',icon:'👛'} },
+    { id:'money1000',      name:'High Roller M',     desc:'Earn $1,000 in a single run',                icon:'💰', check:s=>s.earned>=1000, reward:{name:'Treasure Chest',icon:'📦'} },
+    { id:'gamble_win',     name:'Lucky Devil',       desc:'Win a gamble at the saloon',                  icon:'🎲', check:s=>s.gambles>=1,   reward:{name:'Lucky Chip',icon:'🎰'} },
+    { id:'trinkets3',      name:'Trinket Collector', desc:'Own 3 trinkets at once',                     icon:'📿', check:s=>s.trinkets>=3,  reward:{name:'Trinket Pouch',icon:'👜'} },
+    { id:'guns3',          name:'Well Equipped',     desc:'Own 3 guns at once',                         icon:'🔫', check:s=>s.guns>=3,      reward:{name:'Gun Belt',icon:'🎗️'} },
+];
+
+function getDefaultMeta(){return{unlocked:{},equipped:null,totalKills:0,totalBounties:0,totalEarned:0,bestDay:0,gamblesWon:0,maxTrinkets:0,maxGuns:0};}
+function loadMeta(){return safeGetObj('dustLeadMeta',getDefaultMeta());}
+function saveMeta(m){safeSetObj('dustLeadMeta',m);}
+function metaUnlock(aId){const m=loadMeta();m.unlocked=m.unlocked||{};if(!m.unlocked[aId]){m.unlocked[aId]=true;saveMeta(m);return true;}return false;}
+
+// ==================== GAME STATE ====================
+const gameState = {
+    player: {
+        health:20,maxHealth:20,money:50,food:5,
+        guns:[], equippedGunIndex:0, inventory:[],
+        day:1, bountiesCollected:0, totalEarned:0,
+        trinkets:[], consumables:[], gunParts:[],
+        bullets:{regular:0,express:0,trick:0},
+        ponchoDurability:0, hasSnakeFlute:false,
+        hasStolenBadge:false, killCount:0,
+        sellableInventory:[],
+        dodgeActive:false, coverActive:0, intimidateUsed:false, extraCardNextTurn:false,
+        regionsCompleted:0, venturesThisRegion:0
+    },
+    deck:[], discardPile:[], combatHand:[],
+    combatEnemy:null, combatActive:false,
+    currentScreen:'title', activeBounty:null,
+    wildDepth:0, firstShotThisCombat:true,
+    cardProcessing:false, combatInWilderness:false,
+    rotatingShopItems:[], bonusCardDraw:0,
+    deckViewerOpen: false,
+    difficulty:'easy', regionIndex:0, isBossFight:false, wonGame:false
+};
+
+// ==================== HELPERS ====================
+function buildDeck() {
+    const deck = [];
+    const add = (n,c) => { for(let i=0;i<c;i++) deck.push({...cardDefs[n],name:n}); };
+    add('Quick Shot',3);add('Aimed Shot',2);add('Fan the Hammer',1);add('Reload',2);
+    add('Dodge',1);add('Take Cover',1);add('Desperado',1);add('Intimidate',1);
+    add('Bandage',1);add('Lucky Shot',1);add('Sucker Punch',2);add('Dynamite Toss',1);
+    add('Dead Eye',1);add('Lasso',1);add('Last Stand',1);add('Double Tap',1);
+    add('Ricochet',1);add('Poison Dart',1);add('Bolas',1);
+    ['Bandage Kit','Bandage Kit','Bandage Kit'].forEach(()=>{
+        const i=gameState.player.inventory.findIndex(x=>x.name==='Bandage Kit');
+        if(i!==-1){deck.push({...cardDefs['Bandage'],name:'Bandage'});gameState.player.inventory.splice(i,1);}
+    });
+    const si=gameState.player.inventory.findIndex(x=>x.name==='Smokebomb');
+    if(si!==-1){deck.push({...cardDefs['Smokebomb'],name:'Smokebomb'});gameState.player.inventory.splice(si,1);}
+    const wi=gameState.player.inventory.findIndex(x=>x.name==='War Cry'&&x.type==='card');
+    if(wi!==-1){deck.push({...cardDefs['War Cry'],name:'War Cry'});gameState.player.inventory.splice(wi,1);}
+    const hi=gameState.player.inventory.findIndex(x=>x.name==='Headshot'&&x.type==='card');
+    if(hi!==-1){deck.push({...cardDefs['Headshot'],name:'Headshot'});gameState.player.inventory.splice(hi,1);}
+    gameState.player.trinkets.forEach(t=>{if(t.name==='Quick Draw')deck.push({...cardDefs['Quick Shot'],name:'Quick Shot'});});
+    return shuffleArray(deck);
+}
+function shuffleArray(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function drawCards(count){const d=[];for(let i=0;i<count;i++){if(gameState.deck.length===0){if(gameState.discardPile.length===0)break;gameState.deck=shuffleArray(gameState.discardPile);gameState.discardPile=[];}if(gameState.deck.length>0)d.push(gameState.deck.pop());}return d;}
+function getActualGun(){const g=gameState.player.guns;if(!g.length)return null;return g[Math.min(gameState.player.equippedGunIndex,g.length-1)];}
+function getTotalLoaded(){const g=getActualGun();if(!g)return 0;return (g.loaded.regular||0)+(g.loaded.express||0)+(g.loaded.trick||0);}
+function getMaxCapacity(){const g=getActualGun();if(!g)return 99;let c=g.capacity;if(gameState.player.trinkets.some(t=>t.name==='Bandolier'))c+=2;return c;}
+function getAmmoOfType(t){const g=getActualGun();return g?(g.loaded[t]||0):0;}
+function getCardAmmoCost(card){let c=card.ammoCost;if(card.name==='Fan the Hammer'&&gameState.player.trinkets.some(t=>t.name==='Gunslingers Gloves'))c=Math.max(1,c-1);return c;}
+function dealDamageToEnemy(d){const e=gameState.combatEnemy;if(!e)return 0;if(e.defendActive){d=Math.floor(d*0.55);e.defendActive=false;}const a=Math.max(0,d);e.health=Math.max(0,e.health-a);return a;}
+function getRandomSellableItem(){const k=Object.keys(sellableItemDefs);const key=k[Math.floor(Math.random()*k.length)];return{name:key,...sellableItemDefs[key]};}
+function cycleAmmoType(){const g=getActualGun();if(!g)return;const t=['regular','express','trick'];const ci=t.indexOf(g.currentType);for(let i=1;i<=3;i++){const nt=t[(ci+i)%3];if(g.loaded[nt]>0){g.currentType=nt;updateCombatDisplay();renderCombatHand();return;}}}
+function cycleGun(){const p=gameState.player;if(p.guns.length<2)return;p.equippedGunIndex=(p.equippedGunIndex+1)%p.guns.length;const ng=getActualGun();if(ng&&(!ng.currentType||!getAmmoOfType(ng.currentType))){const t=['regular','express','trick'];ng.currentType=t.find(x=>getAmmoOfType(x)>0)||'regular';}updateCombatDisplay();renderCombatHand();document.getElementById('combat-log').textContent=`Switched to ${ng.name}.`;}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const sc=document.getElementById('screen-'+name);if(sc)sc.classList.add('active');gameState.currentScreen=name;}
+
+// ==================== TOWN ====================
+function goToTown(){
+    gameState.activeBounty=null;gameState.combatActive=false;gameState.cardProcessing=false;gameState.wildDepth=0;
+    if(gameState.combatInWilderness){gameState.rotatingShopItems=generateRotatingItems();}
+    gameState.combatInWilderness=false;updateTownDisplay();showScreen('town');
+    checkAchievements();
+}
+function updateTownDisplay(){
+    const p=gameState.player;
+    const diffCfg=diffConfig[getCurrentDiffKey()];
+    const ri=gameState.regionIndex;
+    const region=regionDefs[Math.min(ri,regionDefs.length-1)];
+    const rc=p.regionsCompleted||0;
+    const maxRegions=diffCfg.regions;
+    const vt=p.venturesThisRegion||0;
+    const re=document.getElementById('region-progress');
+    if(re){if(rc>=maxRegions){re.textContent=`🏁 All ${maxRegions} regions conquered!`;re.style.color='#f0c840';}else{re.textContent=`${region.icon} ${region.name} (${rc+1}/${maxRegions}) — ${vt>=VENTURES_PER_REGION?'⚠️ Boss ready!':'Ventures: '+vt+'/'+VENTURES_PER_REGION}`;}}
+    const msgs=['The noon sun hammers the dusty street.','Somewhere, a piano plays off-key.','Two horses sleep outside the saloon.','A wanted poster flaps in the dry wind.','An old timer spits on the boardwalk.','Smoke rises from the blacksmith\'s forge.','The sheriff tips his hat as you pass.','Day '+p.day+'. Still alive. That counts for something.'];
+    const fe=document.getElementById('town-flavor');
+    if(fe){if(gameState.activeBounty){fe.textContent=`★ HUNTING: ${gameState.activeBounty.name} — $${gameState.activeBounty.reward} reward ★`;fe.style.color='#c9a030';}else{fe.textContent=msgs[p.day%msgs.length];fe.style.color='#7a5a30';}}
+    document.getElementById('town-hp').textContent=p.health+'/'+p.maxHealth;
+    document.getElementById('town-food').textContent=p.food;
+    document.getElementById('town-money').textContent=p.money;
+    document.getElementById('town-day').textContent=p.day;
+    if(p.health<=5)document.getElementById('town-hp').classList.add('low');else document.getElementById('town-hp').classList.remove('low');
+    if(p.food<=1)document.getElementById('town-food').classList.add('low');else document.getElementById('town-food').classList.remove('low');
+    const gun=getActualGun();
+    const ge=document.getElementById('town-gun-display');
+    if(ge&&gun)ge.textContent=`🔫 ${gun.name} — ${gun.damage} dmg | ${getTotalLoaded()}/${getMaxCapacity()} loaded`;
+    document.getElementById('trinkets-display').innerHTML=p.trinkets.length?'✦ '+p.trinkets.map(t=>`<span style="color:#c9a060;">${t.name}</span>`).join(' ✦ ')+' ✦':'';
+    document.getElementById('gun-parts-display').innerHTML=p.gunParts.length?'Parts: '+p.gunParts.map(pt=>partLabels[pt]).join(', '):'';
+    const se=document.getElementById('town-sell-display');
+    if(se){if(p.sellableInventory&&p.sellableInventory.length>0){se.textContent='📦 Goods to sell: '+p.sellableInventory.map(i=>i.name).join(' · ');se.style.color='#c9a060';}else{se.textContent='';}}
+}
+
+// ==================== STORE (updated) ====================
+function goToStore(){ updateStoreDisplay(); showScreen('store'); }
+function updateStoreDisplay(){
+    document.getElementById('store-money').textContent=gameState.player.money;
+    const container=document.getElementById('store-items');
+    container.innerHTML='';
+    const p=gameState.player;
+    const discount=p.hasStolenBadge?0.7:1;
+    const d=v=>Math.floor(v*discount);
+
+    // Sell section (always visible header)
+    const sellTitle=document.createElement('div');
+    sellTitle.innerHTML='<span style="color:#c9a030;font-size:.9em;letter-spacing:2px;">— YOUR GOODS (Sell Here) —</span>';
+    sellTitle.style.textAlign='center';
+    container.appendChild(sellTitle);
+    if(p.sellableInventory&&p.sellableInventory.length>0){
+        [...p.sellableInventory].forEach((item,idx)=>{
+            container.appendChild(createStoreItem(`${item.name} — Worth $${item.sellPrice}`,0,()=>{p.money+=item.sellPrice;p.totalEarned+=item.sellPrice;p.sellableInventory.splice(idx,1);updateStoreDisplay();},true,item.desc,'💰 Sell'));
+        });
+    } else {
+        const emptyMsg=document.createElement('div');
+        emptyMsg.textContent='(No loot to sell — find treasures in the frontier)';
+        emptyMsg.style.cssText='color:#8a6020;font-size:.8em;text-align:center;padding:6px;';
+        container.appendChild(emptyMsg);
+    }
+
+    const divider=document.createElement('div');
+    divider.innerHTML='<span style="color:#8a6020;font-size:.85em;letter-spacing:2px;">— SUPPLIES —</span>';
+    divider.style.textAlign='center';
+    container.appendChild(divider);
+
+    // Fixed supplies: Ammo, Canned Beans, Bandage Kit (Healing Salve and Jerky moved to rotating)
+    container.appendChild(createStoreItem(`Regular Ammo (6) — $${d(12)}`,d(12),()=>{if(p.money>=d(12)){p.money-=d(12);const gun=getActualGun();if(gun){const sp=getMaxCapacity()-getTotalLoaded();const tl=Math.min(6,sp);gun.loaded.regular=(gun.loaded.regular||0)+tl;p.bullets.regular+=(6-tl);}else p.bullets.regular+=6;updateStoreDisplay();}},p.money>=d(12),'6 regular bullets.'));
+    container.appendChild(createStoreItem(`Canned Beans — $${d(8)}`,d(8),()=>{if(p.money>=d(8)){p.money-=d(8);p.food+=3;updateStoreDisplay();}},p.money>=d(8),'Restores 3 food.'));
+    container.appendChild(createStoreItem(`Bandage Kit — $${d(10)}`,d(10),()=>{if(p.money>=d(10)){p.money-=d(10);addToInventory('Bandage Kit','heal');updateStoreDisplay();}},p.money>=d(10),'Adds Bandage card.'));
+
+    // Weapons (excluding those in rotating set)
+    for(const [name,def] of Object.entries(weaponDefs)){
+        if(def.cost>0 && !rotatingWeapons.has(name) && !p.guns.find(g=>g.name===name)){
+            container.appendChild(createStoreItem(`${name} — $${d(def.cost)}`,d(def.cost),()=>{p.money-=d(def.cost);p.guns.push({name,damage:def.damage,capacity:def.capacity,loaded:{regular:def.capacity,express:0,trick:0},currentType:'regular',...(def.onKillHeal?{onKillHeal:def.onKillHeal}:{})});updateStoreDisplay();},p.money>=d(def.cost),def.desc));
+        }
+    }
+
+    // Rotating stock
+    if(gameState.rotatingShopItems.length){
+        const rotTitle=document.createElement('div');
+        rotTitle.innerHTML='<span style="color:#c9a030;font-size:.85em;letter-spacing:2px;">— LIMITED STOCK —</span>';
+        rotTitle.style.textAlign='center';
+        container.appendChild(rotTitle);
+        gameState.rotatingShopItems.forEach(item=>container.appendChild(createStoreItem(item.label,item.cost,item.action,p.money>=item.cost,item.desc)));
+    }
+
+    // Widowmaker assembly moved to Gunsmith – removed from here
+}
+
+function generateRotatingItems(){
+    const p=gameState.player;
+    const discount=p.hasStolenBadge?0.7:1;
+    const d=v=>Math.floor(v*discount);
+    const possible=[];
+    const used=new Set();
+    const tryAdd=(item)=>{if(!used.has(item.label)){used.add(item.label);possible.push(item);}};
+    // Standard rotating items
+    tryAdd({label:`Express Ammo (6) — $${d(18)}`,cost:d(18),action:()=>{p.money-=d(18);const g=getActualGun();if(g){const sp=getMaxCapacity()-getTotalLoaded();const tl=Math.min(6,sp);g.loaded.express=(g.loaded.express||0)+tl;p.bullets.express+=(6-tl);}else p.bullets.express+=6;updateStoreDisplay();},desc:'+2 dmg, +10% acc.'});
+    tryAdd({label:`Trick Ammo (6) — $${d(24)}`,cost:d(24),action:()=>{p.money-=d(24);const g=getActualGun();if(g){const sp=getMaxCapacity()-getTotalLoaded();const tl=Math.min(6,sp);g.loaded.trick=(g.loaded.trick||0)+tl;p.bullets.trick+=(6-tl);}else p.bullets.trick+=6;updateStoreDisplay();},desc:'Half dmg on miss.'});
+    tryAdd({label:`Smokebomb — $${d(20)}`,cost:d(20),action:()=>{addToInventory('Smokebomb','consumable');p.money-=d(20);updateStoreDisplay();},desc:'Instant escape.'});
+    tryAdd({label:`Poncho (2 uses) — $${d(35)}`,cost:d(35),action:()=>{p.ponchoDurability+=2;p.money-=d(35);updateStoreDisplay();},desc:'Protects from sandstorms.'});
+    tryAdd({label:`War Cry Card — $${d(22)}`,cost:d(22),action:()=>{addToInventory('War Cry','card');p.money-=d(22);updateStoreDisplay();},desc:'Heal 4 HP, extra card.'});
+    tryAdd({label:`Headshot Card — $${d(28)}`,cost:d(28),action:()=>{addToInventory('Headshot','card');p.money-=d(28);updateStoreDisplay();},desc:'Huge dmg, low acc.'});
+    if(!p.hasSnakeFlute) tryAdd({label:`Snake Flute — $${d(25)}`,cost:d(25),action:()=>{p.hasSnakeFlute=true;p.money-=d(25);updateStoreDisplay();},desc:'Snakes deal half dmg.'});
+    // Add moved items: Healing Salve, Dried Jerky, Mare's Leg
+    tryAdd({label:`Healing Salve — $${d(18)}`,cost:d(18),action:()=>{p.money-=d(18);p.health=Math.min(p.maxHealth,p.health+10);updateStoreDisplay();},desc:'Heal 10 HP now.'});
+    tryAdd({label:`Dried Jerky — $${d(14)}`,cost:d(14),action:()=>{p.money-=d(14);p.food+=5;updateStoreDisplay();},desc:'Restores 5 food.'});
+    // Rotating Weapons
+    if(!p.guns.find(g=>g.name==="Mare's Leg")){
+        const wDef=weaponDefs["Mare's Leg"];
+        tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
+    }
+    if(!p.guns.find(g=>g.name==="Double-Action")){
+        const wDef=weaponDefs["Double-Action"];
+        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
+    }
+    // Gun parts
+    const missing=partNames.filter(pt=>!p.gunParts.includes(pt));
+    if(missing.length){const pt=missing[Math.floor(Math.random()*missing.length)];tryAdd({label:`${partLabels[pt]} — $${d(25)}`,cost:d(25),action:()=>{p.gunParts.push(pt);p.money-=d(25);updateStoreDisplay();},desc:'Rare gun part.'});}
+    // Trinkets
+    Object.entries(trinketDefs).forEach(([n,def])=>{if(!p.trinkets.find(t=>t.name===n)&&p.trinkets.length<3) tryAdd({label:`${n} — $${d(def.cost)}`,cost:d(def.cost),action:()=>{if(p.money>=d(def.cost)&&p.trinkets.length<3){p.money-=d(def.cost);p.trinkets.push({name:n});updateStoreDisplay();}},desc:def.desc});});
+    return shuffleArray(possible).slice(0,3);
+}
+
+function createStoreItem(label,cost,action,enabled,desc,btnLabel='Buy'){
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;position:relative;';
+    const btn=document.createElement('button');
+    btn.className='btn small';btn.textContent=btnLabel;btn.disabled=!enabled;
+    if(enabled)btn.addEventListener('click',action);
+    div.innerHTML=`<span style="color:#f0d080;">${label}</span>`;
+    div.appendChild(btn);
+    if(desc){const tt=document.createElement('div');tt.className='store-tooltip';tt.textContent=desc;tt.style.display='none';div.appendChild(tt);div.addEventListener('mouseenter',()=>{tt.style.display='block';});div.addEventListener('mouseleave',()=>{tt.style.display='none';});}
+    return div;
+}
+
+// ==================== SALOON ====================
+function goToSaloon(){ updateSaloonDisplay(); document.getElementById('saloon-result').textContent=''; showScreen('saloon'); }
+function updateSaloonDisplay(){ document.getElementById('saloon-hp').textContent=gameState.player.health+'/'+gameState.player.maxHealth; document.getElementById('saloon-money').textContent=gameState.player.money; }
+function saloonRest(){const p=gameState.player;if(p.money<15){document.getElementById('saloon-result').textContent='Not enough money.';return;}p.money-=15;p.health=Math.min(p.maxHealth,p.health+8);p.day++;p.food--;checkStarving();if(p.health<=0)return;updateSaloonDisplay();document.getElementById('saloon-result').textContent='You rest peacefully. +8 HP. (Food -1)';}
+function saloonGamble(){const p=gameState.player;if(p.money<10){document.getElementById('saloon-result').textContent='You need $10.';return;}p.money-=10;p.day++;p.food--;const lucky=p.trinkets.some(t=>t.name==='Lucky Dice');const roll=Math.random();let won=false;if(roll<(lucky?0.5:0.4)){const w=Math.floor(Math.random()*30)+10;p.money+=w;document.getElementById('saloon-result').textContent='You win $'+w+'! (Food -1)';won=true;}else if(roll<(lucky?0.7:0.75)){document.getElementById('saloon-result').textContent='You lose. (Food -1)';}else if(roll<(lucky?0.88:0.85)){const w=Math.floor(Math.random()*50)+20;p.money+=w;document.getElementById('saloon-result').textContent='JACKPOT! $'+w+'! (Food -1)';won=true;}else{const mp=partNames.filter(pt=>!p.gunParts.includes(pt));if(mp.length){const pt=mp[Math.floor(Math.random()*mp.length)];p.gunParts.push(pt);document.getElementById('saloon-result').textContent='You won a '+partLabels[pt]+'! (Food -1)';won=true;}else{const w=Math.floor(Math.random()*20)+5;p.money+=w;document.getElementById('saloon-result').textContent='Won $'+w+' (Food -1)';won=true;}}if(won){const m=loadMeta();m.gamblesWon=(m.gamblesWon||0)+1;saveMeta(m);checkAchievements();}checkStarving();if(p.health<=0)return;updateSaloonDisplay();}
+function saloonDrink(){const p=gameState.player;if(p.money<5){document.getElementById('saloon-result').textContent='Not enough coin.';return;}p.money-=5;p.health=Math.min(p.maxHealth,p.health+3);updateSaloonDisplay();document.getElementById('saloon-result').textContent='Smooth whiskey. +3 HP.';}
+function saloonDoctorVisit(){const p=gameState.player;if(p.money<20){document.getElementById('saloon-result').textContent='The doc wants $20.';return;}p.money-=20;p.health=Math.min(p.maxHealth,p.health+12);updateSaloonDisplay();document.getElementById('saloon-result').textContent='Doc patches you up real good. +12 HP.';}
+
+// ==================== SHERIFF ====================
+function goToSheriff(){ updateSheriffDisplay(); document.getElementById('sheriff-msg').textContent=''; showScreen('sheriff'); }
+function updateSheriffDisplay(){
+    const container=document.getElementById('bounty-list');container.innerHTML='';
+    const p=gameState.player;
+    if(gameState.claimableBounty){
+        const cb=gameState.claimableBounty;
+        const mult=p.trinkets.some(t=>t.name==='Wanted Poster')?2:1;
+        const total=cb.reward*mult;
+        const claimDiv=document.createElement('div');
+        claimDiv.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,60,0,0.5);padding:10px 14px;border-radius:6px;border:2px solid #6aaa4a;margin-bottom:10px;';
+        claimDiv.innerHTML=`<div><strong style="color:#6aaa4a;">CLAIM: ${cb.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${total}</span></small></div>`;
+        const claimBtn=document.createElement('button');claimBtn.className='btn small';claimBtn.textContent=`Claim $${total}`;
+        claimBtn.addEventListener('click',()=>{
+            p.money+=total;p.totalEarned+=total;
+            p.bountiesCollected=(p.bountiesCollected||0)+1;
+            gameState.claimableBounty=null;
+            checkAchievements();
+            document.getElementById('sheriff-msg').textContent=`Claimed bounty on ${cb.name}: $${total}!`;
+            updateSheriffDisplay();
+        });
+        claimDiv.appendChild(claimBtn);container.appendChild(claimDiv);
+    }
+    const bounties=[
+        {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},{name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},{name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},{name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},{name:'Two-Face Hank',reward:50,difficulty:'Moderate',enemyHp:21,enemyDmg:6},{name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},{name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},{name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},{name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},{name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12}
+    ];
+    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff'};
+    bounties.forEach(b=>{
+        const div=document.createElement('div');div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
+        div.innerHTML=`<div><strong style="color:#f0d080;">${b.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${b.reward}</span> &nbsp;|&nbsp; <span style="color:${diffCol[b.difficulty]||'#c9a030'};">${b.difficulty}</span> &nbsp;|&nbsp; HP: ${b.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
+        div.addEventListener('click',()=>acceptBounty(b));container.appendChild(div);
+    });
+}
+function acceptBounty(b){gameState.activeBounty=b;document.getElementById('sheriff-msg').textContent='Bounty accepted: '+b.name+'!';}
+
+// ==================== GUNSMITH (now includes Widowmaker assembly) ====================
+function goToGunsmith(){ updateGunsmithDisplay(); document.getElementById('gunsmith-msg').textContent=''; showScreen('gunsmith'); }
+function updateGunsmithDisplay(){
+    const p=gameState.player; const gun=getActualGun();
+    document.getElementById('gunsmith-money').textContent=p.money;
+    document.getElementById('gunsmith-gun').textContent=gun?gun.name+' ('+gun.damage+' dmg, '+gun.capacity+' cap)':'None';
+    const container=document.getElementById('gunsmith-items');container.innerHTML='';
+    if(!gun){container.innerHTML='<div style="color:#a08060;padding:10px;">You have no gun to upgrade.</div>';return;}
+    const notify=txt=>{document.getElementById('gunsmith-msg').textContent=txt;updateGunsmithDisplay();};
+    const items=[
+        {label:`Reinforce Barrel (+2 dmg) — $50`,cost:50,action:()=>{if(p.money>=50){p.money-=50;gun.damage+=2;notify(`${gun.name} now deals ${gun.damage} damage!`);}}},
+        {label:`Expanded Cylinder (+2 capacity) — $45`,cost:45,action:()=>{if(p.money>=45){p.money-=45;gun.capacity+=2;gun.loaded.regular+=2;notify(`${gun.name} now holds ${gun.capacity} rounds!`);}}},
+        {label:`Polish & Tune (+5% accuracy) — $35`,cost:35,action:()=>{if(p.money>=35){p.money-=35;gun.accuracyBonus=(gun.accuracyBonus||0)+5;notify(`${gun.name} sights improved!`);}}},
+    ];
+    // Widowmaker assembly if all parts collected
+    if(p.gunParts.includes('barrel')&&p.gunParts.includes('trigger')&&p.gunParts.includes('grip')){
+        const discount=p.hasStolenBadge?0.7:1; const cost=Math.floor(50*discount);
+        items.push({label:`Assemble Widowmaker — $${cost}`,cost:cost,action:()=>{if(p.money>=cost){p.money-=cost;p.gunParts=[];p.guns.push({name:'Widowmaker',damage:12,capacity:4,loaded:{regular:4,express:0,trick:0},currentType:'regular',onKillHeal:3});notify('Widowmaker assembled!');}}});
+    }
+    items.forEach(item=>{
+        const div=document.createElement('div');div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
+        const btn=document.createElement('button');btn.className='btn small';btn.textContent='Upgrade';
+        if(p.money<item.cost&&item.cost>0)btn.disabled=true;
+        btn.addEventListener('click',item.action);
+        div.innerHTML=`<span style="color:#f0d080;">${item.label}</span>`;div.appendChild(btn);
+        container.appendChild(div);
+    });
+}
+
+// ==================== WILDERNESS (complete) ====================
+function goToWilderness(){
+    const diffCfg=diffConfig[gameState.difficulty||'easy'];
+    const maxRegions=diffCfg.regions;
+    const rc=gameState.player.regionsCompleted||0;
+    if(rc>=maxRegions){showWinScreen();return;}
+    const ri=gameState.regionIndex;
+    const region=regionDefs[Math.min(ri,regionDefs.length-1)];
+    const vt=gameState.player.venturesThisRegion||0;
+    document.getElementById('wild-description').textContent=vt>=VENTURES_PER_REGION?`⚠️ Boss territory: ${region.name} ⚠️`:`${region.icon} ${region.name} — ${region.desc}`;
+    updateWildernessDisplay();document.getElementById('wild-result').textContent='';gameState.wildDepth=0;gameState.combatInWilderness=true;
+    const btnMsg=vt>=VENTURES_PER_REGION?'Face the Boss':'Set Out';
+    document.getElementById('wild-buttons').innerHTML=`<button class="btn wide" onclick="ventureOut()">${btnMsg}</button>`;
+    showScreen('wilderness');
+}
+function updateWildernessDisplay(){ const p=gameState.player; document.getElementById('wild-hp').textContent=p.health+'/'+p.maxHealth; document.getElementById('wild-food').textContent=p.food; document.getElementById('wild-money').textContent=p.money; document.getElementById('wild-day').textContent=p.day; if(p.health<=5)document.getElementById('wild-hp').classList.add('low'); else document.getElementById('wild-hp').classList.remove('low'); if(p.food<=1)document.getElementById('wild-food').classList.add('low'); else document.getElementById('wild-food').classList.remove('low'); }
+function getRegionEnemies(ri){
+    const base=enemies=[
+        {name:'Lone Bandit',health:14,maxHealth:14,damage:4},
+        {name:'Drunk Outlaw',health:10,maxHealth:10,damage:3},
+        {name:'Rattlesnake',health:8,maxHealth:8,damage:5},
+        {name:'Bounty Hunter',health:16,maxHealth:16,damage:5},
+        {name:'Desert Raider',health:18,maxHealth:18,damage:6},
+        {name:'Gang Member',health:13,maxHealth:13,damage:4},
+        {name:'Hired Gun',health:22,maxHealth:22,damage:7},
+        {name:'Apache Warrior',health:19,maxHealth:19,damage:6}
+    ];
+    const diffCfg=diffConfig[getCurrentDiffKey()];
+    const mult=diffCfg.enemyMult;
+    return base.map(e=>({...e,health:Math.floor(e.health*mult),maxHealth:Math.floor(e.maxHealth*mult),damage:Math.max(1,Math.floor(e.damage*mult)),name:ri>=5?['Killer','Rider','Viper','Tracker','Raider','Brute','Marksman','Brave'][Math.floor(Math.random()*8)]:e.name}));
+}
+function ventureOut(){
+    const p=gameState.player; gameState.wildDepth++; p.day++; p.food--; checkStarving(); if(p.health<=0)return;
+    updateWildernessDisplay(); document.getElementById('wild-buttons').innerHTML='';
+    const vt=p.venturesThisRegion||0;
+    if(vt>=VENTURES_PER_REGION){startBossFight();return;}
+    p.venturesThisRegion=(vt||0)+1;
+    if(gameState.wildDepth>=2&&Math.random()<0.1){wildernessShop();return;}
+    if(gameState.activeBounty&&Math.random()<0.38){ const b={...gameState.activeBounty}; if(p.trinkets.some(t=>t.name==='Wanted Poster'))b.enemyHp+=5; gameState.combatInWilderness=true; startCombat({name:b.name,health:b.enemyHp,maxHealth:b.enemyHp,damage:b.enemyDmg,isBounty:true,bountyData:b}); return; }
+    const hasScout=p.trinkets.some(t=>t.name==='Frontier Scout');
+    const ri=gameState.regionIndex;
+    const combatCh=Math.min(0.60,0.33+(gameState.wildDepth-1)*0.07)-(hasScout?0.08:0); const rem=1-combatCh;
+    const envEnd=combatCh+rem*0.20; const lootEnd=envEnd+rem*(hasScout?0.42:0.35); const choiceEnd=lootEnd+rem*0.08;
+    const roll=Math.random();
+    if(roll<combatCh){const enemies=getRegionEnemies(ri);gameState.combatInWilderness=true;startCombat(enemies[Math.floor(Math.random()*enemies.length)]);}
+    else if(roll<envEnd){ wildernessEnvironmental(); }
+    else if(roll<lootEnd){ wildernessLoot(); }
+    else if(roll<choiceEnd){ wildernessChoiceEvent(); }
+    else { const q=['The desert is quiet.','A vulture circles.','Tracks in the sand.','The sun beats down.','A coyote howls.']; document.getElementById('wild-result').textContent=q[Math.floor(Math.random()*q.length)]; showWildChoices(); }
+}
+function wildernessEnvironmental(){
+    const p=gameState.player;
+    const events=[
+        ()=>{
+            const dmg=Math.floor(Math.random()*5)+3;
+            if(p.ponchoDurability>0){p.ponchoDurability--;document.getElementById('wild-result').textContent=`Sandstorm! Poncho protects you. (${p.ponchoDurability} uses left)`;return;}
+            p.health=Math.max(0,p.health-dmg);
+            document.getElementById('wild-result').textContent=`Sandstorm! You take ${dmg} damage.`;
+        },
+        ()=>{
+            if(!p.hasSnakeFlute){const dmg=6;p.health=Math.max(0,p.health-dmg);document.getElementById('wild-result').textContent=`Rattlesnake bite! -${dmg} HP.`;}
+            else document.getElementById('wild-result').textContent='Rattlesnake — your flute calms it. Safe.';
+        },
+        ()=>{
+            p.food+=2;document.getElementById('wild-result').textContent='Find edible cactus fruit. +2 Food.';
+        },
+        ()=>{
+            if(p.health<p.maxHealth){p.health=Math.min(p.maxHealth,p.health+3);document.getElementById('wild-result').textContent='Fresh spring water. +3 HP.';}
+            else document.getElementById('wild-result').textContent='A cool spring — already full HP.';
+        },
+        ()=>{
+            const item=getRandomSellableItem();p.sellableInventory.push(item);
+            document.getElementById('wild-result').textContent=`Found a ${item.name} in the brush.`;
+        }
+    ];
+    const hasRose=p.trinkets.some(t=>t.name==='Desert Rose');
+    if(hasRose)events.push(()=>{const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Desert Rose luck: found ${item.name}!`;});
+    events[Math.floor(Math.random()*events.length)]();
+    updateWildernessDisplay();showWildChoices();
+}
+function wildernessLoot(){
+    const p=gameState.player;
+    const r=Math.random();
+    if(r<0.35){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Found a ${item.name}!`;}
+    else if(r<0.55){const amt=Math.floor(Math.random()*20)+5;p.money+=amt;document.getElementById('wild-result').textContent=`Found $${amt} in an abandoned camp.`;}
+    else if(r<0.72){p.food+=3;document.getElementById('wild-result').textContent='Supplies: +3 Food.';}
+    else if(r<0.85){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medicine: +5 HP.';}
+    else{document.getElementById('wild-result').textContent='Empty saddlebags. Nothing here.';}
+    const medicineBag=p.trinkets.some(t=>t.name==='Medicine Bag');
+    if(medicineBag&&r>=0.85){p.health=Math.min(p.maxHealth,p.health+2);}
+    updateWildernessDisplay();showWildChoices();
+}
+function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineShaftEvent]; ev[Math.floor(Math.random()*ev.length)](); }
+function strongboxEvent(){ document.getElementById('wild-result').textContent='You find a sturdy locked strongbox.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="openStrongbox()">Force it ($10)</button><button class="btn small" onclick="showWildChoices()">Leave it</button>'; }
+function openStrongbox(){ const p=gameState.player; if(p.money<10){return;} p.money-=10; const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} updateWildernessDisplay(); showWildChoices(); }
+function drifterEvent(){ document.getElementById('wild-result').textContent='An injured drifter asks for food.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="helpDrifter()">Help (-2 food)</button><button class="btn small" onclick="robDrifter()">Rob</button><button class="btn small" onclick="ignoreDrifter()">Ride past</button>'; }
+function helpDrifter(){ const p=gameState.player; if(p.food<2)return; p.food-=2; if(Math.random()<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(Math.random()<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;} else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} updateWildernessDisplay();showWildChoices(); }
+function robDrifter(){ const p=gameState.player; p.money+=12; document.getElementById('wild-result').textContent='You take $12.'; updateWildernessDisplay();showWildChoices(); }
+function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; showWildChoices(); }
+function mineShaftEvent(){ document.getElementById('wild-result').textContent='Abandoned mine shaft.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="enterMine()">Go inside</button><button class="btn small" onclick="showWildChoices()">Leave</button>'; }
+function enterMine(){ const p=gameState.player; const r=Math.random(); if(r<0.35){ const n=Math.floor(Math.random()*2)+1; for(let i=0;i<n;i++){p.sellableInventory.push({name:'Gold Nugget',...sellableItemDefs['Gold Nugget']});} document.getElementById('wild-result').textContent=`Found ${n} Gold Nugget(s)!`; updateWildernessDisplay(); showWildChoices(); } else if(r<0.65){ document.getElementById('wild-result').textContent='Ambush!'; gameState.combatInWilderness=true; setTimeout(()=>startCombat({name:'Mine Bandit',health:15,maxHealth:15,damage:5}),800); } else { document.getElementById('wild-result').textContent='Nothing of value.'; showWildChoices(); } }
+function showWildChoices(){ document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
+function wildernessShop(){
+    const p=gameState.player;
+    document.getElementById('wild-result').textContent='A traveling merchant appears!';
+    const items=[
+        {label:`Canned Beans — $10`,cost:10,action:()=>{if(p.money>=10){p.money-=10;p.food+=3;wildernessShop();}},desc:'+3 Food'},
+        {label:`Bandages — $12`,cost:12,action:()=>{if(p.money>=12){p.money-=12;p.health=Math.min(p.maxHealth,p.health+6);wildernessShop();}},desc:'+6 HP'},
+        {label:`Regular Ammo (6) — $14`,cost:14,action:()=>{if(p.money>=14){p.money-=14;const g=getActualGun();if(g){const sp=getMaxCapacity()-getTotalLoaded();const tl=Math.min(6,sp);g.loaded.regular=(g.loaded.regular||0)+tl;p.bullets.regular+=(6-tl);}else p.bullets.regular+=6;wildernessShop();}},desc:'6 bullets'},
+    ];
+    const btns=items.map(item=>{
+        const b=document.createElement('button');b.className='btn small';b.textContent=item.label;
+        if(p.money<item.cost)b.disabled=true;b.addEventListener('click',item.action);return b;
+    });
+    const leave=document.createElement('button');leave.className='btn small';leave.textContent='Leave';leave.addEventListener('click',()=>showWildChoices());
+    const c=document.getElementById('wild-buttons');c.innerHTML='';btns.forEach(b=>c.appendChild(b));c.appendChild(leave);
+    updateWildernessDisplay();
+}
+
+function startBossFight(){
+    const ri=gameState.regionIndex;const boss=bossDefs[Math.min(ri,bossDefs.length-1)];
+    const diffCfg=diffConfig[getCurrentDiffKey()];const mult=diffCfg.enemyMult;
+    const hp=Math.floor(boss.hp*mult);const dmg=Math.max(1,Math.floor(boss.dmg*mult));
+    gameState.isBossFight=true;gameState.combatInWilderness=true;
+    startCombat({name:boss.name,health:hp,maxHealth:hp,damage:dmg,isBoss:true,bossReward:boss.reward,desc:boss.desc});
+}
+function showWinScreen(){
+    const p=gameState.player;gameState.combatActive=false;gameState.wonGame=true;
+    const curDiff=gameState.difficulty||'easy';
+    const diffCfg=diffConfig[curDiff];
+    const cIdx=diffOrder.indexOf(curDiff);
+    const region=regionDefs[Math.min(gameState.regionIndex,regionDefs.length-1)];
+    document.getElementById('win-title').textContent=`${region.name} Conquered!`;
+    document.getElementById('win-desc').textContent=`${diffCfg.label} campaign complete. The frontier trembles.`;
+    document.getElementById('win-days').textContent=p.day;
+    document.getElementById('win-kills').textContent=p.killCount||0;
+    document.getElementById('win-bounties').textContent=p.bountiesCollected||0;
+    document.getElementById('win-money').textContent=p.totalEarned||0;
+    const nextKey=diffOrder[cIdx+1];
+    const btn=document.getElementById('btn-continue');
+    if(nextKey){const nextCfg=diffConfig[nextKey];btn.style.display='inline-block';document.getElementById('win-next-diff').textContent=`Next: ${nextCfg.label} (${nextCfg.regions} regions) — difficulty increases`;}
+    else{btn.style.display='none';document.getElementById('win-next-diff').textContent='Maximum difficulty reached. You are a legend.';}
+    checkAchievements();
+    const meta=loadMeta();
+    meta.totalKills=(meta.totalKills||0)+(p.killCount||0);
+    meta.totalBounties=(meta.totalBounties||0)+(p.bountiesCollected||0);
+    meta.totalEarned=parseInt(safeGet('dustLeadHighScore','0'));
+    if((p.day||0)>meta.bestDay)meta.bestDay=p.day||0;
+    saveMeta(meta);
+    showScreen('win');
+}
+function continueRun(){
+    const p=gameState.player;const curDiff=gameState.difficulty||'easy';
+    const cIdx=diffOrder.indexOf(curDiff);const nextKey=diffOrder[cIdx+1];
+    if(!nextKey){endRun('retired');return;}
+    const newCfg=diffConfig[nextKey];
+    gameState.difficulty=nextKey;gameState.regionIndex=p.regionsCompleted||0;
+    gameState.isBossFight=false;
+    const g=getActualGun();if(g){const cap=getMaxCapacity();const half=Math.floor(cap/2);['regular','express','trick'].forEach(t=>{const cur=g.loaded[t]||0;if(cur<half)g.loaded[t]=half;});}
+    p.health=Math.min(p.maxHealth,p.health+8);
+    document.getElementById('wild-description').textContent='New territories beckon...';
+    goToTown();
+}
+
+// ==================== COMBAT (complete) ====================
+const iconMap={
+    'Quick Shot':'🔫','Aimed Shot':'🎯','Fan the Hammer':'💥','Reload':'🔄','Dodge':'💨','Take Cover':'🛡️','Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨','Dead Eye':'🔭','Lasso':'🪢','Last Stand':'🌅','War Cry':'🦅','Double Tap':'💢','Headshot':'💀','Poison Dart':'🐍','Ricochet':'🪃','Bolas':'🕸️'
+};
+function setEnemyIntent(){const e=gameState.combatEnemy;if(!e)return;const acts=['attack','attack','heavy','taunt','defend','reload'];e.nextAction=acts[Math.floor(Math.random()*acts.length)];document.getElementById('enemy-intent').textContent=(e.nextAction==='heavy'?`⚠️ ${e.name} winds up a HEAVY ATTACK!`:e.nextAction==='taunt'?`${e.name} taunts you...`:`${e.name} eyes their iron...`);}
+function startCombat(enemy){gameState.combatEnemy={...enemy,poisoned:0,defendActive:false,skipNextTurn:false,nextAction:'attack'};gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=0;gameState.deck=buildDeck();gameState.discardPile=[];gameState.combatHand=[];const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;if(p.trinkets.some(t=>t.name==='Iron Horseshoe'))p.coverActive=1;const g=getActualGun();document.getElementById('combat-title').textContent=enemy.isBoss?'⚠️ BOSS FIGHT! ⚠️':enemy.isBounty?'BOUNTY SHOWDOWN!':'Showdown!';document.getElementById('enemy-name').textContent=enemy.name;document.getElementById('enemy-hp-text').textContent=enemy.health+'/'+enemy.maxHealth;document.getElementById('enemy-hp-fill').style.width=(enemy.health/enemy.maxHealth*100)+'%';document.getElementById('combat-hp').textContent=p.health+'/'+p.maxHealth;document.getElementById('player-hp-fill').style.width=(p.health/p.maxHealth*100)+'%';document.getElementById('combat-gun-name').textContent=g?g.name:'Fists';document.getElementById('combat-status').textContent='';updateCombatDisplay();document.getElementById('combat-log').textContent='The tension crackles...';document.getElementById('btn-flee').style.display=enemy.isBounty?'none':'inline-block';document.getElementById('card-hand').innerHTML='';const sb=document.getElementById('btn-switch-gun');if(sb)sb.style.display=p.guns.length>1?'inline-block':'none';setEnemyIntent();showScreen('combat');drawNewHand();}
+function drawNewHand(){const b=gameState.bonusCardDraw||0;gameState.bonusCardDraw=0;gameState.combatHand=drawCards(3+b);gameState.cardProcessing=false;renderCombatHand();}
+function renderCombatHand(){const h=document.getElementById('card-hand');h.innerHTML='';const g=getActualGun();gameState.combatHand.forEach((c,i)=>{const el=document.createElement('div');el.className='card';const cost=getCardAmmoCost(c);let dis=false,reason='';if(gameState.cardProcessing){dis=true;reason='Wait...';}else if(cost>0&&(!g||getAmmoOfType(g.currentType)<cost)){dis=true;reason=`Need ${cost} ammo`;}else if(c.effect==='reload'&&g&&getTotalLoaded()>=getMaxCapacity()&&gameState.player.bullets.regular===0){dis=true;reason='Full & no ammo';}else if(c.effect==='heal'&&gameState.player.health>=gameState.player.maxHealth){dis=true;reason='HP full';}else if(c.effect==='intimidate'&&gameState.player.intimidateUsed){dis=true;reason='Already used';}if(dis)el.classList.add('disabled');el.innerHTML=`<div class="card-name">${c.name}</div><div class="card-icon">${iconMap[c.name]||'?'}</div><div class="card-desc">${c.desc}</div><div class="card-cost">Ammo: ${cost}</div>${dis?`<div style="color:#555;font-size:.6em;">${reason}</div>`:''}`;if(!dis)el.addEventListener('click',()=>playCard(i,el));h.appendChild(el);});}
+function playCard(i,el){if(!gameState.combatActive||gameState.cardProcessing)return;gameState.cardProcessing=true;const card=gameState.combatHand[i];gameState.combatHand.splice(i,1);if(card.name!=='Smokebomb')gameState.discardPile.push(card);el.classList.add('played');const gun=getActualGun();const p=gameState.player;let log='';const hasL=p.trinkets.some(t=>t.name==='Lucky Rabbits Foot');const hasS=p.trinkets.some(t=>t.name==='Sharpshooter');const hasM=p.trinkets.some(t=>t.name==='Magnum Rounds');const hasDD=p.trinkets.some(t=>t.name==='Double Down');const hasBM=p.trinkets.some(t=>t.name==='Blood Moon');const hasG=p.trinkets.some(t=>t.name==='Gunslingers Gloves');const hasB=p.trinkets.some(t=>t.name==='Bowie Knife');const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');const bt=gun?gun.currentType:'regular';const gunAcc=gun?((gun.accuracyBonus)||0):0;let accBase=card.accuracy+(hasL?10:0)+(bt==='express'?10:0)+(hasG?5:0)+gunAcc;if(gameState.firstShotThisCombat&&hasS)accBase=100;const hit=Math.random()*100<accBase;const bmMult=(hasBM&&p.health<p.maxHealth*0.25)?1.5:1;
+if(card.effect==='smokebomb'){gameState.combatActive=false;document.getElementById('combat-log').textContent='Smoke!';setTimeout(()=>goToTown(),1500);return;}
+if(card.effect==='shoot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(bt==='express')dmg+=2;if(hasS&&gameState.firstShotThisCombat)dmg+=5;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);log=`Hit: ${actual} dmg.`;triggerScreenFlash();}else{if(bt==='trick'){let dmg=Math.floor((gun.damage+(card.bonusDmg||0))/2);const actual=dealDamageToEnemy(dmg);log=`Trick half-dmg: ${actual}.`;}else{log='Miss!';showMissIndicator();}}}else log='No ammo!';}
+if(card.effect==='fan'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const shots=card.shots||3;let totalDmg=0;for(let s=0;s<shots;s++){if(Math.random()*100<(accBase-15)){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Fan: ${totalDmg} total dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='reload'){if(gun){const max=getMaxCapacity();const used=getTotalLoaded();const room=max-used;if(room>0){let toLoad=Math.min(room,6,Math.max(1,p.bullets.regular));if(p.bullets.regular===0){log='No regular ammo!';}else{gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad} round(s).`;if(p.trinkets.some(t=>t.name==='Quick Draw')&&gameState.combatEnemy){let dmg=gun.damage;if(hasM)dmg+=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);log+=` Quick Draw shot: ${actual} dmg!`;triggerScreenFlash();}}}else log='Already full!';}else log='No gun!';}
+if(card.effect==='dodge'){p.dodgeActive=true;log='Dodge activated!';}
+if(card.effect==='cover'){p.coverActive+=4;if(p.coverActive>8)p.coverActive=8;log='Cover raised (+4).';}
+if(card.effect==='heal'){const amt=card.healAmt||6;p.health=Math.min(p.maxHealth,p.health+amt);log=`Healed +${amt} HP.`;}
+if(card.effect==='intimidate'){if(Math.random()<0.4){gameState.combatEnemy.skipNextTurn=true;log='Intimidated! Enemy skips turn.';}else{log='Intimidation failed.';}p.intimidateUsed=true;}
+if(card.effect==='melee'){const cost=getCardAmmoCost(card);let dmg=card.fixedDmg||4;if(hasB)dmg+=4;if(hit){const actual=dealDamageToEnemy(dmg);log=`Punched for ${actual} dmg!`;triggerScreenFlash();}else{log='Punch missed!';}}
+if(card.effect==='dynamite'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(hasM)dmg+=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);const selfDmg=card.selfDmg||3;p.health=Math.max(0,p.health-selfDmg);log=`Dynamite: ${actual} dmg to enemy, ${selfDmg} self-dmg!`;triggerScreenFlash();}else{log='Dynamite fizzled!';}}else log='No ammo!';}
+if(card.effect==='lasso'){if(Math.random()<0.7){gameState.combatEnemy.skipNextTurn=true;log='Lassoed! Enemy is hogtied.';}else{log='Lasso missed!';}}
+if(card.effect==='laststand'){if(gun&&getAmmoOfType(bt)>=1){gun.loaded[bt]-=1;if(hit){const missing=p.maxHealth-p.health;let dmg=Math.floor(missing/2);if(p.trinkets.some(t=>t.name==='Spare Spurs'))dmg+=3;const actual=dealDamageToEnemy(dmg);log=`Last Stand: ${actual} dmg!`;triggerScreenFlash();}else{log='Last Stand missed!';}}else log='No ammo!';}
+if(card.effect==='warcry'){const amt=card.healAmt||4;p.health=Math.min(p.maxHealth,p.health+amt);gameState.bonusCardDraw=1;log=`War Cry! +${amt} HP, extra card.`;}
+if(card.effect==='doubletap'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let totalDmg=0;for(let s=0;s<2;s++){if(Math.random()*100<accBase){let dmg=Math.floor((gun.damage*card.dmgMult)+(card.bonusDmg||0));if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Double Tap: ${totalDmg} dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='ricochet'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let totalDmg=0;for(let s=0;s<2;s++){if(Math.random()*100<(accBase-10)){let dmg=Math.floor((gun.damage*card.dmgMult)+(card.bonusDmg||0));if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Ricochet: ${totalDmg} dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='poison'){if(Math.random()*100<(accBase-5)){gameState.combatEnemy.poisoned=3;log='Poisoned! 3 dmg/turn for 3 turns.';}else{log='Poison dart missed!';}}
+if(card.effect==='bolas'){if(Math.random()<0.7){gameState.combatEnemy.skipNextTurn=true;log='Bolas entangle enemy!';}else{log='Bolas missed!';}}
+gameState.firstShotThisCombat=false;updateCombatDisplay(log);if(gameState.combatEnemy.health<=0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);return;}setTimeout(()=>{if(!gameState.combatActive)return;if(p.trinkets.some(t=>t.name==='Snake Oil'))p.health=Math.min(p.maxHealth,p.health+1);enemyTurn();updateCombatDisplay('');if(gameState.combatEnemy.health<=0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);}else setTimeout(()=>{if(gameState.combatActive)drawNewHand();},500);},600);}
+function enemyTurn(){
+    const e=gameState.combatEnemy;const p=gameState.player;if(!e||!gameState.combatActive)return;
+    const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');
+    if(e.skipNextTurn){e.skipNextTurn=false;document.getElementById('combat-log').textContent=`${e.name} is stunned and skips their turn!`;return;}
+    if(e.poisoned>0){e.health=Math.max(0,e.health-3);e.poisoned--;document.getElementById('combat-log').textContent=`Poison deals 3 dmg! (${e.poisoned} turns remain)`;}
+    if(e.health<=0)return;
+    const action=e.nextAction||'attack';
+    if(action==='attack'||action==='heavy'){
+        let dmg=action==='heavy'?e.damage*2:e.damage;
+        if(p.dodgeActive&&Math.random()<0.5){p.dodgeActive=false;document.getElementById('combat-log').textContent='You dodge the attack!';return;}
+        p.dodgeActive=false;
+        if(p.coverActive>0){const red=Math.min(4,p.coverActive);dmg=Math.max(0,dmg-red);p.coverActive-=red;if(p.coverActive<0)p.coverActive=0;}
+        if(hasCP&&Math.random()<0.1){document.getElementById('combat-log').textContent=`${e.name}'s attack misses entirely!`;return;}
+        if(e.defendActive)dmg=Math.floor(dmg*0.55);
+        e.defendActive=false;
+        dmg=Math.max(0,dmg);
+        p.health=Math.max(0,p.health-dmg);
+        document.getElementById('combat-log').textContent=`${e.name} ${action==='heavy'?'HEAVY ':''}hits you for ${dmg} damage!`;
+    }else if(action==='taunt'){document.getElementById('combat-log').textContent=`${e.name} taunts you — no effect.`;}
+    else if(action==='defend'){e.defendActive=true;document.getElementById('combat-log').textContent=`${e.name} braces for impact.`;}
+    else if(action==='reload'){e.damage=Math.min((e.maxDamage||e.damage)+2,20);document.getElementById('combat-log').textContent=`${e.name} reloads — damage up!`;}
+    else{document.getElementById('combat-log').textContent=`${e.name} eyes you...`;}
+    setEnemyIntent();
+}
+function triggerScreenFlash(){const f=document.createElement('div');f.className='screen-flash';document.getElementById('game-inner').appendChild(f);setTimeout(()=>f.remove(),200);}
+function showMissIndicator(){const el=document.createElement('div');el.className='miss-indicator';el.textContent='MISS!';document.getElementById('game-inner').appendChild(el);setTimeout(()=>el.remove(),900);}
+function updateCombatDisplay(msg){
+    const e=gameState.combatEnemy;const p=gameState.player;const g=getActualGun();
+    if(e){document.getElementById('enemy-hp-text').textContent=e.health+'/'+e.maxHealth;document.getElementById('enemy-hp-fill').style.width=(e.maxHealth>0?(e.health/e.maxHealth*100):0)+'%';}
+    if(p){document.getElementById('combat-hp').textContent=p.health+'/'+p.maxHealth;document.getElementById('player-hp-fill').style.width=(p.maxHealth>0?(p.health/p.maxHealth*100):0)+'%';}
+    if(g){document.getElementById('combat-gun-name').textContent=g.name;const loaded=getTotalLoaded();const cap=getMaxCapacity();document.getElementById('combat-ammo').textContent=loaded+'/'+cap;}
+    document.getElementById('combat-status').textContent='';
+    if(msg&&msg.length)document.getElementById('combat-log').textContent=msg;
+    const hpE=document.getElementById('combat-hp');if(p&&p.health<=5)hpE.classList.add('low');else if(hpE)hpE.classList.remove('low');
+}
+function victory(){
+    const e=gameState.combatEnemy;const p=gameState.player;if(!e)return;
+    p.killCount=(p.killCount||0)+1;
+    let reward=Math.floor(Math.random()*10)+5+Math.floor(e.maxHealth*0.5);
+    let msg=`${e.name} is defeated!`;
+    if(e.isBoss){
+        const bossReward=(e.bossReward||50);
+        p.money+=bossReward;p.totalEarned+=bossReward;
+        msg=`${e.name} is VANQUISHED! You collect $${bossReward}!`;
+    }else{
+        p.money+=reward;p.totalEarned+=reward;
+        msg+=` You find $${reward} on their body.`;
+    }
+    if(e.isBounty&&gameState.activeBounty){
+        gameState.claimableBounty=gameState.activeBounty;
+        gameState.activeBounty=null;
+        msg+=` Return to the sheriff to claim your reward.`;
+    }
+    if(p.trinkets.some(t=>t.name==='Vultures Eye')){p.health=Math.min(p.maxHealth,p.health+4);msg+=' Vulture\'s Eye heals 4 HP.';}
+    const g=getActualGun();if(g&&g.onKillHeal){p.health=Math.min(p.maxHealth,p.health+g.onKillHeal);msg+=` ${g.name} heals ${g.onKillHeal} HP.`;}
+    const lootChance=Math.random();
+    if(lootChance<(e.isBounty?0.5:0.3)&&!e.isBoss){const item=getRandomSellableItem();p.sellableInventory.push(item);msg+=` Loot: ${item.name}.`;}
+    if(e.isBoss){
+        const item=getRandomSellableItem();p.sellableInventory.push(item);msg+=` Trophy: ${item.name}.`;
+        if(Math.random()<0.5){const amt=Math.floor(Math.random()*4)+3;p.bullets.regular=(p.bullets.regular||0)+amt;msg+=` Ammo: ${amt}rds.`;}
+        if(Math.random()<0.3){const amt=Math.floor(Math.random()*3)+2;p.food=(p.food||0)+amt;msg+=` Food: ${amt} rations.`;}
+        if(Math.random()<0.12){const av=Object.keys(trinketDefs).filter(t=>!p.trinkets.find(tt=>tt.name===t));if(av.length&&p.trinkets.length<3){const pick=av[Math.floor(Math.random()*av.length)];p.trinkets.push({name:pick});msg+=` Keepsake: ${pick}!`;}}
+        if(Math.random()<0.08&&!p.guns.find(g=>g.name==='Widowmaker')){const w=weaponDefs['Widowmaker'];p.guns.push({name:'Widowmaker',damage:w.damage,capacity:w.capacity,loaded:{regular:0,express:0,trick:0},currentType:'regular'});msg+=` SPECIAL: Widowmaker!`;}
+    }
+    document.getElementById('combat-log').textContent=msg;gameState.combatActive=false;
+    updateCombatDisplay(msg);
+    checkAchievements();
+    if(e.isBoss){p.regionsCompleted=(p.regionsCompleted||0)+1;gameState.regionIndex=(gameState.regionIndex||0)+1;p.venturesThisRegion=0;gameState.isBossFight=false;
+        setTimeout(()=>{const diffCfg=diffConfig[getCurrentDiffKey()];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();},1500);
+    }else{setTimeout(()=>{goToTown();},1200);}
+}
+function fleeCombat(){
+    if(gameState.combatEnemy&&(gameState.combatEnemy.isBounty||gameState.combatEnemy.isBoss)){document.getElementById('combat-log').textContent='You cannot flee!';return;}
+    const p=gameState.player;const baseChance=0.25;const bonus=p.trinkets.some(t=>t.name==='Slick Hat')?0.2:0;
+    if(Math.random()<(baseChance+bonus)){document.getElementById('combat-log').textContent='You escape!';gameState.combatActive=false;setTimeout(()=>goToTown(),800);}
+    else{document.getElementById('combat-log').textContent='Failed to flee! Enemy gets a free shot.';const e=gameState.combatEnemy;if(e){let dmg=Math.floor(e.damage*0.6);p.health=Math.max(0,p.health-dmg);updateCombatDisplay(`${e.name} hits you for ${dmg} as you try to flee.`);if(p.health<=0){setTimeout(()=>endRun('killed'),300);}}}
+}
+
+// ==================== META PROGRESSION ====================
+function updateTitleScreen(){
+    const meta=loadMeta();const slot=document.getElementById('title-equipped');
+    if(meta.equipped){const ad=achievementDefs.find(a=>a.reward.name===meta.equipped);slot.innerHTML=`<span class="meta-equip-icon">${ad?ad.reward.icon:'🏅'}</span><span class="meta-equip-name">${meta.equipped}</span>`;slot.classList.add('equipped');}
+    else{slot.innerHTML='<span class="meta-equip-empty">No heirloom equipped</span>';slot.classList.remove('equipped');}
+}
+function updateAchievementsScreen(){
+    const meta=loadMeta();const list=document.getElementById('ach-list');list.innerHTML='';
+    let unlocked=0;achievementDefs.forEach(a=>{const isUnlocked=!!(meta.unlocked&&meta.unlocked[a.id]);if(isUnlocked)unlocked++;
+        const d=document.createElement('div');d.className='ach-item'+(isUnlocked?' unlocked':' locked');
+        d.innerHTML=`<span class="ach-icon">${a.icon}</span><div class="ach-info"><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div><div class="ach-reward">Reward: ${a.reward.icon} ${a.reward.name}</div></div><span class="ach-badge${isUnlocked?' unlocked':''}">${isUnlocked?'✔':'🔒'}</span>`;
+        list.appendChild(d);
+    });
+    document.getElementById('ach-unlocked-count').textContent=unlocked;
+    document.getElementById('ach-total-count').textContent=achievementDefs.length;
+}
+function updateEquipmentScreen(){
+    const meta=loadMeta();const curr=document.getElementById('equip-current');
+    if(meta.equipped){const ad=achievementDefs.find(a=>a.reward.name===meta.equipped);
+        curr.innerHTML=`<span class="meta-equip-icon">${ad?ad.reward.icon:'🏅'}</span><span class="meta-equip-name">${meta.equipped}</span>`;
+        curr.classList.add('equipped');
+        const uneq=document.createElement('button');uneq.className='btn small';uneq.textContent='Unequip';
+        uneq.addEventListener('click',()=>{const m=loadMeta();m.equipped=null;saveMeta(m);updateEquipmentScreen();updateTitleScreen();});
+        curr.appendChild(uneq);
+    }else{curr.innerHTML='<span class="meta-equip-empty">Nothing equipped</span>';curr.classList.remove('equipped');}
+    const list=document.getElementById('equip-list');list.innerHTML='';
+    const allRewards={};achievementDefs.forEach(a=>{if(meta.unlocked&&meta.unlocked[a.id]){const key=a.reward.name;if(!allRewards[key])allRewards[key]={icon:a.reward.icon,name:a.reward.name};}});
+    const items=Object.values(allRewards);
+    if(!items.length){list.innerHTML='<div style="color:#6e5040;font-size:.78em;text-align:center;padding:12px;">No achievements unlocked yet. Complete feats to earn rewards.</div>';return;}
+    items.forEach(item=>{
+        const d=document.createElement('div');d.className='ach-item'+(meta.equipped===item.name?' unlocked':'');
+        const eq=meta.equipped===item.name;
+        d.innerHTML=`<span class="ach-icon">${item.icon}</span><div class="ach-info"><div class="ach-name">${item.name}</div></div>`;
+        const btn=document.createElement('button');btn.className='btn small';
+        if(eq){btn.textContent='Equipped';btn.disabled=true;}
+        else{btn.textContent='Equip';btn.addEventListener('click',()=>{const m=loadMeta();m.equipped=item.name;saveMeta(m);updateEquipmentScreen();updateTitleScreen();});}
+        d.appendChild(btn);list.appendChild(d);
+    });
+}
+function checkAchievements(){
+    const meta=loadMeta();const p=gameState.player;
+    const cumKills=(meta.totalKills||0)+(p.killCount||0);
+    const cumBounties=(meta.totalBounties||0)+(p.bountiesCollected||0);
+    const bestDay=Math.max(meta.bestDay||0,p.day||0);
+    const earnings=p.totalEarned||0;
+    const stats={kills:cumKills,bounties:cumBounties,earned:earnings,bestDay:bestDay,gambles:meta.gamblesWon||0,trinkets:p.trinkets.length||0,guns:p.guns.length||0};
+    achievementDefs.forEach(a=>{if(!(meta.unlocked&&meta.unlocked[a.id])&&a.check(stats)){if(metaUnlock(a.id)){showAchievementPopup(a);}}});
+}
+function showAchievementPopup(a){
+    const existing=document.getElementById('ach-popup');if(existing)existing.remove();
+    const popup=document.createElement('div');popup.id='ach-popup';
+    popup.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,#2a1a08,#1a0e04);border:2px solid #c9a030;border-radius:6px;padding:20px 30px;z-index:9998;text-align:center;animation:fadeSlideIn .4s cubic-bezier(.22,1,.36,1);box-shadow:0 0 40px rgba(201,160,48,.3),0 10px 40px rgba(0,0,0,.8);';
+    popup.innerHTML=`<div style="font-size:2em;margin-bottom:6px;">🏆</div><div style="font-family:'Rye',serif;color:#f0d080;font-size:1.2em;letter-spacing:1px;margin-bottom:4px;">ACHIEVEMENT UNLOCKED!</div><div style="font-size:2.5em;margin:6px 0;">${a.icon}</div><div style="color:#f0d080;font-size:1em;font-weight:bold;">${a.name}</div><div style="color:#c9a060;font-size:.78em;margin:4px 0;">${a.desc}</div><div style="color:#a08060;font-size:.75em;">Reward: ${a.reward.icon} ${a.reward.name}</div><button class="btn small" style="margin-top:10px;" onclick="this.parentElement.remove()">Claim</button>`;
+    document.getElementById('game-inner').appendChild(popup);
+}
+
+// ==================== GAME MANAGEMENT ====================
+function addToInventory(n,t){const ex=gameState.player.inventory.find(i=>i.name===n&&i.type===t);if(ex)ex.qty++;else gameState.player.inventory.push({name:n,type:t,qty:1});}
+function checkStarving(){const p=gameState.player;if(p.food<=0){p.health-=3;if(p.health<=0){p.health=0;endRun('starved');}}}
+let selectedDifficulty = 'easy';
+function getCurrentDiffKey(){const rc=gameState.player.regionsCompleted||0;let dIdx=0;for(let i=0;i<diffOrder.length;i++){const cfg=diffConfig[diffOrder[i]];if(rc>=cfg.regions)dIdx=i+1;}return diffOrder[Math.min(dIdx,diffOrder.length-1)];}
+function startGame(){
+    try {
+        const diff=selectedDifficulty||'easy';
+        const diffCfg=diffConfig[diff];
+        gameState.player = { health:20,maxHealth:20,money:50,food:5, guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0},currentType:'regular',accuracyBonus:0}], equippedGunIndex:0,inventory:[],day:1,bountiesCollected:0,totalEarned:0, trinkets:[],consumables:[],gunParts:[], bullets:{regular:0,express:0,trick:0}, ponchoDurability:0,hasSnakeFlute:false,hasStolenBadge:false,killCount:0, sellableInventory:[], dodgeActive:false,coverActive:0,intimidateUsed:false,extraCardNextTurn:false, regionsCompleted:0, venturesThisRegion:0 };
+        gameState.deck=buildDeck(); gameState.discardPile=[]; gameState.combatEnemy=null; gameState.combatActive=false; gameState.activeBounty=null; gameState.claimableBounty=null; gameState.wildDepth=0; gameState.cardProcessing=false; gameState.combatInWilderness=false; gameState.bonusCardDraw=0; gameState.rotatingShopItems=generateRotatingItems();
+        gameState.difficulty=diff; gameState.regionIndex=0; gameState.isBossFight=false; gameState.wonGame=false;
+        goToTown();
+    } catch(e){ console.error(e); alert('Error starting game. Check console.'); }
+}
+function endRun(cause){
+    gameState.combatActive=false; const p=gameState.player;
+    const titleMap={starved:'STARVED',sandstorm:'BURIED',retired:'RETIRED',killed:'DEAD'};
+    document.getElementById('gameover-title').textContent=titleMap[cause]||'DEAD';
+    document.getElementById('gameover-desc').textContent=(cause==='killed'?'You fell.':cause==='starved'?'Starvation.':'Your journey ends.');
+    document.getElementById('go-days').textContent=p.day; document.getElementById('go-kills').textContent=p.killCount||0; document.getElementById('go-bounties').textContent=p.bountiesCollected; document.getElementById('go-money').textContent=p.totalEarned;
+    updateHighScore(); document.getElementById('go-highscore').textContent = safeGet('dustLeadHighScore','0');
+    // Meta progression tracking
+    checkAchievements();
+    const meta=loadMeta();
+    meta.totalKills=(meta.totalKills||0)+(p.killCount||0);
+    meta.totalBounties=(meta.totalBounties||0)+(p.bountiesCollected||0);
+    meta.totalEarned=parseInt(safeGet('dustLeadHighScore','0'));
+    if((p.day||0)>meta.bestDay)meta.bestDay=p.day||0;
+    saveMeta(meta);
+    showScreen('gameover');
+}
+function restartGame(){ startGame(); }
+function updateHighScore(){ const cur=gameState.player.totalEarned; const h=parseInt(safeGet('dustLeadHighScore','0')); if(cur>h){ safeSet('dustLeadHighScore',String(cur)); document.getElementById('high-score-display').textContent = cur; } }
+function loadHighScore(){ document.getElementById('high-score-display').textContent = safeGet('dustLeadHighScore','0'); }
+function toggleDeckViewer(){ document.getElementById('deck-viewer').classList.toggle('open'); updateDeckViewer(); }
+function updateDeckViewer(){ const dd=document.getElementById('deck-contents'); const dc=document.getElementById('discard-contents'); dd.innerHTML='';dc.innerHTML=''; const m=c=>{ const d=document.createElement('div');d.className='deck-mini-card'; const cost=c.ammoCost||0; d.innerHTML=`<span class="deck-mini-icon">${iconMap[c.name]||'?'}</span><div class="deck-mini-info"><span class="deck-mini-name">${c.name}</span><span class="deck-mini-desc">${c.desc||''}</span>${cost?` <span class="deck-mini-cost">Ammo: ${cost}</span>`:''}</div>`; return d; }; gameState.deck.forEach(c=>dd.appendChild(m(c))); gameState.discardPile.forEach(c=>dc.appendChild(m(c))); }
+function createDustParticles(){ const c=document.getElementById('dust-container'); for(let i=0;i<25;i++){ const p=document.createElement('div'); p.className='dust-particle'; p.style.left=Math.random()*100+'%'; p.style.width=(Math.random()*4+1)+'px'; p.style.height=p.style.width; p.style.animationDuration=(Math.random()*12+8)+'s'; p.style.animationDelay=(Math.random()*10)+'s'; c.appendChild(p); } }
+function init(){ createDustParticles(); loadHighScore(); updateTitleScreen(); document.getElementById('diff-select').value='easy'; showScreen('title'); }
+init();
+</script>
+</body>
+</html>
