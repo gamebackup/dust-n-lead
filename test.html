@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="D&L-version" content="1.0.0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dust & Lead - Western Roguelike</title>
@@ -13,8 +12,28 @@
         body { background: radial-gradient(ellipse at 50% -5%, rgba(90,35,5,.55) 0%, transparent 55%), radial-gradient(ellipse at 0% 105%, rgba(40,15,0,.4) 0%, transparent 50%), radial-gradient(ellipse at 100% 105%, rgba(50,20,0,.4) 0%, transparent 50%), linear-gradient(180deg,#0c0400 0%,#1a0902 30%,#230d04 60%,#0c0400 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Special Elite','Courier New',monospace; overflow-x:hidden; user-select:none; -webkit-user-select:none; }
         #grain-overlay { position:fixed; top:-50%; left:-50%; width:200%; height:200%; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity:.038; pointer-events:none; z-index:9999; animation:grainShift .38s steps(2) infinite; }
         @keyframes grainShift { 0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(2px,-3px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(1px,2px)} }
-        .dust-particle { position:fixed; pointer-events:none; background:radial-gradient(circle,rgba(220,180,110,.85) 0%,rgba(200,160,100,0) 70%); border-radius:50%; animation:floatDust linear infinite; z-index:0; }
-        @keyframes floatDust { 0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0}8%{opacity:.8}92%{opacity:.5}100%{transform:translateY(-100vh) translateX(75px) rotate(180deg);opacity:0} }
+        #dust-container { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden; z-index:0; }
+        .dust-particle { position:absolute; pointer-events:none; background:radial-gradient(circle,rgba(220,180,110,.55) 0%,rgba(200,160,100,0) 70%); border-radius:50%; opacity:0; z-index:0; }
+        @keyframes floatDust { 0%{transform:translateY(0) translateX(0);opacity:0}12%{opacity:.6}88%{opacity:.3}100%{transform:translateY(-160px) translateX(80px);opacity:0} }
+        #ww-wrap{position:fixed;inset:0;overflow:hidden;background:#04020f;font-family:Georgia,'Times New Roman',serif;z-index:10000;transition:opacity .95s;}
+        .ww-sky{position:absolute;inset:0;background:linear-gradient(to bottom,#02010a 0%,#09061c 18%,#1f0c02 44%,#6a2600 64%,#b44b0b 79%,#d57422 89%,#e9a43e 96%,#f2be60 100%);}
+        #ww-c{position:absolute;top:0;left:0;width:100%;height:60%;pointer-events:none;}
+        .ww-moon{position:absolute;top:5vh;right:12vw;width:clamp(36px,4vw,56px);height:clamp(36px,4vw,56px);border-radius:50%;background:#fef7d6;box-shadow:0 0 0 7px rgba(255,228,120,0.16),0 0 0 18px rgba(255,220,90,0.07);}
+        .ww-town{position:absolute;bottom:13%;left:0;width:100%;height:30%;}
+        .ww-ground{position:absolute;bottom:0;left:0;right:0;height:14%;background:#0f0500;}
+        .ww-ground-fade{position:absolute;bottom:13%;left:0;right:0;height:8px;background:linear-gradient(to bottom,transparent,#0f0500);}
+        #ww-tw{position:absolute;bottom:13%;left:0;will-change:transform;}
+        #ww-dust{position:absolute;bottom:14%;left:0;right:0;height:60px;pointer-events:none;overflow:hidden;}
+        .ww-ui{position:absolute;bottom:0;left:0;right:0;padding:clamp(10px,2vh,20px) 24px clamp(14px,2.5vh,24px);background:linear-gradient(to top,rgba(2,1,7,0.97) 68%,transparent);text-align:center;}
+        .ww-title{color:#c97c0e;font-size:clamp(15px,2.2vw,22px);letter-spacing:0.24em;text-transform:uppercase;margin-bottom:5px;text-shadow:0 1px 6px rgba(180,90,0,0.5);}
+        #ww-msg{color:#855018;font-size:clamp(9px,1.1vw,13px);letter-spacing:0.11em;text-transform:uppercase;margin-bottom:12px;height:16px;transition:opacity 0.18s;}
+        .ww-track{position:relative;width:min(60%,420px);margin:0 auto;height:18px;background:#0a0300;border:1px solid #381600;border-radius:2px;overflow:hidden;}
+        #ww-pb{position:absolute;inset:0;width:0%;background:linear-gradient(90deg,#461e00,#844010,#b85e18);}
+        .ww-rail-top{position:absolute;top:5px;left:0;right:0;height:1px;background:rgba(90,40,8,0.4);pointer-events:none;}
+        .ww-rail-bot{position:absolute;bottom:5px;left:0;right:0;height:1px;background:rgba(90,40,8,0.4);pointer-events:none;}
+        #ww-edge{position:absolute;top:0;left:-14px;width:14px;height:100%;background:linear-gradient(90deg,transparent,rgba(215,138,38,0.85));pointer-events:none;}
+        #ww-pct{margin-top:6px;font-size:clamp(8px,0.9vw,11px);color:#5e3410;letter-spacing:0.14em;text-transform:uppercase;}
+        @keyframes ww-float{0%{transform:translateY(0) scale(1);opacity:0.35}100%{transform:translateY(-55px) scale(2);opacity:0}}
         #game-container { width:100%; max-width:780px; min-height:600px; background: repeating-linear-gradient(88deg,transparent 0px,transparent 9px,rgba(0,0,0,.055) 9px,rgba(0,0,0,.055) 10px), repeating-linear-gradient(180deg,transparent 0px,transparent 52px,rgba(255,175,70,.018) 52px,rgba(255,175,70,.018) 54px), linear-gradient(180deg,#201008 0%,#391b0c 2%,#452612 5%,#391b0c 8%,#351708 18%,#3a1c0d 82%,#452612 95%,#201008 100%); border-radius:10px; position:relative; z-index:1; overflow:hidden; box-shadow: inset 0 0 0 3px #7c5c28, inset 0 0 0 6px #1c0d04, inset 0 0 0 9px #5c3e18, inset 0 0 0 12px #140a02, 0 0 90px rgba(0,0,0,.92), 0 26px 64px rgba(0,0,0,.72); animation:lanternGlow 5.5s ease-in-out infinite; }
         @keyframes lanternGlow { 0%,100%{box-shadow:inset 0 0 0 3px #7c5c28,inset 0 0 0 6px #1c0d04,inset 0 0 0 9px #5c3e18,inset 0 0 0 12px #140a02,inset 0 60px 120px rgba(140,55,5,.08),0 0 90px rgba(0,0,0,.92),0 26px 64px rgba(0,0,0,.72)}50%{box-shadow:inset 0 0 0 3px #7c5c28,inset 0 0 0 6px #1c0d04,inset 0 0 0 9px #5c3e18,inset 0 0 0 12px #140a02,inset 0 60px 160px rgba(175,80,5,.16),0 0 90px rgba(0,0,0,.92),0 26px 64px rgba(0,0,0,.72)} }
         #game-container::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.024) 2px,rgba(0,0,0,.024) 3px); pointer-events:none; z-index:999; border-radius:4px; }
@@ -96,8 +115,14 @@
         .deck-mini-name{font-weight:bold;color:#ffe8a0;font-size:1em;display:block}
         .deck-mini-desc{color:#a08050;font-size:.82em;display:block;margin-top:2px}
         .deck-mini-cost{color:#8a1a08;font-size:.75em;font-weight:bold;background:rgba(0,0,0,.15);padding:1px 6px;border-radius:6px;display:inline-block;margin-top:2px}
-        #view-deck-btn{position:absolute;top:14px;right:14px;z-index:1001;background:rgba(0,0,0,.52);border:none;color:#d4a820;box-shadow:0 0 0 1px #140a02,0 0 0 2px #6e4c20,0 0 0 3px #140a02;padding:6px 14px;font-size:.7em;cursor:pointer;border-radius:3px;font-family:'Special Elite',monospace;letter-spacing:1px;transition:all .15s}
-        #view-deck-btn:hover{background:rgba(28,14,4,.82);color:#f0c840;box-shadow:0 0 0 1px #140a02,0 0 0 2px #c9a030,0 0 0 3px #140a02}
+        #inv-btn{position:absolute;top:14px;right:14px;z-index:1001;background:rgba(0,0,0,.52);border:none;color:#d4a820;box-shadow:0 0 0 1px #140a02,0 0 0 2px #6e4c20,0 0 0 3px #140a02;padding:6px 14px;font-size:.7em;cursor:pointer;border-radius:3px;font-family:'Special Elite',monospace;letter-spacing:1px;transition:all .15s}
+        #inv-btn:hover{background:rgba(28,14,4,.82);color:#f0c840;box-shadow:0 0 0 1px #140a02,0 0 0 2px #c9a030,0 0 0 3px #140a02}
+        .inv-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid #4a3020;}
+        .inv-tab{background:transparent;border:none;color:#8a7030;padding:8px 14px;cursor:pointer;font-family:'Special Elite',monospace;font-size:.82em;letter-spacing:1px;border-bottom:2px solid transparent;transition:all .15s;}
+        .inv-tab:hover{color:#c9a060;}
+        .inv-tab.active{color:#f0c840;border-bottom-color:#c9a030;}
+        .inv-tab-content{display:none;}
+        .inv-tab-content.active{display:block;}
         #store-items>div,#bounty-list>div{background:linear-gradient(180deg,rgba(5,2,0,.68) 0%,rgba(8,3,0,.74) 100%)!important;border:none!important;border-radius:3px!important;box-shadow:0 0 0 1px #140902,0 0 0 2px #4a2e0a,inset 0 1px 0 rgba(255,200,100,.04);transition:box-shadow .15s;position:relative}
         #store-items>div:hover{box-shadow:0 0 0 1px #140902,0 0 0 2px #8b6012,inset 0 1px 0 rgba(255,200,100,.08)}
         #bounty-list>div:hover{box-shadow:0 0 0 1px #140902,0 0 0 2px #9a7018,0 4px 14px rgba(0,0,0,.45);transform:translateX(4px)}
@@ -126,16 +151,76 @@
     </style>
 </head>
 <body>
+<div id="ww-wrap">
+  <div class="ww-sky"></div>
+  <canvas id="ww-c"></canvas>
+  <div class="ww-moon"></div>
+  <svg class="ww-town" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="#040209">
+      <polygon points="30,116 56,70 82,116"/><rect x="53" y="56" width="5" height="16"/><rect x="46" y="64" width="19" height="4"/><rect x="31" y="116" width="50" height="84"/>
+      <polygon points="86,106 108,90 130,106"/><rect x="86" y="106" width="44" height="94"/>
+      <rect x="130" y="96" width="82" height="104"/><rect x="124" y="83" width="94" height="14"/><rect x="127" y="73" width="88" height="11"/>
+      <rect x="220" y="70" width="124" height="130"/><rect x="212" y="58" width="140" height="14"/><rect x="209" y="47" width="44" height="12"/><rect x="311" y="47" width="43" height="12"/><rect x="207" y="38" width="46" height="11"/><rect x="309" y="38" width="46" height="11"/><rect x="220" y="112" width="124" height="5"/>
+      <rect x="348" y="100" width="80" height="100"/><rect x="342" y="88" width="92" height="13"/><rect x="345" y="78" width="86" height="11"/>
+      <polygon points="432,82 472,60 512,82"/><rect x="432" y="82" width="80" height="118"/>
+      <rect x="530" y="66" width="11" height="150"/><rect x="549" y="66" width="11" height="150"/><rect x="568" y="66" width="11" height="150"/><rect x="524" y="66" width="60" height="47"/><ellipse cx="554" cy="64" rx="34" ry="9"/>
+      <rect x="587" y="110" width="70" height="90"/><rect x="581" y="98" width="82" height="13"/>
+      <polygon points="654,96 674,78 694,96"/><rect x="654" y="96" width="42" height="104"/>
+      <rect x="188" y="154" width="8" height="46"/><rect x="175" y="161" width="14" height="7"/><rect x="198" y="164" width="14" height="7"/><rect x="177" y="154" width="12" height="8"/>
+      <rect x="508" y="157" width="8" height="43"/><rect x="496" y="164" width="13" height="7"/><rect x="497" y="157" width="12" height="8"/>
+    </g>
+  </svg>
+  <div class="ww-ground"></div>
+  <div class="ww-ground-fade"></div>
+  <div id="ww-tw">
+    <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="21" cy="21" r="18" fill="none" stroke="#6e3a14" stroke-width="1.5"/>
+      <circle cx="21" cy="21" r="12" fill="none" stroke="#572c0c" stroke-width="1.2"/>
+      <circle cx="21" cy="21" r="5"  fill="none" stroke="#432009" stroke-width="1"/>
+      <line x1="3"  y1="21" x2="39" y2="21" stroke="#6e3a14" stroke-width="1.3"/>
+      <line x1="21" y1="3"  x2="21" y2="39" stroke="#6e3a14" stroke-width="1.3"/>
+      <line x1="7"  y1="7"  x2="35" y2="35" stroke="#572c0c" stroke-width="1.1"/>
+      <line x1="35" y1="7"  x2="7"  y2="35" stroke="#572c0c" stroke-width="1.1"/>
+      <line x1="3"  y1="13" x2="39" y2="29" stroke="#432009" stroke-width="0.8"/>
+      <line x1="3"  y1="29" x2="39" y2="13" stroke="#432009" stroke-width="0.8"/>
+    </svg>
+  </div>
+  <div id="ww-dust"></div>
+  <div class="ww-ui">
+    <div class="ww-title">&#10022; Hold Yer Horses &#10022;</div>
+    <div id="ww-msg"></div>
+    <div class="ww-track">
+      <div id="ww-pb"></div>
+      <div class="ww-rail-top"></div>
+      <div class="ww-rail-bot"></div>
+      <div id="ww-edge"></div>
+    </div>
+    <div id="ww-pct">0%</div>
+  </div>
+</div>
 <div id="grain-overlay"></div>
-<div id="dust-container"></div>
 <div id="game-container">
+    <div id="dust-container"></div>
     <div id="game-inner">
-        <button id="view-deck-btn" onclick="toggleDeckViewer()">View Deck</button>
+        <button id="inv-btn" onclick="toggleInventory()">Inventory</button>
         <div id="deck-viewer">
-            <h3>Your Deck</h3>
-            <div id="deck-contents"></div>
-            <br><h4>Discard Pile</h4>
-            <div id="discard-contents"></div>
+            <div class="inv-tabs">
+                <button class="inv-tab active" data-tab="cards" onclick="switchInvTab('cards')">Cards</button>
+                <button class="inv-tab" data-tab="guns" onclick="switchInvTab('guns')">Guns</button>
+                <button class="inv-tab" data-tab="items" onclick="switchInvTab('items')">Items</button>
+                <button class="inv-tab" data-tab="loot" onclick="switchInvTab('loot')">Loot</button>
+            </div>
+            <div id="inv-content">
+                <div id="inv-cards" class="inv-tab-content active">
+                    <h3>Your Deck</h3>
+                    <div id="deck-contents"></div>
+                    <h4>Discard Pile</h4>
+                    <div id="discard-contents"></div>
+                </div>
+                <div id="inv-guns" class="inv-tab-content"></div>
+                <div id="inv-items" class="inv-tab-content"></div>
+                <div id="inv-loot" class="inv-tab-content"></div>
+            </div>
         </div>
 
         <!-- screens unchanged -->
@@ -143,10 +228,9 @@
             <div style="font-size:3em;color:#c9a030;letter-spacing:8px;text-shadow:0 0 30px rgba(201,160,48,.55);">&#9733; &#9733; &#9733;</div>
             <div class="game-title">DUST &amp; LEAD</div>
             <div class="game-subtitle">A Western Roguelike</div>
-            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,.18);border-bottom:1px solid rgba(201,160,48,.18);padding:10px 0;">The frontier is unforgiving. Bounties await, outlaws roam, and every sunset could be your last.</div>
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,.18);border-bottom:1px solid rgba(201,160,48,.18);padding:10px 0;">The frontier is unforgiving. Bounties await, outlaws roam,<br>and every sunset could be your last.</div>
             <div style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;max-width:340px;">
                 <button class="btn wide" onclick="startGame()">Ride Into Town</button>
-                <br>
                 <div style="display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
                     <label for="diff-select" style="color:#a08060;font-size:.85em;">Difficulty:</label>
                     <select id="diff-select" onchange="selectedDifficulty=this.value" style="background:#1a0e04;color:#f0d080;border:2px solid #4a3020;border-radius:4px;padding:4px 8px;font-family:'Rye',serif;font-size:.85em;cursor:pointer;">
@@ -160,7 +244,6 @@
             <div class="meta-equip-slot" id="title-equipped"><span class="meta-equip-empty">No heirloom equipped</span></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
                 <button class="btn small" onclick="showScreen('achievements');updateAchievementsScreen()">Achievements</button>
-                <br>
                 <button class="btn small" onclick="showScreen('equipment');updateEquipmentScreen()">Equipment</button>
             </div>
             <div style="color:#8d6e63;font-size:.73em;letter-spacing:2px;">HIGH SCORE: <span id="high-score-display" style="color:#c9a030;">0</span> dollars</div>
@@ -178,21 +261,19 @@
             </div>
             <div id="town-gun-display" style="color:#9a7030;font-size:.78em;text-align:center;letter-spacing:1px;"></div>
             <div id="trinkets-display" style="color:#9a7030;font-size:.78em;text-align:center;"></div>
-            <div id="town-sell-display" style="color:#c9a060;font-size:.75em;text-align:center;letter-spacing:1px;"></div>
             <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:.78em;text-align:center;"></div>
             <div class="location-grid">
                 <div class="location-row">
-                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="general-store.png" alt="Store"></span><span class="location-name">General Store<br></span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
-                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith<br></span><small style="color:#a08060;">Upgrade your weapons</small></div>
-                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="saloon.png" alt="Saloon"></span><span class="location-name">Saloon<br></span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
+                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
+                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
+                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
                 </div>
                 <div class="location-row">
-                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office<br></span><small style="color:#a08060;">Collect bounties</small></div>
-                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out<br></span><small style="color:#a08060;">Into the wild frontier</small></div>
+                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
+                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
                 </div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
-            <button class="btn small" onclick="toggleDeckViewer()">View Deck</button>
         </div>
         <div class="screen" id="screen-store">
             <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">General Store</div>
@@ -209,7 +290,6 @@
             <button class="btn wide" onclick="saloonRest()">Rest Night ($15) — Heal 8 HP</button>
             <button class="btn wide" onclick="saloonGamble()">Play Cards ($10) — Win or Lose</button>
             <button class="btn wide" onclick="saloonDrink()">Whiskey ($5) — Heal 3 HP</button>
-            <button class="btn wide" onclick="saloonDoctorVisit()">See the Doc ($20) — Heal 12 HP</button>
             <button class="btn small" onclick="goToTown()">Back to Town</button>
             <div id="saloon-result" style="color:#f0d080;text-align:center;"></div>
         </div>
@@ -245,11 +325,11 @@
         </div>
         <div class="screen" id="screen-combat">
             <div style="font-family:'Rye',serif;font-size:1.5em;color:#ff6b4a;letter-spacing:2px;" id="combat-title">Showdown!</div>
-            <div class="enemy-display">
-                <div class="enemy-name" id="enemy-name">Bandit</div>
-                <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp-fill" style="width:100%;"></div></div>
-                <div style="font-size:.85em;">HP: <span id="enemy-hp-text">15/15</span></div>
-                <div style="font-size:.8em;color:#a08060;" id="enemy-intent">Watching you closely...</div>
+            <div id="enemy-container" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;"></div>
+            <div id="target-controls" style="display:none;gap:6px;flex-wrap:wrap;justify-content:center;margin:4px 0;">
+                <button class="btn small" onclick="selectEnemy(gameState.selectedEnemyIndex-1)" id="btn-prev-target" style="min-width:50px;">◀</button>
+                <span style="color:#f0d080;font-size:.85em;align-self:center;" id="target-label">Target: —</span>
+                <button class="btn small" onclick="selectEnemy(gameState.selectedEnemyIndex+1)" id="btn-next-target" style="min-width:50px;">▶</button>
             </div>
             <div id="combat-status" style="color:#b0d090;font-size:.78em;text-align:center;letter-spacing:1px;min-height:18px;"></div>
             <div class="info-bar">
@@ -267,8 +347,21 @@
             </div>
             <div style="color:#f0d080;font-size:.9em;letter-spacing:1px;">Select a card to play:</div>
             <div class="card-hand" id="card-hand"></div>
+            <button class="btn small" id="btn-discard" onclick="toggleDiscardMode()">Discard</button>
             <div class="combat-log" id="combat-log">The tension crackles in the air...</div>
             <button class="btn small danger" id="btn-flee" onclick="fleeCombat()">Flee (25% chance)</button>
+        </div>
+        <div class="screen" id="screen-camp">
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Campfire Rest</div>
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-style:italic;">The fire crackles. You have a moment to breathe...</div>
+            <div class="info-bar">
+                <div class="info-item">HP: <span class="info-value" id="camp-hp">20/20</span></div>
+                <div class="info-item">Food: <span class="info-value" id="camp-food">5</span></div>
+                <div class="info-item">$: <span class="info-value" id="camp-money">50</span></div>
+            </div>
+            <div id="camp-actions" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px;"></div>
+            <div id="camp-result" style="color:#f0d080;text-align:center;font-style:italic;"></div>
+            <button class="btn small" onclick="leaveCamp()">Pack Up & Move On</button>
         </div>
         <div class="screen" id="screen-gameover">
             <div style="font-family:'Rye',serif;font-size:2em;letter-spacing:3px;" id="gameover-title">DEAD</div>
@@ -322,6 +415,26 @@
     </div>
 </div>
 
+<script>
+(function () {
+  var c=document.getElementById('ww-c'),ctx=c.getContext('2d');
+  function resizeCanvas(){c.width=window.innerWidth;c.height=window.innerHeight*0.6}
+  resizeCanvas();window.addEventListener('resize',resizeCanvas);
+  var stars=[];for(var i=0;i<120;i++){stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.5+0.3,ph:Math.random()*6.28,sp:0.4+Math.random()*1.6})}
+  function drawStars(t){if(!document.getElementById('ww-wrap'))return;ctx.clearRect(0,0,c.width,c.height);for(var i=0;i<stars.length;i++){var s=stars[i],a=0.25+0.75*(0.5+0.5*Math.sin(t*0.001*s.sp+s.ph));ctx.beginPath();ctx.arc(s.x*c.width,s.y*c.height,s.r,0,6.28);ctx.fillStyle='rgba(255,250,210,'+a.toFixed(2)+')';ctx.fill()}requestAnimationFrame(drawStars)}
+  requestAnimationFrame(drawStars);
+  var tw=document.getElementById('ww-tw'),twBusy=false;
+  function rollTumbleweed(){if(twBusy)return;twBusy=true;var twX=window.innerWidth+50,twA=0,speed=1.5+Math.random()*2.2;(function step(){twX-=speed;twA-=speed*2.4;tw.style.transform='translateX('+Math.round(twX)+'px) rotate('+twA.toFixed(1)+'deg)';if(twX>-60)requestAnimationFrame(step);else{twBusy=false;setTimeout(rollTumbleweed,600+Math.random()*3000)}})()}
+  setTimeout(rollTumbleweed,400);
+  var dustEl=document.getElementById('ww-dust'),dustInterval=setInterval(function(){if(!document.getElementById('ww-wrap'))return;var d=document.createElement('div'),sz=2+Math.round(Math.random()*3),dur=(1.3+Math.random()*1.9).toFixed(1);d.style.cssText='position:absolute;bottom:0;left:'+(30+Math.random()*(window.innerWidth-60))+'px;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:rgba(110,52,8,0.26);animation:ww-float '+dur+'s ease-out forwards;';dustEl.appendChild(d);setTimeout(function(){try{dustEl.removeChild(d)}catch(e){}},parseFloat(dur)*1000+100)},360);
+  var pb=document.getElementById('ww-pb'),edge=document.getElementById('ww-edge'),pctEl=document.getElementById('ww-pct'),msgEl=document.getElementById('ww-msg'),loader=document.getElementById('ww-wrap');
+  var msgs=["Roundin' up the cows...","Wranglin' the ruffians...","Hitchin' the carriage...","Settlin' in the west...","Rustlin' the beeves...","Polishin' the spurs...","Buildin' the outhouses...","Robbin' the banks...","Minin' the gold...","Evadin' the law...","Tumblin' the weeds...","Loadin' the guns...","Cleanin' the saloon...","Duelin' at noon...","Playin' the piano...","Servin' the drinks...","Drillin' for oil...","Survivin' the dysentery...","Plottin' the heist...","Tannin' the pelts...","Dressin' the cowboys...","Dressin' the cowgirls...","Distillin' the moonshine...","Countin' the loot...","Ridin' the train...","Fillin' the canteens..."];
+  var totalDur=4000+Math.random()*4000,t0=performance.now(),lastMi=-1,lastChangeTime=0;
+  msgEl.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  function tick(now){var elapsed=now-t0,p=Math.min(100,elapsed/totalDur*100),pr=Math.round(p);pb.style.width=p+'%';edge.style.left=(p-2)+'%';pctEl.textContent=pr+'%';if(elapsed-(lastChangeTime||0)>2000){lastChangeTime=elapsed;var newMi;do{newMi=Math.floor(Math.random()*msgs.length)}while(newMi===lastMi);lastMi=newMi;msgEl.style.opacity='0';setTimeout(function(){msgEl.textContent=msgs[newMi];msgEl.style.opacity='1'},140)}if(p<100){requestAnimationFrame(tick)}else{clearInterval(dustInterval);setTimeout(function(){loader.style.opacity='0';setTimeout(function(){loader.remove();if(typeof init==='function')init()},960)},450)}}
+  requestAnimationFrame(tick);
+})();
+</script>
 <script>
 // ==================== DEFINITIONS ====================
 const sellableItemDefs = {
@@ -390,7 +503,7 @@ const bossDefs = [
     { name:'Clint Eastwood',   hp:50, dmg:12, reward:100, desc:'The Man with No Name' },
     { name:'El Diablo',        hp:70, dmg:16, reward:150, desc:'The devil himself' },
 ];
-const VENTURES_PER_REGION = 2; // normal ventures before boss
+const VENTURES_PER_REGION = 6; // normal ventures before boss
 
 const cardDefs = {
     'Quick Shot':    { desc:'Fire once.',                            ammoCost:1, effect:'shoot',      dmgMult:1,   accuracy:90 },
@@ -415,6 +528,16 @@ const cardDefs = {
     'Poison Dart':   { desc:'Poison enemy: 3 dmg/turn for 3 turns.',ammoCost:0, effect:'poison',                 accuracy:85 },
     'Ricochet':      { desc:'Bullet bounces — hits twice at 70% dmg.',ammoCost:1,effect:'ricochet',  dmgMult:0.7, shots:2,     accuracy:72 },
     'Bolas':         { desc:'Entangle: 70% chance enemy skips turn.',ammoCost:0, effect:'bolas',                 accuracy:100 },
+    // Multi-enemy / new cards
+    'Blunderbuss':   { desc:'Blast all enemies for reduced damage.',  ammoCost:2, effect:'aoe',        dmgMult:0.6, accuracy:80 },
+    'Sloppy Reload': { desc:'Reload half cylinder + gain 1 cover.',   ammoCost:0, effect:'sloppyreload',          accuracy:100 },
+    'Coin Shot':     { desc:'Heads: double dmg. Tails: self-dmg 1.', ammoCost:1, effect:'coinshot',  dmgMult:1,   accuracy:90 },
+    'Fateful Draw':  { desc:'Draw 2 extra cards this turn.',          ammoCost:0, effect:'fatedraw',               accuracy:100 },
+    'Dynamite Bundle':{desc:'2× dmg on target, 1× splash. Self 2.',   ammoCost:2, effect:'dynamitebundle',dmgMult:2, selfDmg:2, accuracy:75 },
+    'Bullet Swarm':  { desc:'One shot at each enemy on the field.',   ammoCost:2, effect:'bulletswarm',dmgMult:0.7, accuracy:75 },
+    'Akimbo':        { desc:'Fire both guns at once. Requires 2 guns.',ammoCost:2,effect:'akimbo',    dmgMult:1,   accuracy:80 },
+    'Crossfire':     { desc:'Crossfire two enemies. Hits confuse.',   ammoCost:2, effect:'crossfire', dmgMult:0.8, accuracy:75 },
+    'Deadeye Duelist':{ desc:'Careful shot from each gun. Kill: draw 2.',ammoCost:2,effect:'deadeye', dmgMult:1.4, accuracy:85 },
 };
 
 const trinketDefs = {
@@ -428,7 +551,6 @@ const trinketDefs = {
     'Wanted Poster':       { desc:'Bounty rewards doubled, +5 enemy HP.', cost:30 },
     'Quick Draw':          { desc:'Reload also fires a free shot.', cost:65 },
     'Vultures Eye':        { desc:'Heal 4 HP on kill.', cost:50 },
-    'Canteen':             { desc:'+2 max food.', cost:25 },
     'Lucky Dice':          { desc:'Better gambling odds.', cost:30 },
     'Iron Horseshoe':      { desc:'Start each combat with 1 cover.', cost:40 },
     'Medicine Bag':        { desc:'Heal 2 HP after each non-combat wilderness event.', cost:35 },
@@ -492,10 +614,10 @@ const gameState = {
         regionsCompleted:0, venturesThisRegion:0
     },
     deck:[], discardPile:[], combatHand:[],
-    combatEnemy:null, combatActive:false,
-    currentScreen:'title', activeBounty:null,
+    combatEnemies:[], combatActive:false,
+    selectedEnemyIndex:0, currentScreen:'title', activeBounty:null,
     wildDepth:0, firstShotThisCombat:true,
-    cardProcessing:false, combatInWilderness:false,
+    cardProcessing:false, combatInWilderness:false, discardMode:false, discardTargets:[],
     rotatingShopItems:[], bonusCardDraw:0,
     deckViewerOpen: false,
     difficulty:'easy', regionIndex:0, isBossFight:false, wonGame:false
@@ -505,11 +627,9 @@ const gameState = {
 function buildDeck() {
     const deck = [];
     const add = (n,c) => { for(let i=0;i<c;i++) deck.push({...cardDefs[n],name:n}); };
-    add('Quick Shot',3);add('Aimed Shot',2);add('Fan the Hammer',1);add('Reload',2);
-    add('Dodge',1);add('Take Cover',1);add('Desperado',1);add('Intimidate',1);
-    add('Bandage',1);add('Lucky Shot',1);add('Sucker Punch',2);add('Dynamite Toss',1);
-    add('Dead Eye',1);add('Lasso',1);add('Last Stand',1);add('Double Tap',1);
-    add('Ricochet',1);add('Poison Dart',1);add('Bolas',1);
+    add('Aimed Shot',3);add('Reload',2);add('Take Cover',1);add('Quick Shot',3);
+    add('Intimidate',1);add('Dynamite Toss',1);add('Last Stand',1);add('Sucker Punch',2);
+    add('Bandage',1);add('Lucky Shot',1);add('Fan the Hammer',1);
     ['Bandage Kit','Bandage Kit','Bandage Kit'].forEach(()=>{
         const i=gameState.player.inventory.findIndex(x=>x.name==='Bandage Kit');
         if(i!==-1){deck.push({...cardDefs['Bandage'],name:'Bandage'});gameState.player.inventory.splice(i,1);}
@@ -530,15 +650,43 @@ function getTotalLoaded(){const g=getActualGun();if(!g)return 0;return (g.loaded
 function getMaxCapacity(){const g=getActualGun();if(!g)return 99;let c=g.capacity;if(gameState.player.trinkets.some(t=>t.name==='Bandolier'))c+=2;return c;}
 function getAmmoOfType(t){const g=getActualGun();return g?(g.loaded[t]||0):0;}
 function getCardAmmoCost(card){let c=card.ammoCost;if(card.name==='Fan the Hammer'&&gameState.player.trinkets.some(t=>t.name==='Gunslingers Gloves'))c=Math.max(1,c-1);return c;}
-function dealDamageToEnemy(d){const e=gameState.combatEnemy;if(!e)return 0;if(e.defendActive){d=Math.floor(d*0.55);e.defendActive=false;}const a=Math.max(0,d);e.health=Math.max(0,e.health-a);return a;}
+function dealDamageToEnemy(d,e){
+    if(!e&&!(e=getTargetEnemy()))return 0;
+    if(e.defendActive){d=Math.floor(d*0.55);e.defendActive=false;}
+    const a=Math.max(0,d);e.health=Math.max(0,e.health-a);return a;
+}
 function getRandomSellableItem(){const k=Object.keys(sellableItemDefs);const key=k[Math.floor(Math.random()*k.length)];return{name:key,...sellableItemDefs[key]};}
 function cycleAmmoType(){const g=getActualGun();if(!g)return;const t=['regular','express','trick'];const ci=t.indexOf(g.currentType);for(let i=1;i<=3;i++){const nt=t[(ci+i)%3];if(g.loaded[nt]>0){g.currentType=nt;updateCombatDisplay();renderCombatHand();return;}}}
 function cycleGun(){const p=gameState.player;if(p.guns.length<2)return;p.equippedGunIndex=(p.equippedGunIndex+1)%p.guns.length;const ng=getActualGun();if(ng&&(!ng.currentType||!getAmmoOfType(ng.currentType))){const t=['regular','express','trick'];ng.currentType=t.find(x=>getAmmoOfType(x)>0)||'regular';}updateCombatDisplay();renderCombatHand();document.getElementById('combat-log').textContent=`Switched to ${ng.name}.`;}
 function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const sc=document.getElementById('screen-'+name);if(sc)sc.classList.add('active');gameState.currentScreen=name;}
 
+// Multi-enemy helpers
+function getTargetEnemy(){return gameState.combatEnemies[gameState.selectedEnemyIndex]||null;}
+function dealDamageToAllEnemies(dmg,singleIdx){
+    const es=gameState.combatEnemies;
+    if(singleIdx!==undefined){if(es[singleIdx]){const a=Math.max(0,dmg);es[singleIdx].health=Math.max(0,es[singleIdx].health-a);}return;}
+    es.forEach(e=>{if(e){const a=Math.max(0,dmg);e.health=Math.max(0,e.health-a);}});
+}
+function removeDeadEnemies(){
+    gameState.combatEnemies=gameState.combatEnemies.filter(e=>e.health>0);
+    if(gameState.selectedEnemyIndex>=gameState.combatEnemies.length)
+        gameState.selectedEnemyIndex=Math.max(0,gameState.combatEnemies.length-1);
+}
+function enemiesRemaining(){return gameState.combatEnemies.filter(e=>e.health>0).length;}
+function combatVictoryCheck(){removeDeadEnemies();return enemiesRemaining()===0;}
+function genEnemyGroup(count,baseEnemy){
+    const group=[];
+    for(let i=0;i<count;i++){
+        const mult=0.65+Math.random()*0.2;
+        group.push({...baseEnemy,health:Math.floor(baseEnemy.health*mult),maxHealth:Math.floor(baseEnemy.health*mult),damage:Math.max(1,Math.floor(baseEnemy.damage*mult)),name:i>0?baseEnemy.name+' #'+(i+1):baseEnemy.name});
+    }
+    return group;
+}
+function selectEnemy(n){gameState.selectedEnemyIndex=Math.max(0,Math.min(n,gameState.combatEnemies.length-1));updateCombatDisplay();}
+
 // ==================== TOWN ====================
 function goToTown(){
-    gameState.activeBounty=null;gameState.combatActive=false;gameState.cardProcessing=false;gameState.wildDepth=0;
+    gameState.activeBounty=null;gameState.combatActive=false;gameState.cardProcessing=false;gameState.wildDepth=0;gameState.combatEnemies=[];
     if(gameState.combatInWilderness){gameState.rotatingShopItems=generateRotatingItems();}
     gameState.combatInWilderness=false;updateTownDisplay();showScreen('town');
     checkAchievements();
@@ -567,8 +715,6 @@ function updateTownDisplay(){
     if(ge&&gun)ge.textContent=`🔫 ${gun.name} — ${gun.damage} dmg | ${getTotalLoaded()}/${getMaxCapacity()} loaded`;
     document.getElementById('trinkets-display').innerHTML=p.trinkets.length?'✦ '+p.trinkets.map(t=>`<span style="color:#c9a060;">${t.name}</span>`).join(' ✦ ')+' ✦':'';
     document.getElementById('gun-parts-display').innerHTML=p.gunParts.length?'Parts: '+p.gunParts.map(pt=>partLabels[pt]).join(', '):'';
-    const se=document.getElementById('town-sell-display');
-    if(se){if(p.sellableInventory&&p.sellableInventory.length>0){se.textContent='📦 Goods to sell: '+p.sellableInventory.map(i=>i.name).join(' · ');se.style.color='#c9a060';}else{se.textContent='';}}
 }
 
 // ==================== STORE (updated) ====================
@@ -610,7 +756,7 @@ function updateStoreDisplay(){
     // Weapons (excluding those in rotating set)
     for(const [name,def] of Object.entries(weaponDefs)){
         if(def.cost>0 && !rotatingWeapons.has(name) && !p.guns.find(g=>g.name===name)){
-            container.appendChild(createStoreItem(`${name} — $${d(def.cost)}`,d(def.cost),()=>{p.money-=d(def.cost);p.guns.push({name,damage:def.damage,capacity:def.capacity,loaded:{regular:def.capacity,express:0,trick:0},currentType:'regular',...(def.onKillHeal?{onKillHeal:def.onKillHeal}:{})});updateStoreDisplay();},p.money>=d(def.cost),def.desc));
+            container.appendChild(createStoreItem(`${name} — $${d(def.cost)}`,d(def.cost),()=>{p.money-=d(def.cost);p.guns.push({name,damage:def.damage,capacity:def.capacity,loaded:{regular:def.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0,...(def.onKillHeal?{onKillHeal:def.onKillHeal}:{})});updateStoreDisplay();},p.money>=d(def.cost),def.desc));
         }
     }
 
@@ -647,11 +793,11 @@ function generateRotatingItems(){
     // Rotating Weapons
     if(!p.guns.find(g=>g.name==="Mare's Leg")){
         const wDef=weaponDefs["Mare's Leg"];
-        tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
+        tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
     }
     if(!p.guns.find(g=>g.name==="Double-Action")){
         const wDef=weaponDefs["Double-Action"];
-        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular'});updateStoreDisplay();},desc:wDef.desc});
+        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
     }
     // Gun parts
     const missing=partNames.filter(pt=>!p.gunParts.includes(pt));
@@ -679,7 +825,6 @@ function updateSaloonDisplay(){ document.getElementById('saloon-hp').textContent
 function saloonRest(){const p=gameState.player;if(p.money<15){document.getElementById('saloon-result').textContent='Not enough money.';return;}p.money-=15;p.health=Math.min(p.maxHealth,p.health+8);p.day++;p.food--;checkStarving();if(p.health<=0)return;updateSaloonDisplay();document.getElementById('saloon-result').textContent='You rest peacefully. +8 HP. (Food -1)';}
 function saloonGamble(){const p=gameState.player;if(p.money<10){document.getElementById('saloon-result').textContent='You need $10.';return;}p.money-=10;p.day++;p.food--;const lucky=p.trinkets.some(t=>t.name==='Lucky Dice');const roll=Math.random();let won=false;if(roll<(lucky?0.5:0.4)){const w=Math.floor(Math.random()*30)+10;p.money+=w;document.getElementById('saloon-result').textContent='You win $'+w+'! (Food -1)';won=true;}else if(roll<(lucky?0.7:0.75)){document.getElementById('saloon-result').textContent='You lose. (Food -1)';}else if(roll<(lucky?0.88:0.85)){const w=Math.floor(Math.random()*50)+20;p.money+=w;document.getElementById('saloon-result').textContent='JACKPOT! $'+w+'! (Food -1)';won=true;}else{const mp=partNames.filter(pt=>!p.gunParts.includes(pt));if(mp.length){const pt=mp[Math.floor(Math.random()*mp.length)];p.gunParts.push(pt);document.getElementById('saloon-result').textContent='You won a '+partLabels[pt]+'! (Food -1)';won=true;}else{const w=Math.floor(Math.random()*20)+5;p.money+=w;document.getElementById('saloon-result').textContent='Won $'+w+' (Food -1)';won=true;}}if(won){const m=loadMeta();m.gamblesWon=(m.gamblesWon||0)+1;saveMeta(m);checkAchievements();}checkStarving();if(p.health<=0)return;updateSaloonDisplay();}
 function saloonDrink(){const p=gameState.player;if(p.money<5){document.getElementById('saloon-result').textContent='Not enough coin.';return;}p.money-=5;p.health=Math.min(p.maxHealth,p.health+3);updateSaloonDisplay();document.getElementById('saloon-result').textContent='Smooth whiskey. +3 HP.';}
-function saloonDoctorVisit(){const p=gameState.player;if(p.money<20){document.getElementById('saloon-result').textContent='The doc wants $20.';return;}p.money-=20;p.health=Math.min(p.maxHealth,p.health+12);updateSaloonDisplay();document.getElementById('saloon-result').textContent='Doc patches you up real good. +12 HP.';}
 
 // ==================== SHERIFF ====================
 function goToSheriff(){ updateSheriffDisplay(); document.getElementById('sheriff-msg').textContent=''; showScreen('sheriff'); }
@@ -705,17 +850,22 @@ function updateSheriffDisplay(){
         claimDiv.appendChild(claimBtn);container.appendChild(claimDiv);
     }
     const bounties=[
-        {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},{name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},{name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},{name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},{name:'Two-Face Hank',reward:50,difficulty:'Moderate',enemyHp:21,enemyDmg:6},{name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},{name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},{name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},{name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},{name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12}
+        {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},{name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},{name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},{name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},{name:'Two-Face Hank',reward:50,difficulty:'Moderate',enemyHp:21,enemyDmg:6},{name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},{name:'Redrock Rosa',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},{name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},{name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},{name:"Canyon Jack",reward:110,difficulty:'Legendary',enemyHp:42,enemyDmg:12}
     ];
+    const diffCfg=diffConfig[getCurrentDiffKey()];
+    const mtMult=diffCfg.enemyMult;
+    const rewMult=diffCfg.moneyMult;
     const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff'};
     bounties.forEach(b=>{
+        const scaled={...b,reward:Math.floor(b.reward*rewMult),enemyHp:Math.floor(b.enemyHp*mtMult),enemyDmg:Math.max(1,Math.floor(b.enemyDmg*mtMult))};
         const div=document.createElement('div');div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
-        div.innerHTML=`<div><strong style="color:#f0d080;">${b.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${b.reward}</span> &nbsp;|&nbsp; <span style="color:${diffCol[b.difficulty]||'#c9a030'};">${b.difficulty}</span> &nbsp;|&nbsp; HP: ${b.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
-        div.addEventListener('click',()=>acceptBounty(b));container.appendChild(div);
+        div.innerHTML=`<div><strong style="color:#f0d080;">${scaled.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${scaled.reward}</span> &nbsp;|&nbsp; <span style="color:${diffCol[scaled.difficulty]||'#c9a030'};">${scaled.difficulty}</span> &nbsp;|&nbsp; HP: ${scaled.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
+        div.addEventListener('click',()=>acceptBounty(scaled));container.appendChild(div);
     });
 }
 function acceptBounty(b){gameState.activeBounty=b;document.getElementById('sheriff-msg').textContent='Bounty accepted: '+b.name+'!';}
 
+function getUpgradeCap(){const d=gameState.difficulty||'easy';return{easy:3,medium:4,hard:5,extreme:6}[d]||3;}
 // ==================== GUNSMITH (now includes Widowmaker assembly) ====================
 function goToGunsmith(){ updateGunsmithDisplay(); document.getElementById('gunsmith-msg').textContent=''; showScreen('gunsmith'); }
 function updateGunsmithDisplay(){
@@ -725,20 +875,30 @@ function updateGunsmithDisplay(){
     const container=document.getElementById('gunsmith-items');container.innerHTML='';
     if(!gun){container.innerHTML='<div style="color:#a08060;padding:10px;">You have no gun to upgrade.</div>';return;}
     const notify=txt=>{document.getElementById('gunsmith-msg').textContent=txt;updateGunsmithDisplay();};
-    const items=[
-        {label:`Reinforce Barrel (+2 dmg) — $50`,cost:50,action:()=>{if(p.money>=50){p.money-=50;gun.damage+=2;notify(`${gun.name} now deals ${gun.damage} damage!`);}}},
-        {label:`Expanded Cylinder (+2 capacity) — $45`,cost:45,action:()=>{if(p.money>=45){p.money-=45;gun.capacity+=2;gun.loaded.regular+=2;notify(`${gun.name} now holds ${gun.capacity} rounds!`);}}},
-        {label:`Polish & Tune (+5% accuracy) — $35`,cost:35,action:()=>{if(p.money>=35){p.money-=35;gun.accuracyBonus=(gun.accuracyBonus||0)+5;notify(`${gun.name} sights improved!`);}}},
-    ];
+    const cap=getUpgradeCap();
+    const ud=gun.upgdDmg||0,uc=gun.upgdCap||0,ua=gun.upgdAcc||0;
+    const maxed=ud>=cap&&uc>=cap&&ua>=cap;
+    const items=[];
+    if(maxed){
+        const msg=document.createElement('div');
+        msg.style.cssText='color:#c9a030;text-align:center;padding:10px;font-family:Rye,serif;font-size:1.1em;letter-spacing:2px;';
+        msg.textContent='✦ FULLY UPGRADED ✦';
+        container.appendChild(msg);
+    }
+    items.push(
+        {label:`Reinforce Barrel (+2 dmg) — $50${ud>=cap?' (MAXED)':` [${ud}/${cap}]`}`,cost:50,action:()=>{if(p.money>=50&&ud<cap){p.money-=50;gun.damage+=2;gun.upgdDmg=(gun.upgdDmg||0)+1;notify(`${gun.name} now deals ${gun.damage} damage!`);}},en:p.money>=50&&ud<cap},
+        {label:`Expanded Cylinder (+2 capacity) — $45${uc>=cap?' (MAXED)':` [${uc}/${cap}]`}`,cost:45,action:()=>{if(p.money>=45&&uc<cap){p.money-=45;gun.capacity+=2;gun.loaded.regular+=2;gun.upgdCap=(gun.upgdCap||0)+1;notify(`${gun.name} now holds ${gun.capacity} rounds!`);}},en:p.money>=45&&uc<cap},
+        {label:`Polish & Tune (+5% accuracy) — $35${ua>=cap?' (MAXED)':` [${ua}/${cap}]`}`,cost:35,action:()=>{if(p.money>=35&&ua<cap){p.money-=35;gun.accuracyBonus=(gun.accuracyBonus||0)+5;gun.upgdAcc=(gun.upgdAcc||0)+1;notify(`${gun.name} sights improved!`);}},en:p.money>=35&&ua<cap},
+    );
     // Widowmaker assembly if all parts collected
     if(p.gunParts.includes('barrel')&&p.gunParts.includes('trigger')&&p.gunParts.includes('grip')){
         const discount=p.hasStolenBadge?0.7:1; const cost=Math.floor(50*discount);
-        items.push({label:`Assemble Widowmaker — $${cost}`,cost:cost,action:()=>{if(p.money>=cost){p.money-=cost;p.gunParts=[];p.guns.push({name:'Widowmaker',damage:12,capacity:4,loaded:{regular:4,express:0,trick:0},currentType:'regular',onKillHeal:3});notify('Widowmaker assembled!');}}});
+        items.push({label:`Assemble Widowmaker — $${cost}`,cost:cost,action:()=>{if(p.money>=cost){p.money-=cost;p.gunParts=[];p.guns.push({name:'Widowmaker',damage:12,capacity:4,loaded:{regular:4,express:0,trick:0},currentType:'regular',onKillHeal:3,upgdDmg:0,upgdCap:0,upgdAcc:0});notify('Widowmaker assembled!');}},en:p.money>=cost});
     }
     items.forEach(item=>{
         const div=document.createElement('div');div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
         const btn=document.createElement('button');btn.className='btn small';btn.textContent='Upgrade';
-        if(p.money<item.cost&&item.cost>0)btn.disabled=true;
+        if(item.en===false||(p.money<item.cost&&item.cost>0))btn.disabled=true;
         btn.addEventListener('click',item.action);
         div.innerHTML=`<span style="color:#f0d080;">${item.label}</span>`;div.appendChild(btn);
         container.appendChild(div);
@@ -762,7 +922,7 @@ function goToWilderness(){
 }
 function updateWildernessDisplay(){ const p=gameState.player; document.getElementById('wild-hp').textContent=p.health+'/'+p.maxHealth; document.getElementById('wild-food').textContent=p.food; document.getElementById('wild-money').textContent=p.money; document.getElementById('wild-day').textContent=p.day; if(p.health<=5)document.getElementById('wild-hp').classList.add('low'); else document.getElementById('wild-hp').classList.remove('low'); if(p.food<=1)document.getElementById('wild-food').classList.add('low'); else document.getElementById('wild-food').classList.remove('low'); }
 function getRegionEnemies(ri){
-    const base=enemies=[
+    const base=[
         {name:'Lone Bandit',health:14,maxHealth:14,damage:4},
         {name:'Drunk Outlaw',health:10,maxHealth:10,damage:3},
         {name:'Rattlesnake',health:8,maxHealth:8,damage:5},
@@ -789,7 +949,18 @@ function ventureOut(){
     const combatCh=Math.min(0.60,0.33+(gameState.wildDepth-1)*0.07)-(hasScout?0.08:0); const rem=1-combatCh;
     const envEnd=combatCh+rem*0.20; const lootEnd=envEnd+rem*(hasScout?0.42:0.35); const choiceEnd=lootEnd+rem*0.08;
     const roll=Math.random();
-    if(roll<combatCh){const enemies=getRegionEnemies(ri);gameState.combatInWilderness=true;startCombat(enemies[Math.floor(Math.random()*enemies.length)]);}
+    if(roll<combatCh){
+        const enemies=getRegionEnemies(ri);
+        // 35% chance for multi-enemy group
+        if(Math.random()<0.35){
+            const base=enemies[Math.floor(Math.random()*enemies.length)];
+            const count=2+Math.floor(Math.random()*2); // 2-3
+            const group=genEnemyGroup(count,base);
+            gameState.combatInWilderness=true;startCombat(group);
+        }else{
+            gameState.combatInWilderness=true;startCombat(enemies[Math.floor(Math.random()*enemies.length)]);
+        }
+    }
     else if(roll<envEnd){ wildernessEnvironmental(); }
     else if(roll<lootEnd){ wildernessLoot(); }
     else if(roll<choiceEnd){ wildernessChoiceEvent(); }
@@ -846,7 +1017,7 @@ function robDrifter(){ const p=gameState.player; p.money+=12; document.getElemen
 function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; showWildChoices(); }
 function mineShaftEvent(){ document.getElementById('wild-result').textContent='Abandoned mine shaft.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="enterMine()">Go inside</button><button class="btn small" onclick="showWildChoices()">Leave</button>'; }
 function enterMine(){ const p=gameState.player; const r=Math.random(); if(r<0.35){ const n=Math.floor(Math.random()*2)+1; for(let i=0;i<n;i++){p.sellableInventory.push({name:'Gold Nugget',...sellableItemDefs['Gold Nugget']});} document.getElementById('wild-result').textContent=`Found ${n} Gold Nugget(s)!`; updateWildernessDisplay(); showWildChoices(); } else if(r<0.65){ document.getElementById('wild-result').textContent='Ambush!'; gameState.combatInWilderness=true; setTimeout(()=>startCombat({name:'Mine Bandit',health:15,maxHealth:15,damage:5}),800); } else { document.getElementById('wild-result').textContent='Nothing of value.'; showWildChoices(); } }
-function showWildChoices(){ document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
+function showWildChoices(){ document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToCamp()">Make Camp</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
 function wildernessShop(){
     const p=gameState.player;
     document.getElementById('wild-result').textContent='A traveling merchant appears!';
@@ -911,60 +1082,192 @@ function continueRun(){
 
 // ==================== COMBAT (complete) ====================
 const iconMap={
-    'Quick Shot':'🔫','Aimed Shot':'🎯','Fan the Hammer':'💥','Reload':'🔄','Dodge':'💨','Take Cover':'🛡️','Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨','Dead Eye':'🔭','Lasso':'🪢','Last Stand':'🌅','War Cry':'🦅','Double Tap':'💢','Headshot':'💀','Poison Dart':'🐍','Ricochet':'🪃','Bolas':'🕸️'
+    'Quick Shot':'🔫','Aimed Shot':'🎯','Fan the Hammer':'💥','Reload':'🔄','Dodge':'💨','Take Cover':'🛡️','Desperado':'⚡','Intimidate':'👁️','Bandage':'🩹','Lucky Shot':'🍀','Sucker Punch':'👊','Dynamite Toss':'🧨','Smokebomb':'💨','Dead Eye':'🔭','Lasso':'🪢','Last Stand':'🌅','War Cry':'🦅','Double Tap':'💢','Headshot':'💀','Poison Dart':'🐍','Ricochet':'🪃',    'Bolas':'🕸️',
+    'Blunderbuss':'💥','Sloppy Reload':'🔄','Coin Shot':'🪙','Fateful Draw':'🃏',
+    'Dynamite Bundle':'🧨','Bullet Swarm':'🌪️','Akimbo':'🔫','Crossfire':'⚡','Deadeye Duelist':'🎯'
 };
-function setEnemyIntent(){const e=gameState.combatEnemy;if(!e)return;const acts=['attack','attack','heavy','taunt','defend','reload'];e.nextAction=acts[Math.floor(Math.random()*acts.length)];document.getElementById('enemy-intent').textContent=(e.nextAction==='heavy'?`⚠️ ${e.name} winds up a HEAVY ATTACK!`:e.nextAction==='taunt'?`${e.name} taunts you...`:`${e.name} eyes their iron...`);}
-function startCombat(enemy){gameState.combatEnemy={...enemy,poisoned:0,defendActive:false,skipNextTurn:false,nextAction:'attack'};gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=0;gameState.deck=buildDeck();gameState.discardPile=[];gameState.combatHand=[];const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;if(p.trinkets.some(t=>t.name==='Iron Horseshoe'))p.coverActive=1;const g=getActualGun();document.getElementById('combat-title').textContent=enemy.isBoss?'⚠️ BOSS FIGHT! ⚠️':enemy.isBounty?'BOUNTY SHOWDOWN!':'Showdown!';document.getElementById('enemy-name').textContent=enemy.name;document.getElementById('enemy-hp-text').textContent=enemy.health+'/'+enemy.maxHealth;document.getElementById('enemy-hp-fill').style.width=(enemy.health/enemy.maxHealth*100)+'%';document.getElementById('combat-hp').textContent=p.health+'/'+p.maxHealth;document.getElementById('player-hp-fill').style.width=(p.health/p.maxHealth*100)+'%';document.getElementById('combat-gun-name').textContent=g?g.name:'Fists';document.getElementById('combat-status').textContent='';updateCombatDisplay();document.getElementById('combat-log').textContent='The tension crackles...';document.getElementById('btn-flee').style.display=enemy.isBounty?'none':'inline-block';document.getElementById('card-hand').innerHTML='';const sb=document.getElementById('btn-switch-gun');if(sb)sb.style.display=p.guns.length>1?'inline-block':'none';setEnemyIntent();showScreen('combat');drawNewHand();}
-function drawNewHand(){const b=gameState.bonusCardDraw||0;gameState.bonusCardDraw=0;gameState.combatHand=drawCards(3+b);gameState.cardProcessing=false;renderCombatHand();}
-function renderCombatHand(){const h=document.getElementById('card-hand');h.innerHTML='';const g=getActualGun();gameState.combatHand.forEach((c,i)=>{const el=document.createElement('div');el.className='card';const cost=getCardAmmoCost(c);let dis=false,reason='';if(gameState.cardProcessing){dis=true;reason='Wait...';}else if(cost>0&&(!g||getAmmoOfType(g.currentType)<cost)){dis=true;reason=`Need ${cost} ammo`;}else if(c.effect==='reload'&&g&&getTotalLoaded()>=getMaxCapacity()&&gameState.player.bullets.regular===0){dis=true;reason='Full & no ammo';}else if(c.effect==='heal'&&gameState.player.health>=gameState.player.maxHealth){dis=true;reason='HP full';}else if(c.effect==='intimidate'&&gameState.player.intimidateUsed){dis=true;reason='Already used';}if(dis)el.classList.add('disabled');el.innerHTML=`<div class="card-name">${c.name}</div><div class="card-icon">${iconMap[c.name]||'?'}</div><div class="card-desc">${c.desc}</div><div class="card-cost">Ammo: ${cost}</div>${dis?`<div style="color:#555;font-size:.6em;">${reason}</div>`:''}`;if(!dis)el.addEventListener('click',()=>playCard(i,el));h.appendChild(el);});}
-function playCard(i,el){if(!gameState.combatActive||gameState.cardProcessing)return;gameState.cardProcessing=true;const card=gameState.combatHand[i];gameState.combatHand.splice(i,1);if(card.name!=='Smokebomb')gameState.discardPile.push(card);el.classList.add('played');const gun=getActualGun();const p=gameState.player;let log='';const hasL=p.trinkets.some(t=>t.name==='Lucky Rabbits Foot');const hasS=p.trinkets.some(t=>t.name==='Sharpshooter');const hasM=p.trinkets.some(t=>t.name==='Magnum Rounds');const hasDD=p.trinkets.some(t=>t.name==='Double Down');const hasBM=p.trinkets.some(t=>t.name==='Blood Moon');const hasG=p.trinkets.some(t=>t.name==='Gunslingers Gloves');const hasB=p.trinkets.some(t=>t.name==='Bowie Knife');const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');const bt=gun?gun.currentType:'regular';const gunAcc=gun?((gun.accuracyBonus)||0):0;let accBase=card.accuracy+(hasL?10:0)+(bt==='express'?10:0)+(hasG?5:0)+gunAcc;if(gameState.firstShotThisCombat&&hasS)accBase=100;const hit=Math.random()*100<accBase;const bmMult=(hasBM&&p.health<p.maxHealth*0.25)?1.5:1;
-if(card.effect==='smokebomb'){gameState.combatActive=false;document.getElementById('combat-log').textContent='Smoke!';setTimeout(()=>goToTown(),1500);return;}
-if(card.effect==='shoot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(bt==='express')dmg+=2;if(hasS&&gameState.firstShotThisCombat)dmg+=5;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);log=`Hit: ${actual} dmg.`;triggerScreenFlash();}else{if(bt==='trick'){let dmg=Math.floor((gun.damage+(card.bonusDmg||0))/2);const actual=dealDamageToEnemy(dmg);log=`Trick half-dmg: ${actual}.`;}else{log='Miss!';showMissIndicator();}}}else log='No ammo!';}
-if(card.effect==='fan'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const shots=card.shots||3;let totalDmg=0;for(let s=0;s<shots;s++){if(Math.random()*100<(accBase-15)){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Fan: ${totalDmg} total dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
-if(card.effect==='reload'){if(gun){const max=getMaxCapacity();const used=getTotalLoaded();const room=max-used;if(room>0){let toLoad=Math.min(room,6,Math.max(1,p.bullets.regular));if(p.bullets.regular===0){log='No regular ammo!';}else{gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad} round(s).`;if(p.trinkets.some(t=>t.name==='Quick Draw')&&gameState.combatEnemy){let dmg=gun.damage;if(hasM)dmg+=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);log+=` Quick Draw shot: ${actual} dmg!`;triggerScreenFlash();}}}else log='Already full!';}else log='No gun!';}
-if(card.effect==='dodge'){p.dodgeActive=true;log='Dodge activated!';}
-if(card.effect==='cover'){p.coverActive+=4;if(p.coverActive>8)p.coverActive=8;log='Cover raised (+4).';}
-if(card.effect==='heal'){const amt=card.healAmt||6;p.health=Math.min(p.maxHealth,p.health+amt);log=`Healed +${amt} HP.`;}
-if(card.effect==='intimidate'){if(Math.random()<0.4){gameState.combatEnemy.skipNextTurn=true;log='Intimidated! Enemy skips turn.';}else{log='Intimidation failed.';}p.intimidateUsed=true;}
-if(card.effect==='melee'){const cost=getCardAmmoCost(card);let dmg=card.fixedDmg||4;if(hasB)dmg+=4;if(hit){const actual=dealDamageToEnemy(dmg);log=`Punched for ${actual} dmg!`;triggerScreenFlash();}else{log='Punch missed!';}}
-if(card.effect==='dynamite'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=(gun.damage*card.dmgMult)+(card.bonusDmg||0);if(hasM)dmg+=2;dmg=Math.floor(dmg*bmMult);const actual=dealDamageToEnemy(dmg);const selfDmg=card.selfDmg||3;p.health=Math.max(0,p.health-selfDmg);log=`Dynamite: ${actual} dmg to enemy, ${selfDmg} self-dmg!`;triggerScreenFlash();}else{log='Dynamite fizzled!';}}else log='No ammo!';}
-if(card.effect==='lasso'){if(Math.random()<0.7){gameState.combatEnemy.skipNextTurn=true;log='Lassoed! Enemy is hogtied.';}else{log='Lasso missed!';}}
-if(card.effect==='laststand'){if(gun&&getAmmoOfType(bt)>=1){gun.loaded[bt]-=1;if(hit){const missing=p.maxHealth-p.health;let dmg=Math.floor(missing/2);if(p.trinkets.some(t=>t.name==='Spare Spurs'))dmg+=3;const actual=dealDamageToEnemy(dmg);log=`Last Stand: ${actual} dmg!`;triggerScreenFlash();}else{log='Last Stand missed!';}}else log='No ammo!';}
-if(card.effect==='warcry'){const amt=card.healAmt||4;p.health=Math.min(p.maxHealth,p.health+amt);gameState.bonusCardDraw=1;log=`War Cry! +${amt} HP, extra card.`;}
-if(card.effect==='doubletap'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let totalDmg=0;for(let s=0;s<2;s++){if(Math.random()*100<accBase){let dmg=Math.floor((gun.damage*card.dmgMult)+(card.bonusDmg||0));if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Double Tap: ${totalDmg} dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
-if(card.effect==='ricochet'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let totalDmg=0;for(let s=0;s<2;s++){if(Math.random()*100<(accBase-10)){let dmg=Math.floor((gun.damage*card.dmgMult)+(card.bonusDmg||0));if(bt==='express')dmg+=2;if(hasM)dmg+=2;if(hasDD&&Math.random()<0.5)dmg*=2;dmg=Math.floor(dmg*bmMult);totalDmg+=dealDamageToEnemy(dmg);}}log=`Ricochet: ${totalDmg} dmg!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
-if(card.effect==='poison'){if(Math.random()*100<(accBase-5)){gameState.combatEnemy.poisoned=3;log='Poisoned! 3 dmg/turn for 3 turns.';}else{log='Poison dart missed!';}}
-if(card.effect==='bolas'){if(Math.random()<0.7){gameState.combatEnemy.skipNextTurn=true;log='Bolas entangle enemy!';}else{log='Bolas missed!';}}
-gameState.firstShotThisCombat=false;updateCombatDisplay(log);if(gameState.combatEnemy.health<=0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);return;}setTimeout(()=>{if(!gameState.combatActive)return;if(p.trinkets.some(t=>t.name==='Snake Oil'))p.health=Math.min(p.maxHealth,p.health+1);enemyTurn();updateCombatDisplay('');if(gameState.combatEnemy.health<=0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);}else setTimeout(()=>{if(gameState.combatActive)drawNewHand();},500);},600);}
-function enemyTurn(){
-    const e=gameState.combatEnemy;const p=gameState.player;if(!e||!gameState.combatActive)return;
-    const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');
-    if(e.skipNextTurn){e.skipNextTurn=false;document.getElementById('combat-log').textContent=`${e.name} is stunned and skips their turn!`;return;}
-    if(e.poisoned>0){e.health=Math.max(0,e.health-3);e.poisoned--;document.getElementById('combat-log').textContent=`Poison deals 3 dmg! (${e.poisoned} turns remain)`;}
-    if(e.health<=0)return;
-    const action=e.nextAction||'attack';
-    if(action==='attack'||action==='heavy'){
-        let dmg=action==='heavy'?e.damage*2:e.damage;
-        if(p.dodgeActive&&Math.random()<0.5){p.dodgeActive=false;document.getElementById('combat-log').textContent='You dodge the attack!';return;}
-        p.dodgeActive=false;
-        if(p.coverActive>0){const red=Math.min(4,p.coverActive);dmg=Math.max(0,dmg-red);p.coverActive-=red;if(p.coverActive<0)p.coverActive=0;}
-        if(hasCP&&Math.random()<0.1){document.getElementById('combat-log').textContent=`${e.name}'s attack misses entirely!`;return;}
-        if(e.defendActive)dmg=Math.floor(dmg*0.55);
-        e.defendActive=false;
-        dmg=Math.max(0,dmg);
-        p.health=Math.max(0,p.health-dmg);
-        document.getElementById('combat-log').textContent=`${e.name} ${action==='heavy'?'HEAVY ':''}hits you for ${dmg} damage!`;
-    }else if(action==='taunt'){document.getElementById('combat-log').textContent=`${e.name} taunts you — no effect.`;}
-    else if(action==='defend'){e.defendActive=true;document.getElementById('combat-log').textContent=`${e.name} braces for impact.`;}
-    else if(action==='reload'){e.damage=Math.min((e.maxDamage||e.damage)+2,20);document.getElementById('combat-log').textContent=`${e.name} reloads — damage up!`;}
-    else{document.getElementById('combat-log').textContent=`${e.name} eyes you...`;}
+function setEnemyIntent(e){
+    if(!e){gameState.combatEnemies.forEach(en=>setEnemyIntent(en));return;}
+    const acts=['attack','attack','heavy','taunt','defend','reload'];
+    e.nextAction=acts[Math.floor(Math.random()*acts.length)];
+}
+function startCombat(enemies,isBossGroup,isBountyGroup){
+    if(!Array.isArray(enemies))enemies=[enemies];
+    const now=new Date().getTime();
+    gameState.combatEnemies=enemies.map((e,i)=>({...e,id:now+i,poisoned:0,defendActive:false,skipNextTurn:false,nextAction:'attack'}));
+    gameState.selectedEnemyIndex=0;
+    gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=0;gameState.discardMode=false;gameState.discardTargets=[];
+    gameState.deck=buildDeck();gameState.discardPile=[];gameState.combatHand=[];
+    const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;
+    if(p.trinkets.some(t=>t.name==='Iron Horseshoe'))p.coverActive=1;
+    const first=enemies[0];
+    const isBoss=isBossGroup||first.isBoss;
+    const isBounty=isBountyGroup||first.isBounty;
+    const g=getActualGun();
+    document.getElementById('combat-title').textContent=isBoss?'⚠️ BOSS FIGHT! ⚠️':isBounty?'BOUNTY SHOWDOWN!':'Showdown!';
+    document.getElementById('combat-hp').textContent=p.health+'/'+p.maxHealth;
+    document.getElementById('player-hp-fill').style.width=(p.health/p.maxHealth*100)+'%';
+    document.getElementById('combat-gun-name').textContent=g?g.name:'Fists';
+    document.getElementById('combat-status').textContent='';
+    const fleeBtn=document.getElementById('btn-flee');
+    if(fleeBtn){
+        fleeBtn.style.display=(isBounty||isBoss)?'none':'inline-block';
+        const baseChance=0.25;const bonus=p.trinkets.some(t=>t.name==='Slick Hat')?0.2:0;
+        fleeBtn.textContent=`Flee (${Math.round((baseChance+bonus)*100)}% chance)`;
+    }
+    document.getElementById('card-hand').innerHTML='';
+    const sb=document.getElementById('btn-switch-gun');
+    if(sb)sb.style.display=p.guns.length>1?'inline-block':'none';
+    updateCombatDisplay();
+    document.getElementById('combat-log').textContent='The tension crackles...';
     setEnemyIntent();
+    showScreen('combat');
+    drawNewHand();
+    // If multiple enemies, show target controls
+    const tc=document.getElementById('target-controls');
+    if(tc)tc.style.display=enemies.length>1?'flex':'none';
+}
+function drawNewHand(){const b=gameState.bonusCardDraw||0;gameState.bonusCardDraw=0;gameState.combatHand=drawCards(3+b);gameState.cardProcessing=false;gameState.discardMode=false;gameState.discardTargets=[];renderCombatHand();}
+function toggleDiscardMode(){
+    if(gameState.cardProcessing)return;
+    gameState.discardMode=!gameState.discardMode;
+    if(!gameState.discardMode)gameState.discardTargets=[];
+    renderCombatHand();
+}
+function confirmDiscard(){
+    if(!gameState.discardTargets.length){gameState.discardMode=false;renderCombatHand();return;}
+    const targets=[...gameState.discardTargets].sort((a,b)=>b-a);
+    const count=targets.length;
+    targets.forEach(i=>{const card=gameState.combatHand[i];if(card)gameState.discardPile.push(card);gameState.combatHand.splice(i,1);});
+    const drawn=drawCards(count);
+    gameState.combatHand=gameState.combatHand.concat(drawn);
+    gameState.discardMode=false;gameState.discardTargets=[];
+    document.getElementById('combat-log').textContent=`Discarded ${count}, drew ${drawn.length}.`;
+    renderCombatHand();
+}
+function renderCombatHand(){const h=document.getElementById('card-hand');h.innerHTML='';const g=getActualGun();const db=document.getElementById('btn-discard');if(db){if(gameState.discardMode){db.textContent=`Discard (${gameState.discardTargets.length}/3)`;db.style.background='linear-gradient(180deg,#962222,7c1818,#5e1212,#461010)';}else{db.textContent='Discard';db.style.background='';}}gameState.combatHand.forEach((c,i)=>{const el=document.createElement('div');el.className='card';const cost=getCardAmmoCost(c);let dis=false,reason='';if(gameState.cardProcessing){dis=true;reason='Wait...';}else if(!gameState.discardMode&&cost>0&&(!g||getAmmoOfType(g.currentType)<cost)){dis=true;reason=`Need ${cost} ammo`;}else if(!gameState.discardMode&&c.effect==='reload'&&g&&(getTotalLoaded()>=getMaxCapacity()||gameState.player.bullets.regular===0)){dis=true;reason=gameState.player.bullets.regular===0?'No regular ammo':'Already full';}else if(!gameState.discardMode&&c.effect==='heal'&&gameState.player.health>=gameState.player.maxHealth){dis=true;reason='HP full';}else if(!gameState.discardMode&&c.effect==='intimidate'&&gameState.player.intimidateUsed){dis=true;reason='Already used';}else if(!gameState.discardMode&&(c.effect==='akimbo'||c.effect==='crossfire'||c.effect==='deadeye')&&gameState.player.guns.length<2){dis=true;reason='Need 2 guns';}if(gameState.discardMode){const marked=gameState.discardTargets.includes(i);if(marked)el.style.boxShadow='0 0 0 2px #cc2020,0 0 12px rgba(200,20,20,.5)';}if(dis&&!gameState.discardMode)el.classList.add('disabled');el.innerHTML=`<div class="card-name">${c.name}</div><div class="card-icon">${iconMap[c.name]||'?'}</div><div class="card-desc">${c.desc}</div><div class="card-cost">Ammo: ${cost}</div>${dis&&!gameState.discardMode?`<div style="color:#555;font-size:.6em;">${reason}</div>`:''}`;el.addEventListener('click',()=>{if(gameState.discardMode){if(gameState.discardTargets.includes(i)){gameState.discardTargets=gameState.discardTargets.filter(t=>t!==i);}else if(gameState.discardTargets.length<3){gameState.discardTargets.push(i);}if(gameState.discardTargets.length>=3)confirmDiscard();else renderCombatHand();return;}if(!gameState.combatActive||gameState.cardProcessing)return;playCard(i,el);});h.appendChild(el);});}
+function playCard(i,el){if(!gameState.combatActive||gameState.cardProcessing)return;gameState.cardProcessing=true;const card=gameState.combatHand[i];gameState.combatHand.splice(i,1);if(card.name!=='Smokebomb')gameState.discardPile.push(card);el.classList.add('played');const gun=getActualGun();const p=gameState.player;let log='';const hasL=p.trinkets.some(t=>t.name==='Lucky Rabbits Foot');const hasS=p.trinkets.some(t=>t.name==='Sharpshooter');const hasM=p.trinkets.some(t=>t.name==='Magnum Rounds');const hasDD=p.trinkets.some(t=>t.name==='Double Down');const hasBM=p.trinkets.some(t=>t.name==='Blood Moon');const hasG=p.trinkets.some(t=>t.name==='Gunslingers Gloves');const hasB=p.trinkets.some(t=>t.name==='Bowie Knife');const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');const bt=gun?gun.currentType:'regular';const gunAcc=gun?((gun.accuracyBonus)||0):0;let accBase=card.accuracy+(hasL?10:0)+(bt==='express'?10:0)+(hasG?5:0)+gunAcc;if(gameState.firstShotThisCombat&&hasS)accBase=100;const hit=Math.random()*100<accBase;const bmMult=(hasBM&&p.health<p.maxHealth*0.25)?1.5:1;
+const target=getTargetEnemy();
+const calcDmg=(mult,bonus)=>{
+    let d=(gun?gun.damage*mult:0)+(bonus||0);
+    if(bt==='express')d+=2;if(hasM)d+=2;if(hasDD&&Math.random()<0.5)d*=2;
+    return Math.floor(d*bmMult);
+};
+if(card.effect==='smokebomb'){gameState.combatActive=false;document.getElementById('combat-log').textContent='Smoke!';setTimeout(()=>goToTown(),1500);return;}
+if(card.effect==='shoot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=calcDmg(card.dmgMult,card.bonusDmg);if(hasS&&gameState.firstShotThisCombat)dmg+=5;const actual=dealDamageToEnemy(dmg,target);log=`Hit ${target.name}: ${actual} dmg.`;triggerScreenFlash();}else{if(bt==='trick'){const actual=dealDamageToEnemy(Math.floor((gun.damage+(card.bonusDmg||0))/2),target);log=`Trick half-dmg: ${actual}.`;}else{log='Miss!';showMissIndicator();}}}else log='No ammo!';}
+if(card.effect==='fan'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const shots=card.shots||3;let totalDmg=0;for(let s=0;s<shots;s++){if(Math.random()*100<(accBase-15)){const dmg=calcDmg(card.dmgMult,card.bonusDmg);totalDmg+=dealDamageToEnemy(dmg,target);}}log=`Fan: ${totalDmg} total!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='reload'){if(gun){const max=getMaxCapacity();const used=getTotalLoaded();const room=max-used;if(room>0){let toLoad=Math.min(room,6,Math.max(1,p.bullets.regular));if(p.bullets.regular===0){log='No regular ammo!';}else{gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad} round(s).`;if(p.trinkets.some(t=>t.name==='Quick Draw')&&target){let dmg=calcDmg(1,0);const actual=dealDamageToEnemy(dmg,target);log+=` Quick Draw: ${actual}!`;triggerScreenFlash();}}}else log='Already full!';}else log='No gun!';}
+if(card.effect==='dodge'){p.dodgeActive=true;log='Dodge!';}
+if(card.effect==='cover'){p.coverActive+=4;if(p.coverActive>8)p.coverActive=8;log='Cover +4.';}
+if(card.effect==='heal'){const amt=card.healAmt||6;p.health=Math.min(p.maxHealth,p.health+amt);log=`+${amt} HP.`;}
+if(card.effect==='intimidate'){if(Math.random()<0.4){if(target)target.skipNextTurn=true;log='Intimidated!';}else log='Intimidation failed.';p.intimidateUsed=true;}
+if(card.effect==='melee'){let dmg=card.fixedDmg||4;if(hasB)dmg+=4;if(hit){const actual=dealDamageToEnemy(dmg,target);log=`Punch: ${actual}!`;triggerScreenFlash();}else log='Miss!';}
+if(card.effect==='dynamite'){
+    const cost=getCardAmmoCost(card);
+    if(gun&&getAmmoOfType(bt)>=cost){
+        gun.loaded[bt]-=cost;const selfDmg=card.selfDmg||3;
+        if(hit){
+            const es=gameState.combatEnemies;
+            if(es.length<=1){
+                let dmg=calcDmg(card.dmgMult,card.bonusDmg);
+                const actual=dealDamageToEnemy(dmg,target);
+                p.health=Math.max(0,p.health-selfDmg);
+                log=`Blast: ${actual} to ${target.name}, self ${selfDmg}!`;
+            }else{
+                let total=calcDmg(card.dmgMult,card.bonusDmg);
+                const split=Math.floor(total/es.length);
+                es.forEach(e=>{if(e.health>0)e.health=Math.max(0,e.health-split);});
+                p.health=Math.max(0,p.health-selfDmg);
+                log=`Dynamite: ${split} each to ${es.length} foes, self ${selfDmg}!`;
+            }
+            triggerScreenFlash();
+        }else log='Dynamite fizzled!';
+    }else log='No ammo!';
+}
+if(card.effect==='lasso'){if(Math.random()<0.7&&target){target.skipNextTurn=true;log=`Lassoed ${target.name}!`;}else log='Lasso missed!';}
+if(card.effect==='laststand'){if(gun&&getAmmoOfType(bt)>=1){gun.loaded[bt]-=1;if(hit){const missing=p.maxHealth-p.health;let dmg=Math.floor(missing/2);if(p.trinkets.some(t=>t.name==='Spare Spurs'))dmg+=3;const actual=dealDamageToEnemy(dmg,target);log=`Last Stand: ${actual}!`;triggerScreenFlash();}else log='Miss!';}else log='No ammo!';}
+if(card.effect==='warcry'){const amt=card.healAmt||4;p.health=Math.min(p.maxHealth,p.health+amt);gameState.bonusCardDraw=1;log=`War Cry! +${amt} HP, +1 card.`;}
+if(card.effect==='doubletap'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let total=0;for(let s=0;s<2;s++){if(Math.random()*100<accBase){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),target);}}log=`Double Tap: ${total}!`;if(total>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='ricochet'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;let total=0;for(let s=0;s<2;s++){if(Math.random()*100<(accBase-10)){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),target);}}log=`Ricochet: ${total}!`;if(total>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='poison'){if(Math.random()*100<(accBase-5)&&target){target.poisoned=3;log='Poisoned!';}else log='Poison missed!';}
+if(card.effect==='bolas'){if(Math.random()<0.7&&target){target.skipNextTurn=true;log=`Bolas: ${target.name} entangled!`;}else log='Bolas missed!';}
+// NEW EFFECTS
+if(card.effect==='aoe'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const es=gameState.combatEnemies;let total=0;es.forEach(e=>{if(e.health>0){if(Math.random()*100<(accBase-10)){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),e);}}});log=`Blunderbuss: ${total} total!`;if(total>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='sloppyreload'){if(gun){const half=Math.floor(getMaxCapacity()/2);const used=getTotalLoaded();const room=getMaxCapacity()-used;const toLoad=Math.min(room,half,Math.max(1,p.bullets.regular));if(toLoad>0&&p.bullets.regular>0){gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad}.`;}else log='No ammo or full.';p.coverActive=Math.min(8,p.coverActive+1);log+=' +1 Cover.';}else log='No gun!';}
+if(card.effect==='coinshot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(Math.random()<0.5){const dmg=calcDmg(card.dmgMult*2,card.bonusDmg);const actual=dealDamageToEnemy(dmg,target);log=`Heads! ${actual} dmg!`;triggerScreenFlash();}else{p.health=Math.max(0,p.health-1);log=`Tails! Self-dmg 1.`;}}else log='No ammo!';}
+if(card.effect==='fatedraw'){gameState.bonusCardDraw=2;log='Fateful Draw: +2 cards!';}
+if(card.effect==='dynamitebundle'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const es=gameState.combatEnemies;const selfDmg=card.selfDmg||2;let total=0;if(hit&&target){const main=calcDmg(card.dmgMult,card.bonusDmg);total+=dealDamageToEnemy(main,target);es.forEach(e=>{if(e!==target&&e.health>0){const splash=Math.floor(calcDmg(card.dmgMult,card.bonusDmg)*0.5);total+=dealDamageToEnemy(splash,e);}});p.health=Math.max(0,p.health-selfDmg);log=`Bundle: ${total} total, self ${selfDmg}!`;triggerScreenFlash();}else log='Miss!';}else log='No ammo!';}
+if(card.effect==='bulletswarm'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const es=gameState.combatEnemies.filter(e=>e.health>0);let total=0;const hitTargets=new Set();es.forEach(e=>{if(Math.random()*100<(accBase-10)){const dmg=calcDmg(card.dmgMult,card.bonusDmg);total+=dealDamageToEnemy(dmg,e);hitTargets.add(e.id);}});log=`Swarm: ${total} to ${hitTargets.size} foes!`;if(total>0)triggerScreenFlash();}else log='No ammo!';}
+if(card.effect==='akimbo'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost&&p.guns.length>=2){gun.loaded[bt]-=cost;const enemies=gameState.combatEnemies.filter(e=>e.health>0);let total=0;for(let gIdx=0;gIdx<Math.min(2,enemies.length);gIdx++){const t=enemies[gIdx];const dmg=calcDmg(card.dmgMult,card.bonusDmg);total+=dealDamageToEnemy(dmg,t);}log=`Akimbo: ${total} total!`;if(total>0)triggerScreenFlash();}else if(p.guns.length<2)log='Need 2 guns!';else log='No ammo!';}
+if(card.effect==='crossfire'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost&&p.guns.length>=2){gun.loaded[bt]-=cost;const es=gameState.combatEnemies.filter(e=>e.health>0);let total=0;let bothHit=true;for(let gIdx=0;gIdx<Math.min(2,es.length);gIdx++){const t=es[gIdx];if(Math.random()*100<accBase){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),t);}else bothHit=false;}if(bothHit&&es.length>=2){es.forEach(e=>{if(e.health>0)e.confused=true;});log=`Crossfire: ${total}! Confused!`;}else log=`Crossfire: ${total}.`;if(total>0)triggerScreenFlash();}else if(p.guns.length<2)log='Need 2 guns!';else log='No ammo!';}
+if(card.effect==='deadeye'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost&&p.guns.length>=2){gun.loaded[bt]-=cost;let total=0;for(let s=0;s<2;s++){if(Math.random()*100<(accBase+5)){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),target);}}log=`Deadeye: ${total} to ${target.name}!`;if(total>0)triggerScreenFlash();if(target&&target.health<=0){gameState.bonusCardDraw=2;log+=` Killed! +2 cards.`;}}else if(p.guns.length<2)log='Need 2 guns!';else log='No ammo!';}
+gameState.firstShotThisCombat=false;updateCombatDisplay(log);removeDeadEnemies();if(enemiesRemaining()===0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);return;}setTimeout(()=>{if(!gameState.combatActive)return;if(p.trinkets.some(t=>t.name==='Snake Oil'))p.health=Math.min(p.maxHealth,p.health+1);enemyTurn();updateCombatDisplay('');if(enemiesRemaining()===0){setTimeout(()=>victory(),400);return;}if(p.health<=0){setTimeout(()=>endRun('killed'),300);}else setTimeout(()=>{if(gameState.combatActive)drawNewHand();},500);},600);}
+function enemyTurn(){
+    const es=gameState.combatEnemies;const p=gameState.player;if(!es.length||!gameState.combatActive)return;
+    const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');
+    let msg='';
+    const alive=es.filter(e=>e&&e.health>0);
+    if(alive.length===0)return;
+    const confusedIds=new Set();
+    alive.filter(e=>e.confused).forEach(e=>{
+        e.confused=false;
+        if(Math.random()<0.3){
+            const targets=alive.filter(o=>o.id!==e.id);
+            if(targets.length){
+                const t=targets[Math.floor(Math.random()*targets.length)];
+                const dmg=Math.max(1,Math.floor(e.damage*0.6));
+                t.health=Math.max(0,t.health-dmg);
+                msg+=`${e.name} attacks ${t.name} for ${dmg}! `;
+                confusedIds.add(e.id);
+            }
+        }
+    });
+    alive.forEach(e=>{
+        if(!e||e.health<=0||confusedIds.has(e.id))return;
+        if(e.skipNextTurn){e.skipNextTurn=false;msg+=`${e.name} is stunned! `;return;}
+        if(e.poisoned>0){e.health=Math.max(0,e.health-3);e.poisoned--;msg+=`Poison deals 3 dmg to ${e.name}! `;}
+        if(e.health<=0)return;
+        const action=e.nextAction||'attack';
+        if(action==='attack'||action==='heavy'){
+            let dmg=action==='heavy'?e.damage*2:e.damage;
+            if(p.dodgeActive&&Math.random()<0.5){p.dodgeActive=false;msg+=`You dodge ${e.name}'s attack! `;return;}
+            p.dodgeActive=false;
+            if(p.coverActive>0){const red=Math.min(4,p.coverActive);dmg=Math.max(0,dmg-red);p.coverActive-=red;}
+            if(hasCP&&Math.random()<0.1){msg+=`${e.name}'s attack misses! `;return;}
+            dmg=Math.max(0,dmg);
+            p.health=Math.max(0,p.health-dmg);
+            msg+=`${e.name} ${action==='heavy'?'HEAVY ':''}hits for ${dmg}! `;
+        }else if(action==='defend'){e.defendActive=true;msg+=`${e.name} braces. `;}
+        else if(action==='reload'){e.damage=Math.min((e.maxDamage||e.damage)+2,20);msg+=`${e.name} reloads! `;}
+        setEnemyIntent(e);
+    });
+    if(p.health<=0||enemiesRemaining()===0)return;
+    document.getElementById('combat-log').textContent=msg||'The enemies watch you...';
+    updateCombatDisplay();
 }
 function triggerScreenFlash(){const f=document.createElement('div');f.className='screen-flash';document.getElementById('game-inner').appendChild(f);setTimeout(()=>f.remove(),200);}
 function showMissIndicator(){const el=document.createElement('div');el.className='miss-indicator';el.textContent='MISS!';document.getElementById('game-inner').appendChild(el);setTimeout(()=>el.remove(),900);}
 function updateCombatDisplay(msg){
-    const e=gameState.combatEnemy;const p=gameState.player;const g=getActualGun();
-    if(e){document.getElementById('enemy-hp-text').textContent=e.health+'/'+e.maxHealth;document.getElementById('enemy-hp-fill').style.width=(e.maxHealth>0?(e.health/e.maxHealth*100):0)+'%';}
+    const es=gameState.combatEnemies;const p=gameState.player;const g=getActualGun();
+    const container=document.getElementById('enemy-container');
+    if(container){
+        const sel=gameState.selectedEnemyIndex;
+        container.innerHTML=es.map((e,i)=>{
+            const hpPct=e.maxHealth>0?(e.health/e.maxHealth*100):0;
+            const isSel=i===sel;
+            return `<div class="enemy-display" style="${isSel?'box-shadow:0 0 0 1px #140902,0 0 0 3px #f0c840,0 0 0 5px #140902,0 0 0 6px #583c0e,0 10px 28px rgba(0,0,0,.76),inset 0 0 50px rgba(0,0,0,.45);':''}min-width:${es.length>1?'180':'220'}px;cursor:pointer;" onclick="selectEnemy(${i})">
+                <div class="enemy-name" style="font-size:${es.length>1?'1.2':'1.5'}em;">${e.name}</div>
+                <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${hpPct}%;"></div></div>
+                <div style="font-size:.85em;">HP: <span>${e.health}/${e.maxHealth}</span></div>
+                <div style="font-size:.8em;color:#a08060;">${e.poisoned?'☠️ Poisoned ('+e.poisoned+')':''}${e.nextAction&&isSel?' Intent: '+e.nextAction:''}</div>
+            </div>`;
+        }).join('');
+    }
+    const targetEl=document.getElementById('target-label');
+    if(targetEl&&es.length>1){
+        const t=es[gameState.selectedEnemyIndex];
+        targetEl.textContent='Target: '+(t?t.name:'—');
+    }else if(targetEl){targetEl.textContent='';}
     if(p){document.getElementById('combat-hp').textContent=p.health+'/'+p.maxHealth;document.getElementById('player-hp-fill').style.width=(p.maxHealth>0?(p.health/p.maxHealth*100):0)+'%';}
     if(g){document.getElementById('combat-gun-name').textContent=g.name;const loaded=getTotalLoaded();const cap=getMaxCapacity();document.getElementById('combat-ammo').textContent=loaded+'/'+cap;}
     document.getElementById('combat-status').textContent='';
@@ -972,46 +1275,55 @@ function updateCombatDisplay(msg){
     const hpE=document.getElementById('combat-hp');if(p&&p.health<=5)hpE.classList.add('low');else if(hpE)hpE.classList.remove('low');
 }
 function victory(){
-    const e=gameState.combatEnemy;const p=gameState.player;if(!e)return;
-    p.killCount=(p.killCount||0)+1;
-    let reward=Math.floor(Math.random()*10)+5+Math.floor(e.maxHealth*0.5);
-    let msg=`${e.name} is defeated!`;
-    if(e.isBoss){
-        const bossReward=(e.bossReward||50);
+    const es=gameState.combatEnemies;const p=gameState.player;
+    removeDeadEnemies();
+    const allDead=enemiesRemaining()===0;
+    if(!allDead)return;
+    const firstBoss=es.find(e=>e.isBoss);
+    const firstBounty=es.find(e=>e.isBounty);
+    const killCount=es.length;
+    p.killCount=(p.killCount||0)+killCount;
+    let reward=0;
+    es.forEach(e=>{reward+=Math.floor(Math.random()*10)+5+Math.floor(e.maxHealth*0.5);});
+    let msg=`All enemies defeated!`;
+    if(firstBoss){
+        const bossReward=(firstBoss.bossReward||50);
         p.money+=bossReward;p.totalEarned+=bossReward;
-        msg=`${e.name} is VANQUISHED! You collect $${bossReward}!`;
-    }else{
-        p.money+=reward;p.totalEarned+=reward;
-        msg+=` You find $${reward} on their body.`;
-    }
-    if(e.isBounty&&gameState.activeBounty){
+        msg=`${firstBoss.name} VANQUISHED! You collect $${bossReward}!`;
+        if(killCount>1)msg+=` (${killCount-1} minions felled)`;
+    }else if(firstBounty&&gameState.activeBounty){
         gameState.claimableBounty=gameState.activeBounty;
         gameState.activeBounty=null;
-        msg+=` Return to the sheriff to claim your reward.`;
+        msg+=` Bounty target down! Return to the sheriff.`;
+        p.money+=reward;p.totalEarned+=reward;
+    }else{
+        p.money+=reward;p.totalEarned+=reward;
+        msg+=` You find $${reward} in total.`;
     }
     if(p.trinkets.some(t=>t.name==='Vultures Eye')){p.health=Math.min(p.maxHealth,p.health+4);msg+=' Vulture\'s Eye heals 4 HP.';}
     const g=getActualGun();if(g&&g.onKillHeal){p.health=Math.min(p.maxHealth,p.health+g.onKillHeal);msg+=` ${g.name} heals ${g.onKillHeal} HP.`;}
     const lootChance=Math.random();
-    if(lootChance<(e.isBounty?0.5:0.3)&&!e.isBoss){const item=getRandomSellableItem();p.sellableInventory.push(item);msg+=` Loot: ${item.name}.`;}
-    if(e.isBoss){
+    if(lootChance<(firstBounty?0.5:0.3)&&!firstBoss){const item=getRandomSellableItem();p.sellableInventory.push(item);msg+=` Loot: ${item.name}.`;}
+    if(firstBoss){
         const item=getRandomSellableItem();p.sellableInventory.push(item);msg+=` Trophy: ${item.name}.`;
         if(Math.random()<0.5){const amt=Math.floor(Math.random()*4)+3;p.bullets.regular=(p.bullets.regular||0)+amt;msg+=` Ammo: ${amt}rds.`;}
         if(Math.random()<0.3){const amt=Math.floor(Math.random()*3)+2;p.food=(p.food||0)+amt;msg+=` Food: ${amt} rations.`;}
         if(Math.random()<0.12){const av=Object.keys(trinketDefs).filter(t=>!p.trinkets.find(tt=>tt.name===t));if(av.length&&p.trinkets.length<3){const pick=av[Math.floor(Math.random()*av.length)];p.trinkets.push({name:pick});msg+=` Keepsake: ${pick}!`;}}
-        if(Math.random()<0.08&&!p.guns.find(g=>g.name==='Widowmaker')){const w=weaponDefs['Widowmaker'];p.guns.push({name:'Widowmaker',damage:w.damage,capacity:w.capacity,loaded:{regular:0,express:0,trick:0},currentType:'regular'});msg+=` SPECIAL: Widowmaker!`;}
+        if(Math.random()<0.08&&!p.guns.find(g=>g.name==='Widowmaker')){const w=weaponDefs['Widowmaker'];p.guns.push({name:'Widowmaker',damage:w.damage,capacity:w.capacity,loaded:{regular:0,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});msg+=` SPECIAL: Widowmaker!`;}
     }
     document.getElementById('combat-log').textContent=msg;gameState.combatActive=false;
     updateCombatDisplay(msg);
     checkAchievements();
-    if(e.isBoss){p.regionsCompleted=(p.regionsCompleted||0)+1;gameState.regionIndex=(gameState.regionIndex||0)+1;p.venturesThisRegion=0;gameState.isBossFight=false;
+    if(firstBoss){p.regionsCompleted=(p.regionsCompleted||0)+1;gameState.regionIndex=(gameState.regionIndex||0)+1;p.venturesThisRegion=0;gameState.isBossFight=false;
         setTimeout(()=>{const diffCfg=diffConfig[getCurrentDiffKey()];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();},1500);
     }else{setTimeout(()=>{goToTown();},1200);}
 }
 function fleeCombat(){
-    if(gameState.combatEnemy&&(gameState.combatEnemy.isBounty||gameState.combatEnemy.isBoss)){document.getElementById('combat-log').textContent='You cannot flee!';return;}
+    const es=gameState.combatEnemies;
+    if(es.some(e=>e.isBounty||e.isBoss)){document.getElementById('combat-log').textContent='You cannot flee!';return;}
     const p=gameState.player;const baseChance=0.25;const bonus=p.trinkets.some(t=>t.name==='Slick Hat')?0.2:0;
     if(Math.random()<(baseChance+bonus)){document.getElementById('combat-log').textContent='You escape!';gameState.combatActive=false;setTimeout(()=>goToTown(),800);}
-    else{document.getElementById('combat-log').textContent='Failed to flee! Enemy gets a free shot.';const e=gameState.combatEnemy;if(e){let dmg=Math.floor(e.damage*0.6);p.health=Math.max(0,p.health-dmg);updateCombatDisplay(`${e.name} hits you for ${dmg} as you try to flee.`);if(p.health<=0){setTimeout(()=>endRun('killed'),300);}}}
+    else{const attacker=es.find(e=>e.health>0);if(attacker){let dmg=Math.floor(attacker.damage*0.6);p.health=Math.max(0,p.health-dmg);updateCombatDisplay(`${attacker.name} hits you for ${dmg} as you flee.`);if(p.health<=0)setTimeout(()=>endRun('killed'),300);}else goToTown();}
 }
 
 // ==================== META PROGRESSION ====================
@@ -1070,17 +1382,63 @@ function showAchievementPopup(a){
     document.getElementById('game-inner').appendChild(popup);
 }
 
+// ==================== CAMPING / REST STOPS ====================
+function goToCamp(){
+    updateCampDisplay();
+    document.getElementById('camp-result').textContent='';
+    showScreen('camp');
+}
+function updateCampDisplay(){
+    const p=gameState.player;
+    document.getElementById('camp-hp').textContent=p.health+'/'+p.maxHealth;
+    document.getElementById('camp-food').textContent=p.food;
+    document.getElementById('camp-money').textContent=p.money;
+    const container=document.getElementById('camp-actions');container.innerHTML='';
+    const buttons=[];
+    // Rest: spend food to heal
+    buttons.push({
+        label:`Rest (2 food) — Heal 4 HP${p.health>=p.maxHealth?' (HP full)':''}`,
+        action:()=>{if(p.food<2){document.getElementById('camp-result').textContent='Not enough food.';return;}p.food-=2;p.health=Math.min(p.maxHealth,p.health+4);document.getElementById('camp-result').textContent='You rest by the fire. +4 HP, -2 food.';updateCampDisplay();},
+        en:p.food>=2&&p.health<p.maxHealth
+    });
+    // Cook food: 2 food -> 3 food, with cooldown
+    const cookReady=!gameState.cookCooldown||Date.now()>gameState.cookCooldown;
+    buttons.push({
+        label:`Cook a meal (2 food → 3 food)${cookReady?'':' (cooling)'}`,
+        action:()=>{if(p.food<2){document.getElementById('camp-result').textContent='Need 2 food to cook.';return;}p.food+=1;gameState.cookCooldown=Date.now()+10000;document.getElementById('camp-result').textContent='Hearty meal! +1 food.';updateCampDisplay();setTimeout(()=>{if(gameState.currentScreen==='camp')updateCampDisplay();},10000);},
+        en:p.food>=2&&cookReady
+    });
+    // Repair poncho
+    if(p.ponchoDurability>0&&p.ponchoDurability<3){
+        buttons.push({
+            label:`Repair poncho ($${10})`,
+            action:()=>{if(p.money<10){document.getElementById('camp-result').textContent='Need $10.';return;}p.money-=10;p.ponchoDurability++;document.getElementById('camp-result').textContent='Poncho patched. +1 durability.';updateCampDisplay();},
+            en:p.money>=10
+        });
+    }
+    buttons.forEach(b=>{
+        const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;';
+        const btn=document.createElement('button');btn.className='btn small';btn.textContent='Do';btn.disabled=!b.en;
+        if(b.en)btn.addEventListener('click',b.action);
+        d.innerHTML=`<span style="color:#f0d080;">${b.label}</span>`;d.appendChild(btn);container.appendChild(d);
+    });
+}
+function leaveCamp(){
+    showWildChoices();
+    showScreen('wilderness');
+}
+
 // ==================== GAME MANAGEMENT ====================
 function addToInventory(n,t){const ex=gameState.player.inventory.find(i=>i.name===n&&i.type===t);if(ex)ex.qty++;else gameState.player.inventory.push({name:n,type:t,qty:1});}
 function checkStarving(){const p=gameState.player;if(p.food<=0){p.health-=3;if(p.health<=0){p.health=0;endRun('starved');}}}
 let selectedDifficulty = 'easy';
-function getCurrentDiffKey(){const rc=gameState.player.regionsCompleted||0;let dIdx=0;for(let i=0;i<diffOrder.length;i++){const cfg=diffConfig[diffOrder[i]];if(rc>=cfg.regions)dIdx=i+1;}return diffOrder[Math.min(dIdx,diffOrder.length-1)];}
+function getCurrentDiffKey(){const rc=gameState.player.regionsCompleted||0;const startIdx=diffOrder.indexOf(gameState.difficulty||'easy');let dIdx=startIdx;for(let i=startIdx;i<diffOrder.length;i++){const cfg=diffConfig[diffOrder[i]];if(rc>=cfg.regions)dIdx=i+1;}return diffOrder[Math.min(dIdx,diffOrder.length-1)];}
 function startGame(){
     try {
         const diff=selectedDifficulty||'easy';
         const diffCfg=diffConfig[diff];
-        gameState.player = { health:20,maxHealth:20,money:50,food:5, guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0},currentType:'regular',accuracyBonus:0}], equippedGunIndex:0,inventory:[],day:1,bountiesCollected:0,totalEarned:0, trinkets:[],consumables:[],gunParts:[], bullets:{regular:0,express:0,trick:0}, ponchoDurability:0,hasSnakeFlute:false,hasStolenBadge:false,killCount:0, sellableInventory:[], dodgeActive:false,coverActive:0,intimidateUsed:false,extraCardNextTurn:false, regionsCompleted:0, venturesThisRegion:0 };
-        gameState.deck=buildDeck(); gameState.discardPile=[]; gameState.combatEnemy=null; gameState.combatActive=false; gameState.activeBounty=null; gameState.claimableBounty=null; gameState.wildDepth=0; gameState.cardProcessing=false; gameState.combatInWilderness=false; gameState.bonusCardDraw=0; gameState.rotatingShopItems=generateRotatingItems();
+        gameState.player = { health:20,maxHealth:20,money:50,food:5, guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0},currentType:'regular',accuracyBonus:0,upgdDmg:0,upgdCap:0,upgdAcc:0}], equippedGunIndex:0,inventory:[],day:1,bountiesCollected:0,totalEarned:0, trinkets:[],consumables:[],gunParts:[], bullets:{regular:0,express:0,trick:0}, ponchoDurability:0,hasSnakeFlute:false,hasStolenBadge:false,killCount:0, sellableInventory:[], dodgeActive:false,coverActive:0,intimidateUsed:false,extraCardNextTurn:false, regionsCompleted:0, venturesThisRegion:0 };
+        gameState.deck=buildDeck(); gameState.discardPile=[]; gameState.combatEnemies=[]; gameState.combatActive=false; gameState.activeBounty=null; gameState.claimableBounty=null; gameState.wildDepth=0; gameState.cardProcessing=false; gameState.combatInWilderness=false; gameState.bonusCardDraw=0; gameState.rotatingShopItems=generateRotatingItems();
         gameState.difficulty=diff; gameState.regionIndex=0; gameState.isBossFight=false; gameState.wonGame=false;
         goToTown();
     } catch(e){ console.error(e); alert('Error starting game. Check console.'); }
@@ -1088,7 +1446,10 @@ function startGame(){
 function endRun(cause){
     gameState.combatActive=false; const p=gameState.player;
     const titleMap={starved:'STARVED',sandstorm:'BURIED',retired:'RETIRED',killed:'DEAD'};
-    document.getElementById('gameover-title').textContent=titleMap[cause]||'DEAD';
+    const titleEl=document.getElementById('gameover-title');
+    titleEl.textContent=titleMap[cause]||'DEAD';
+    if(cause==='retired'){titleEl.style.color='#c9a030';titleEl.style.setProperty('text-shadow','4px 4px 0 rgba(0,0,0,.92),0 0 44px rgba(201,160,48,.6)','important');titleEl.style.setProperty('animation','none','important');}
+    else{titleEl.style.color='#cc2020';titleEl.style.setProperty('text-shadow','4px 4px 0 rgba(0,0,0,.92),0 0 44px rgba(200,20,20,.6)','important');}
     document.getElementById('gameover-desc').textContent=(cause==='killed'?'You fell.':cause==='starved'?'Starvation.':'Your journey ends.');
     document.getElementById('go-days').textContent=p.day; document.getElementById('go-kills').textContent=p.killCount||0; document.getElementById('go-bounties').textContent=p.bountiesCollected; document.getElementById('go-money').textContent=p.totalEarned;
     updateHighScore(); document.getElementById('go-highscore').textContent = safeGet('dustLeadHighScore','0');
@@ -1105,11 +1466,72 @@ function endRun(cause){
 function restartGame(){ startGame(); }
 function updateHighScore(){ const cur=gameState.player.totalEarned; const h=parseInt(safeGet('dustLeadHighScore','0')); if(cur>h){ safeSet('dustLeadHighScore',String(cur)); document.getElementById('high-score-display').textContent = cur; } }
 function loadHighScore(){ document.getElementById('high-score-display').textContent = safeGet('dustLeadHighScore','0'); }
-function toggleDeckViewer(){ document.getElementById('deck-viewer').classList.toggle('open'); updateDeckViewer(); }
-function updateDeckViewer(){ const dd=document.getElementById('deck-contents'); const dc=document.getElementById('discard-contents'); dd.innerHTML='';dc.innerHTML=''; const m=c=>{ const d=document.createElement('div');d.className='deck-mini-card'; const cost=c.ammoCost||0; d.innerHTML=`<span class="deck-mini-icon">${iconMap[c.name]||'?'}</span><div class="deck-mini-info"><span class="deck-mini-name">${c.name}</span><span class="deck-mini-desc">${c.desc||''}</span>${cost?` <span class="deck-mini-cost">Ammo: ${cost}</span>`:''}</div>`; return d; }; gameState.deck.forEach(c=>dd.appendChild(m(c))); gameState.discardPile.forEach(c=>dc.appendChild(m(c))); }
-function createDustParticles(){ const c=document.getElementById('dust-container'); for(let i=0;i<25;i++){ const p=document.createElement('div'); p.className='dust-particle'; p.style.left=Math.random()*100+'%'; p.style.width=(Math.random()*4+1)+'px'; p.style.height=p.style.width; p.style.animationDuration=(Math.random()*12+8)+'s'; p.style.animationDelay=(Math.random()*10)+'s'; c.appendChild(p); } }
+function toggleInventory(){ document.getElementById('deck-viewer').classList.toggle('open'); updateInventoryDisplay(); }
+function switchInvTab(tab){
+    document.querySelectorAll('.inv-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.inv-tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelector(`.inv-tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById('inv-'+tab).classList.add('active');
+}
+function updateInventoryDisplay(){
+    updateInvCards();updateInvGuns();updateInvItems();updateInvLoot();
+}
+function updateInvCards(){
+    const dd=document.getElementById('deck-contents'); const dc=document.getElementById('discard-contents'); dd.innerHTML='';dc.innerHTML='';
+    const m=c=>{ const d=document.createElement('div');d.className='deck-mini-card'; const cost=c.ammoCost||0; d.innerHTML=`<span class="deck-mini-icon">${iconMap[c.name]||'?'}</span><div class="deck-mini-info"><span class="deck-mini-name">${c.name}</span><span class="deck-mini-desc">${c.desc||''}</span>${cost?` <span class="deck-mini-cost">Ammo: ${cost}</span>`:''}</div>`; return d; };
+    gameState.deck.forEach(c=>dd.appendChild(m(c))); gameState.discardPile.forEach(c=>dc.appendChild(m(c)));
+}
+function updateInvGuns(){
+    const c=document.getElementById('inv-guns');c.innerHTML='';
+    const g=gameState.player.guns;
+    if(!g.length){c.innerHTML='<div class="deck-mini-card"><span style="color:#6e5040;">No guns owned.</span></div>';return;}
+    g.forEach((gun,i)=>{
+        const d=document.createElement('div');d.className='deck-mini-card';
+        const loaded=`R:${gun.loaded.regular||0} E:${gun.loaded.express||0} T:${gun.loaded.trick||0}`;
+        const eq=i===gameState.player.equippedGunIndex?'<span style="color:#c9a030;font-size:.7em;display:block;">EQUIPPED</span>':'';
+        const cap=getUpgradeCap();
+        const ud=gun.upgdDmg||0,uc=gun.upgdCap||0,ua=gun.upgdAcc||0;
+        d.innerHTML=`<span class="deck-mini-icon">🔫</span><div class="deck-mini-info"><span class="deck-mini-name">${gun.name}${eq}</span><span class="deck-mini-desc">${gun.damage} dmg · ${gun.capacity} cap · Loaded: ${loaded}</span><span class="deck-mini-cost">Dmg:${ud}/${cap} Cap:${uc}/${cap} Acc:${ua}/${cap}</span></div>`;
+        c.appendChild(d);
+    });
+}
+function updateInvItems(){
+    const c=document.getElementById('inv-items');c.innerHTML='';
+    const p=gameState.player;
+    const gun=getActualGun();
+    const items=[];
+    const lr=gun?(gun.loaded.regular||0):0,le=gun?(gun.loaded.express||0):0,lt=gun?(gun.loaded.trick||0):0;
+    items.push({icon:'🔫',name:'Regular Ammo',val:(p.bullets.regular||0)+lr});
+    items.push({icon:'💥',name:'Express Ammo',val:(p.bullets.express||0)+le});
+    items.push({icon:'🎲',name:'Trick Ammo',val:(p.bullets.trick||0)+lt});
+    items.push({icon:'🍖',name:'Food',val:p.food});
+    p.inventory.forEach(i=>items.push({icon:'🩹',name:i.name,qty:i.qty||1}));
+    p.trinkets.forEach(t=>items.push({icon:'📿',name:t.name}));
+    p.gunParts.forEach(pt=>items.push({icon:'🔧',name:partLabels[pt]}));
+    if(p.ponchoDurability>0)items.push({icon:'🧥',name:'Poncho',val:p.ponchoDurability+' use(s)'});
+    if(p.hasSnakeFlute)items.push({icon:'🪈',name:'Snake Flute'});
+    if(p.hasStolenBadge)items.push({icon:'⭐',name:"Stolen Sheriff's Badge"});
+    if(!items.length){c.innerHTML='<div class="deck-mini-card"><span style="color:#6e5040;">No items.</span></div>';return;}
+    items.forEach(item=>{
+        const d=document.createElement('div');d.className='deck-mini-card';
+        const val=item.val!==undefined?`<span class="deck-mini-cost">${item.val}</span>`:'';
+        const qty=item.qty?`<span class="deck-mini-cost">x${item.qty}</span>`:'';
+        d.innerHTML=`<span class="deck-mini-icon">${item.icon}</span><div class="deck-mini-info"><span class="deck-mini-name">${item.name}</span></div>${val}${qty}`;
+        c.appendChild(d);
+    });
+}
+function updateInvLoot(){
+    const c=document.getElementById('inv-loot');c.innerHTML='';
+    const si=gameState.player.sellableInventory;
+    if(!si||!si.length){c.innerHTML='<div class="deck-mini-card"><span style="color:#6e5040;">No loot to sell. Find treasures in the frontier.</span></div>';return;}
+    si.forEach(item=>{
+        const d=document.createElement('div');d.className='deck-mini-card';
+        d.innerHTML=`<span class="deck-mini-icon">📦</span><div class="deck-mini-info"><span class="deck-mini-name">${item.name}</span><span class="deck-mini-desc">${item.desc||''}</span><span class="deck-mini-cost">Worth $${item.sellPrice}</span></div>`;
+        c.appendChild(d);
+    });
+}
+function createDustParticles(){ const c=document.getElementById('dust-container');c.innerHTML=''; for(let i=0;i<30;i++){ const p=document.createElement('div'); p.className='dust-particle'; p.style.left=Math.random()*100+'%'; p.style.top=Math.random()*100+'%'; p.style.width=(Math.random()*5+2)+'px'; p.style.height=p.style.width; p.style.animation='floatDust '+(Math.random()*12+8)+'s linear '+(Math.random()*12)+'s infinite'; c.appendChild(p); } }
 function init(){ createDustParticles(); loadHighScore(); updateTitleScreen(); document.getElementById('diff-select').value='easy'; showScreen('title'); }
-init();
 </script>
 </body>
 </html>
