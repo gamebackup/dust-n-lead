@@ -910,13 +910,14 @@ function updateSheriffDisplay(){
             {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
             {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
             {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
+            {name:"Gabriel, Judge of Hell",reward:175,difficulty:'Archangel',enemyHp:50,enemyDmg:13},
             {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
             {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
     ]  
     const diffCfg=diffConfig[getCurrentDiffKey()];
     const mtMult=diffCfg.enemyMult;
     const rewMult=diffCfg.moneyMult;
-    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Prime:'#00A2FF'};
+    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Archangel:'#E6E6E6',Prime:'#00A2FF'};
     bounties.forEach(b => {
   const scaled = {
     ...b,
