@@ -518,16 +518,16 @@ const diffConfig = {
 };
 const diffOrder = ['easy','medium','hard','extreme'];
 const regionDefs = [
-    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'' },
-    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'' },
-    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'' },
-    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'' },
-    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'' },
-    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'' },
-    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'' },
-    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'' },
-    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'' },
-    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'' },
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
 ];
 const bossDefs = [
     { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
@@ -900,20 +900,19 @@ function updateSheriffDisplay(){
         claimDiv.appendChild(claimBtn);container.appendChild(claimDiv);
     }
     const bounties=[
-        const bounties = [
-  {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},
-  {name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},
-  {name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},
-  {name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},
-  {name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},
-  {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
-  {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
-  {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
-  {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
-  {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
-  {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
-    ];
-]
+    
+            {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},
+            {name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},
+            {name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},
+            {name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},
+            {name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},
+            {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
+            {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
+            {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
+            {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
+            {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
+            {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
+    ]  
     const diffCfg=diffConfig[getCurrentDiffKey()];
     const mtMult=diffCfg.enemyMult;
     const rewMult=diffCfg.moneyMult;
