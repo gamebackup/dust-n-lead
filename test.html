@@ -518,16 +518,16 @@ const diffConfig = {
 };
 const diffOrder = ['easy','medium','hard','extreme'];
 const regionDefs = [
-    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
-    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
-    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
-    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
-    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
-    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
-    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
-    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
-    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
-    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'' },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'' },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'' },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'' },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'' },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'' },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'' },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'' },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'' },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'' },
 ];
 const bossDefs = [
     { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
@@ -900,23 +900,43 @@ function updateSheriffDisplay(){
         claimDiv.appendChild(claimBtn);container.appendChild(claimDiv);
     }
     const bounties=[
-        {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},{name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},{name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},{name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},{name:'Two-Face Hank',reward:50,difficulty:'Moderate',enemyHp:21,enemyDmg:6},{name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},{name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},{name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},{name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},{name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12}
+        const bounties = [
+  {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},
+  {name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},
+  {name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},
+  {name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},
+  {name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},
+  {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
+  {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
+  {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
+  {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
+  {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
+  {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
     ];
+]
     const diffCfg=diffConfig[getCurrentDiffKey()];
     const mtMult=diffCfg.enemyMult;
     const rewMult=diffCfg.moneyMult;
-    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff'};
-    bounties.forEach(b=>{
-        const scaled={...b,reward:Math.floor(b.reward*rewMult),enemyHp:Math.floor(b.enemyHp*mtMult),enemyDmg:Math.max(1,Math.floor(b.enemyDmg*mtMult))};
-        const div=document.createElement('div');div.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
-        div.innerHTML=`<div><strong style="color:#f0d080;">${scaled.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${scaled.reward}</span> &nbsp;|&nbsp; <span style="color:${diffCol[scaled.difficulty]||'#c9a030'};">${scaled.difficulty}</span> &nbsp;|&nbsp; HP: ${scaled.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">&#9733;</span>`;
-        div.addEventListener('click',()=>acceptBounty(scaled));container.appendChild(div);
-    });
+    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Prime:'#00A2FF'};
+    bounties.forEach(b => {
+  const scaled = {
+    ...b,
+    reward: Math.floor(b.reward * rewMult),
+    enemyHp: Math.floor(b.enemyHp * mtMult),
+    enemyDmg: Math.max(1, Math.floor(b.enemyDmg * mtMult))
+  };
+  const displayColor = scaled.color || diffCol[scaled.difficulty] || '#c9a030';
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid #4a3020;cursor:pointer;';
+  div.innerHTML = `<div><strong style="color:#f0d080;">${scaled.name}</strong><br><small style="color:#a08060;">Reward: <span style="color:#c9a030;">$${scaled.reward}</span> &nbsp;|&nbsp; <span style="color:${displayColor};">${scaled.difficulty}</span> &nbsp;|&nbsp; HP: ${scaled.enemyHp}</small></div><span style="color:#c9a030;font-size:1.5em;">★</span>`;
+  div.addEventListener('click', () => acceptBounty(scaled));
+  container.appendChild(div);
+});
 }
 function acceptBounty(b){gameState.activeBounty=b;document.getElementById('sheriff-msg').textContent='Bounty accepted: '+b.name+'!';}
 
 function getUpgradeCap(){const d=gameState.difficulty||'easy';return{easy:3,medium:4,hard:5,extreme:6}[d]||3;}
-// ==================== GUNSMITH (now includes Widowmaker assembly) ====================
+// ====================GUNSMITH====================
 function goToGunsmith(){ updateGunsmithDisplay(); document.getElementById('gunsmith-msg').textContent=''; showScreen('gunsmith'); }
 function cycleGunsmithGun(){const p=gameState.player;if(p.guns.length<2)return;p.equippedGunIndex=(p.equippedGunIndex+1)%p.guns.length;updateGunsmithDisplay();document.getElementById('gunsmith-msg').textContent='Switched to '+(getActualGun()?getActualGun().name:'')+'.';}
 function updateGunsmithDisplay(){
