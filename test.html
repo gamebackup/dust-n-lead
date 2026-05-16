@@ -162,6 +162,56 @@
         .card-lib-item .cli-name{color:#ffe8a0;font-weight:bold;font-size:1em;}
         .card-lib-item .cli-desc{color:#a08050;font-size:.85em;}
         .card-lib-item .cli-stats{color:#8a1a08;font-size:.78em;background:rgba(0,0,0,0.15);padding:1px 6px;border-radius:6px;display:inline-block;margin-top:2px;white-space:nowrap;}
+        #dev-console{position:fixed;top:10px;right:10px;width:380px;max-height:440px;z-index:99999;background:rgba(0,0,0,0.92);border:2px solid #0a0;border-radius:6px;font-family:'Courier New',monospace;display:none;flex-direction:column;box-shadow:0 0 30px rgba(0,170,0,.25); overflow:hidden;}
+        #dev-console.open{display:flex;}
+        #dev-header{background:#0a0;color:#000;padding:4px 10px;font-size:.78em;font-weight:bold;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;}
+        #dev-header span{cursor:pointer;color:#050;}
+        #dev-output{flex:1;overflow-y:auto;padding:6px 10px;color:#0f0;font-size:.72em;min-height:60px;max-height:220px;line-height:1.6;border-bottom:1px solid #0a0;}
+        #dev-output .err{color:#f44}#dev-output .ok{color:#0f0}#dev-output .info{color:#aa0}
+        #dev-input{width:100%;background:transparent;border:none;color:#0f0;font-family:'Courier New',monospace;font-size:.78em;padding:8px 10px;outline:none;border-top:1px solid #0a0;}
+        #dev-input::placeholder{color:#060;}
+        #uk-overlay{position:fixed;inset:0;z-index:10000;background:#000;display:none;font-family:'Courier New',monospace;overflow:hidden;}
+        #uk-overlay img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+        #uk-label{position:absolute;bottom:14%;left:0;right:0;text-align:center;color:#800;font-size:clamp(9px,1vw,13px);letter-spacing:4px;text-transform:uppercase;}
+        #uk-bar-track{position:absolute;bottom:10%;left:10%;right:10%;height:6px;background:#1a0000;border:1px solid #600;border-radius:2px;overflow:hidden;}
+        #uk-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#600,#ff0000,#ff4444);border-radius:1px;transition:width .15s linear;}
+        #uk-bar-pct{position:absolute;bottom:7%;left:0;right:0;text-align:center;color:#500;font-size:clamp(8px,.9vw,11px);letter-spacing:3px;}
+        .uk-title{font-family:'Courier New',monospace;font-size:3.2em;color:#ff0000;text-shadow:0 0 30px rgba(255,0,0,.6),0 0 80px rgba(200,0,0,.3),4px 4px 0 #300;letter-spacing:12px;text-align:center;line-height:1.2;animation:ukTitlePulse 3s ease-in-out infinite;}
+        @keyframes ukTitlePulse{0%,100%{text-shadow:0 0 30px rgba(255,0,0,.6),0 0 80px rgba(200,0,0,.3),4px 4px 0 #300}50%{text-shadow:0 0 50px rgba(255,0,0,.9),0 0 120px rgba(200,0,0,.5),4px 4px 0 #300}}
+        .uk-sub{font-family:'Courier New',monospace;color:#600;letter-spacing:8px;font-size:.85em;border:1px solid #300;padding:4px 16px;}
+        .uk-flavor{color:#800;text-align:center;max-width:400px;font-size:.82em;line-height:1.8;border-top:1px solid #300;border-bottom:1px solid #300;padding:10px 0;}
+        #screen-ultrakill .btn{background:linear-gradient(180deg,#600 0%,#400 30%,#300 60%,#200 100%);box-shadow:0 0 0 1px #200,0 0 0 3px #600,0 0 0 4px #200,inset 0 1px 0 rgba(255,100,100,.15),0 5px 14px rgba(0,0,0,.65);color:#ff8888;}
+        #screen-ultrakill .btn:hover{background:linear-gradient(180deg,#800 0%,#600 30%,#400 60%,#300 100%);color:#ffcccc;box-shadow:0 0 0 1px #200,0 0 0 3px #800,0 0 0 4px #200,inset 0 1px 0 rgba(255,100,100,.25),0 9px 22px rgba(0,0,0,.7),0 0 22px rgba(200,0,0,.18);}
+        #screen-ultrakill .btn.danger{background:linear-gradient(180deg,#400 0%,#300 30%,#200 60%,#100 100%);color:#ff6666;box-shadow:0 0 0 1px #200,0 0 0 3px #400,0 0 0 4px #200;}
+        #screen-ultrakill .btn.danger:hover{background:linear-gradient(180deg,#600 0%,#400 30%,#300 60%,#200 100%);}
+        #screen-ultrakill .info-item{color:#700;border-right-color:#300;}
+        #screen-ultrakill .info-item .info-value{color:#cc4444;text-shadow:0 0 10px rgba(200,40,40,.3);}
+        #screen-ultrakill .meta-equip-slot{border-color:#400;}
+        #screen-ultrakill .meta-equip-slot.equipped{border-color:#800;box-shadow:0 0 12px rgba(200,0,0,.15);}
+        #screen-ultrakill{background:radial-gradient(ellipse at 50% 0%,rgba(60,0,0,.3) 0%,transparent 60%),linear-gradient(180deg,#050000 0%,#0a0000 30%,#050000 100%);}
+        #game-container.uk-mode{background:linear-gradient(180deg,#050000 0%,#0a0000 20%,#050000 100%);box-shadow:inset 0 0 0 3px #600,inset 0 0 0 6px #200,inset 0 0 0 9px #400,inset 0 0 0 12px #100,0 0 90px rgba(0,0,0,.92),0 26px 64px rgba(0,0,0,.72);animation:none;}
+        #game-container.uk-mode::after{border-color:rgba(200,0,0,.2);}
+        #game-container.uk-mode .btn{background:linear-gradient(180deg,#600 0%,#400 30%,#300 60%,#200 100%);box-shadow:0 0 0 1px #200,0 0 0 3px #600,0 0 0 4px #200,inset 0 1px 0 rgba(255,100,100,.15),0 5px 14px rgba(0,0,0,.65);color:#ff8888;}
+        #game-container.uk-mode .btn:hover{background:linear-gradient(180deg,#800 0%,#600 30%,#400 60%,#300 100%);color:#ffcccc;box-shadow:0 0 0 1px #200,0 0 0 3px #800,0 0 0 4px #200,inset 0 1px 0 rgba(255,100,100,.25),0 9px 22px rgba(0,0,0,.7),0 0 22px rgba(200,0,0,.18);}
+        #game-container.uk-mode .btn.danger{background:linear-gradient(180deg,#400 0%,#300 30%,#200 60%,#100 100%);color:#ff6666;box-shadow:0 0 0 1px #200,0 0 0 3px #400,0 0 0 4px #200;}
+        #game-container.uk-mode .btn.danger:hover{background:linear-gradient(180deg,#600 0%,#400 30%,#300 60%,#200 100%);}
+        #game-container.uk-mode .info-bar{background:linear-gradient(180deg,rgba(30,0,0,.78) 0%,rgba(40,0,0,.85) 100%);box-shadow:0 0 0 1px #200,0 0 0 2px #600,0 0 0 3px #200,0 5px 14px rgba(0,0,0,.55);}
+        #game-container.uk-mode .info-item{color:#700;border-right-color:#300;}
+        #game-container.uk-mode .info-value{color:#cc4444;text-shadow:0 0 10px rgba(200,40,40,.3);}
+        #game-container.uk-mode .location-card{box-shadow:0 0 0 1px #200,0 0 0 3px #500,0 0 0 4px #200,0 5px 14px rgba(0,0,0,.55);color:#ff8888;}
+        #game-container.uk-mode .location-card:hover{box-shadow:0 0 0 1px #200,0 0 0 3px #800,0 0 0 4px #200,0 10px 28px rgba(0,0,0,.68);color:#ffcccc;}
+        #game-container.uk-mode .location-name{color:#ff6666;}
+        #game-container.uk-mode .enemy-display{box-shadow:0 0 0 1px #200,0 0 0 3px #600,0 0 0 5px #200,0 0 0 6px #400,0 10px 28px rgba(0,0,0,.76),inset 0 0 50px rgba(0,0,0,.45);}
+        #game-container.uk-mode .enemy-name{color:#ff0000;text-shadow:2px 2px 0 rgba(0,0,0,.88),0 0 28px rgba(255,0,0,.42);}
+        #game-container.uk-mode .enemy-display::before{color:#ff4444;border-color:#500;}
+        #game-container.uk-mode #combat-title{color:#ff0000!important;text-shadow:2px 2px 0 rgba(0,0,0,.9),0 0 30px rgba(255,0,0,.45)!important;}
+        #game-container.uk-mode #gameover-title{color:#ff0000!important;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 44px rgba(200,0,0,.6)!important;animation:ukDeathPulse 1.6s ease-in-out infinite!important;}
+        @keyframes ukDeathPulse{0%,100%{opacity:1;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 40px rgba(200,0,0,.48)}50%{opacity:.88;text-shadow:4px 4px 0 rgba(0,0,0,.92),0 0 70px rgba(225,0,0,.82)}}
+        #game-container.uk-mode [id^="screen-"]>div:first-child{color:#ff4444!important;text-shadow:none!important;}
+        #game-container.uk-mode #town-flavor{color:#aa4444!important;}
+        #game-container.uk-mode #region-progress{color:#ff4444;}
+        #game-container.uk-mode #trinkets-display{color:#cc4444;}
+        #game-container.uk-mode #town-gun-display{color:#cc4444;}
         @media(max-width:600px){.game-title{font-size:2em;letter-spacing:3px}.card{width:98px;min-height:138px;padding:8px 6px}.card-name{font-size:.68em}.card-icon{font-size:1.4em}.card-desc{font-size:.58em}.location-row{gap:10px}.btn{padding:10px 18px;font-size:.8em;min-width:100px}#game-inner{padding:12px}#deck-viewer{right:-320px;width:300px}#game-container::after{top:10px;left:10px;right:10px;bottom:10px}.discard-pile-card{width:72px;min-height:105px;font-size:.65em}.discard-pile-card .count{font-size:1.3em}.draw-pile-card{width:72px;min-height:105px;font-size:.65em}.draw-pile-card .count{font-size:1.3em}}
     </style>
 </head>
@@ -212,6 +262,17 @@
     </div>
     <div id="ww-pct">0%</div>
   </div>
+</div>
+<div id="uk-overlay">
+    <img src="https://raw.githubusercontent.com/gamebackup/dust-n-lead/refs/heads/main/src/img/fall.gif" alt="Falling" id="uk-gif">
+    <div id="uk-label">Establishing Link</div>
+    <div id="uk-bar-track"><div id="uk-bar-fill"></div></div>
+    <div id="uk-bar-pct">0%</div>
+</div>
+<div id="dev-console">
+    <div id="dev-header">DEV CONSOLE <span onclick="toggleDevConsole()">✕</span></div>
+    <div id="dev-output"></div>
+    <input id="dev-input" type="text" placeholder="type command..." autocomplete="off" spellcheck="false">
 </div>
 <div id="grain-overlay"></div>
 <div id="dust-container"></div>
@@ -267,6 +328,34 @@
             <div style="color:#8d6e63;font-size:.73em;letter-spacing:2px;">REPUTATION: <span id="title-reputation" style="color:#c9a030;">0</span></div>
             <div style="color:#6e5040;font-size:.7em;text-align:center;max-width:380px;line-height:1.6;margin-top:4px;">Build your deck ✦ Hunt bounties ✦ Sell your loot ✦ Survive</div>
         </div>
+        <div class="screen" id="screen-ultrakill">
+            <div style="color:#ff0000;font-size:1.2em;letter-spacing:6px;font-family:'Courier New',monospace;text-shadow:0 0 20px rgba(255,0,0,.5);">// // //</div>
+            <div class="uk-title">DUST &amp; LEAD</div>
+            <div class="uk-sub">/// ULTRAKILL CROSSOVER ///</div>
+            <div class="uk-flavor">The abyss stares back. You've fallen beyond the frontier,<br>into a world of chrome and blood. Survive.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;max-width:340px;">
+                <button class="btn wide" onclick="startGame()">Ride Into Town</button>
+                <div style="margin-top:4px;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
+                    <label for="uk-diff-select" style="color:#800;font-size:.85em;">Difficulty:</label>
+                    <select id="uk-diff-select" onchange="selectedDifficulty=this.value" style="background:#0a0000;color:#ff4444;border:2px solid #400;border-radius:4px;padding:4px 8px;font-family:'Courier New',monospace;font-size:.85em;cursor:pointer;">
+                        <option value="easy" style="background:#0a0000;color:#aa6666;">Easy</option>
+                        <option value="medium" style="background:#0a0000;color:#cc4444;">Medium</option>
+                        <option value="hard" style="background:#0a0000;color:#ee2222;">Hard</option>
+                        <option value="extreme" style="background:#0a0000;color:#ff0000;">Extreme</option>
+                    </select>
+                </div>
+            </div>
+            <div class="meta-equip-slot" id="uk-title-equipped"><span class="meta-equip-empty">No heirloom equipped</span></div>
+            <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+                <button class="btn small" onclick="showScreen('achievements');updateAchievementsScreen()">Achievements</button>
+                <button class="btn small" onclick="showScreen('equipment');updateEquipmentScreen()">Equipment</button>
+                <button class="btn small" onclick="showScreen('upgrades');updateUpgradesScreen()">Upgrades</button>
+                <button class="btn small" onclick="showScreen('cardlibrary');renderCardLibrary()">Card Library</button>
+            </div>
+            <div style="color:#600;font-size:.73em;letter-spacing:2px;">HIGH SCORE: <span id="uk-high-score-display" style="color:#cc4444;">0</span> dollars</div>
+            <div style="color:#600;font-size:.73em;letter-spacing:2px;">REPUTATION: <span id="uk-title-reputation" style="color:#cc4444;">0</span></div>
+            <div style="color:#400;font-size:.7em;text-align:center;max-width:380px;line-height:1.6;margin-top:4px;">Build your deck ✦ Hunt bounties ✦ Sell your loot ✦ Survive</div>
+        </div>
         <div class="screen" id="screen-town">
             <div style="font-family:'Rye',serif;font-size:1.8em;color:#f0d080;letter-spacing:3px;">Dustwater Town</div>
             <div id="town-flavor" style="color:#7a5a30;font-size:.78em;font-style:italic;text-align:center;letter-spacing:1px;"></div>
@@ -282,13 +371,13 @@
             <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:.78em;text-align:center;"></div>
             <div class="location-grid">
                 <div class="location-row">
-                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="src/general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
-                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="src/gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
-                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="src/saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
+                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
+                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
+                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
                 </div>
                 <div class="location-row">
-                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="src/sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
-                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="src/wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
+                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
+                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
                 </div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
@@ -396,7 +485,10 @@
             </div>
             <div style="color:#9a7030;font-size:.75em;">High Score: $<span id="go-highscore">0</span></div>
             <div style="color:#9a7030;font-size:.75em;">Reputation Earned: +<span id="go-reputation" style="color:#c9a030;">0</span></div>
-            <button class="btn wide" onclick="restartGame()">New Gunslinger</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                <button class="btn wide" onclick="restartGame()">New Gunslinger</button>
+                <button class="btn small" onclick="goToMainMenu()">Main Menu</button>
+            </div>
         </div>
         <div class="screen" id="screen-win">
             <div style="font-family:'Rye',serif;font-size:2em;letter-spacing:3px;color:#f0c840;text-shadow:0 0 40px rgba(240,200,64,.5),4px 4px 0 rgba(0,0,0,.8);animation:starPulse 3s ease-in-out infinite;">&#9733; VICTORY &#9733;</div>
@@ -422,7 +514,7 @@
                 <div class="info-item">Total: <span class="info-value" id="ach-total-count">0</span></div>
             </div>
             <div class="ach-list" id="ach-list"></div>
-            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+            <button class="btn small" onclick="backToTitle()">Back</button>
         </div>
         <div class="screen" id="screen-equipment">
             <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Equipment</div>
@@ -433,13 +525,13 @@
             </div>
             <div style="color:#a08060;font-size:.75em;letter-spacing:1px;margin-bottom:4px;">— UNLOCKED ITEMS —</div>
             <div class="ach-list" id="equip-list"></div>
-            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+            <button class="btn small" onclick="backToTitle()">Back</button>
         </div>
         <div class="screen" id="screen-cardlibrary">
             <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Card Library</div>
             <div style="color:#c9a060;font-size:.78em;text-align:center;">All the cards in your deck</div>
             <div id="card-lib-list" class="ach-list"></div>
-            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+            <button class="btn small" onclick="backToTitle()">Back</button>
         </div>
         <div class="screen" id="screen-upgrades">
             <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Upgrades</div>
@@ -448,7 +540,7 @@
                 <div class="info-item">Reputation: <span class="info-value" id="upg-reputation">0</span></div>
             </div>
             <div id="upg-list" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:450px;"></div>
-            <button class="btn small" onclick="showScreen('title');updateTitleScreen()">Back</button>
+            <button class="btn small" onclick="backToTitle()">Back</button>
         </div>
     </div>
 </div>
@@ -518,16 +610,16 @@ const diffConfig = {
 };
 const diffOrder = ['easy','medium','hard','extreme'];
 const regionDefs = [
-    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
-    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
-    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
-    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
-    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
-    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
-    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
-    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
-    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
-    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'' },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'' },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'' },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'' },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'' },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'' },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'' },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'' },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'' },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'' },
 ];
 const bossDefs = [
     { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
@@ -540,6 +632,17 @@ const bossDefs = [
     { name:'Calamity Jane',    hp:48, dmg:11, reward:90,  desc:'Scout and frontierswoman' },
     { name:'Clint Eastwood',   hp:50, dmg:12, reward:100, desc:'The Man with No Name' },
     { name:'El Diablo',        hp:70, dmg:16, reward:150, desc:'The devil himself' },
+];
+const bountyDefs = [
+    {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},
+    {name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},
+    {name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},
+    {name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},
+    {name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},
+    {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
+    {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
+    {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
+    {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
 ];
 const VENTURES_PER_REGION = 6; // normal ventures before boss
 
@@ -667,7 +770,7 @@ const gameState = {
     wildDepth:0, firstShotThisCombat:true,
     cardProcessing:false, combatInWilderness:false, discardMode:false, discardTargets:[],
     rotatingShopItems:[], bonusCardDraw:0,
-    deckViewerOpen: false,
+    deckViewerOpen: false, lastTitleScreen:'title', ukCrossover:false,
     difficulty:'easy', regionIndex:0, isBossFight:false, wonGame:false
 };
 
@@ -749,11 +852,19 @@ function updateTownDisplay(){
     const rc=p.regionsCompleted||0;
     const maxRegions=diffCfg.regions;
     const vt=p.venturesThisRegion||0;
+    if(gameState.ukCrossover){
+        const first=document.querySelector('#screen-town>div:first-child');
+        if(first)first.textContent='/// HELL ///';
+    }
     const re=document.getElementById('region-progress');
     if(re){if(rc>=maxRegions){re.textContent=`🏁 All ${maxRegions} regions conquered!`;re.style.color='#f0c840';}else{re.textContent=`${region.icon} ${region.name} (${rc+1}/${maxRegions}) — ${vt>=VENTURES_PER_REGION?'⚠️ Boss ready!':'Ventures: '+vt+'/'+VENTURES_PER_REGION}`;}}
     const msgs=['The noon sun hammers the dusty street.','Somewhere, a piano plays off-key.','Two horses sleep outside the saloon.','A wanted poster flaps in the dry wind.','An old timer spits on the boardwalk.','Smoke rises from the blacksmith\'s forge.','The sheriff tips his hat as you pass.','Day '+p.day+'. Still alive. That counts for something.'];
     const fe=document.getElementById('town-flavor');
-    if(fe){if(gameState.activeBounty){fe.textContent=`★ HUNTING: ${gameState.activeBounty.name} — $${gameState.activeBounty.reward} reward ★`;fe.style.color='#c9a030';}else{fe.textContent=msgs[p.day%msgs.length];fe.style.color='#7a5a30';}}
+    if(fe){
+        if(gameState.activeBounty){fe.textContent=`★ HUNTING: ${gameState.activeBounty.name} — $${gameState.activeBounty.reward} reward ★`;fe.style.color='#c9a030';}
+        else if(gameState.ukCrossover){fe.textContent='The air smells of chrome and blood...';fe.style.color='#aa4444';}
+        else{fe.textContent=msgs[p.day%msgs.length];fe.style.color='#7a5a30';}
+    }
     document.getElementById('town-hp').textContent=p.health+'/'+p.maxHealth;
     document.getElementById('town-food').textContent=p.food;
     document.getElementById('town-money').textContent=p.money;
@@ -899,25 +1010,11 @@ function updateSheriffDisplay(){
         });
         claimDiv.appendChild(claimBtn);container.appendChild(claimDiv);
     }
-    const bounties=[
-    
-            {name:'Slim Cassidy',reward:25,difficulty:'Easy',enemyHp:12,enemyDmg:3},
-            {name:'Drunk Hector',reward:20,difficulty:'Easy',enemyHp:10,enemyDmg:3},
-            {name:'Black Bart',reward:40,difficulty:'Moderate',enemyHp:18,enemyDmg:5},
-            {name:'Dirty Morgan',reward:35,difficulty:'Moderate',enemyHp:16,enemyDmg:4},
-            {name:'The Rattler',reward:60,difficulty:'Hard',enemyHp:25,enemyDmg:7},
-            {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
-            {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
-            {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
-            {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
-            {name:"Gabriel, Judge of Hell",reward:175,difficulty:'Archangel',enemyHp:50,enemyDmg:13},
-            {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
-            {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
-    ]  
+    const bounties=bountyDefs  
     const diffCfg=diffConfig[getCurrentDiffKey()];
     const mtMult=diffCfg.enemyMult;
     const rewMult=diffCfg.moneyMult;
-    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Archangel:'#E6E6E6',Prime:'#00A2FF'};
+    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Prime:'#00A2FF'};
     bounties.forEach(b => {
   const scaled = {
     ...b,
@@ -1080,7 +1177,7 @@ function wildernessLoot(){
     if(medicineBag&&r>=0.85){p.health=Math.min(p.maxHealth,p.health+2);}
     updateWildernessDisplay();showWildChoices();
 }
-function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineShaftEvent]; ev[Math.floor(Math.random()*ev.length)](); }
+function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineShaftEvent, chasmEvent]; ev[Math.floor(Math.random()*ev.length)](); }
 function strongboxEvent(){ document.getElementById('wild-result').textContent='You find a sturdy locked strongbox.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="openStrongbox()">Force it (-5 HP)</button><button class="btn small" onclick="showWildChoices()">Leave it</button>'; }
 function openStrongbox(){ const p=gameState.player; p.health=Math.max(0,p.health-5); const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} updateWildernessDisplay(); showWildChoices(); }
 function drifterEvent(){ document.getElementById('wild-result').textContent='An injured drifter asks for food.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="helpDrifter()">Help (-2 food)</button><button class="btn small" onclick="robDrifter()">Rob</button><button class="btn small" onclick="ignoreDrifter()">Ride past</button>'; }
@@ -1089,6 +1186,67 @@ function robDrifter(){ const p=gameState.player; p.money+=12; document.getElemen
 function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; showWildChoices(); }
 function mineShaftEvent(){ document.getElementById('wild-result').textContent='Abandoned mine shaft.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="enterMine()">Go inside</button><button class="btn small" onclick="showWildChoices()">Leave</button>'; }
 function enterMine(){ const p=gameState.player; const r=Math.random(); if(r<0.35){ const n=Math.floor(Math.random()*2)+1; for(let i=0;i<n;i++){p.sellableInventory.push({name:'Gold Nugget',...sellableItemDefs['Gold Nugget']});} document.getElementById('wild-result').textContent=`Found ${n} Gold Nugget(s)!`; updateWildernessDisplay(); showWildChoices(); } else if(r<0.65){ document.getElementById('wild-result').textContent='Ambush!'; gameState.combatInWilderness=true; setTimeout(()=>startCombat({name:'Mine Bandit',health:15,maxHealth:15,damage:5}),800); } else { document.getElementById('wild-result').textContent='Nothing of value.'; showWildChoices(); } }
+function chasmEvent(){
+    document.getElementById('wild-result').innerHTML='Whatever\'s down there... It ain\'t of this world';
+    document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="ventureOut()">Ride Past</button><button class="btn small danger" onclick="leapIntoChasm()">Leap into the chasm</button>';
+}
+function leapIntoChasm(){showUltrakillLoading();}
+function startUltrakillRun(){
+    gameState.ukCrossover=true;startGame();
+    document.getElementById('game-container').classList.add('uk-mode');
+    const first=document.querySelector('#screen-town>div:first-child');
+    if(first)first.textContent='/// HELL ///';
+    document.getElementById('town-flavor').textContent='The air smells of metal and blood...';
+}
+function preloadUK(){const i=new Image();i.src='https://raw.githubusercontent.com/gamebackup/dust-n-lead/refs/heads/main/src/img/fall.gif';}
+function showUltrakillLoading(){
+    const ov=document.getElementById('uk-overlay');
+    const fill=document.getElementById('uk-bar-fill');
+    const label=document.getElementById('uk-label');
+    const pct=document.getElementById('uk-bar-pct');
+    gameState.combatActive=false;
+    ov.style.display='flex';
+    fill.style.width='0%';
+    label.textContent='Establishing Link';
+    const dur=5000;
+    const t0=performance.now();
+    (function tick(now){
+        const elapsed=now-t0,p=Math.min(100,elapsed/dur*100);
+        fill.style.width=p+'%';
+        pct.textContent=Math.round(p)+'%';
+        if(p<100){requestAnimationFrame(tick)}
+        else{
+            label.textContent='// LINK ESTABLISHED //';
+            pct.textContent='';
+            setTimeout(()=>{
+                ov.style.display='none';
+                startUltrakillRun();
+            },600);
+        }
+    })(t0);
+}
+function showUltrakillMenu(){
+    document.getElementById('uk-high-score-display').textContent=safeGet('dustLeadHighScore','0');
+    const meta=loadMeta();
+    const slot=document.getElementById('uk-title-equipped');
+    if(meta.equipped){
+        const ad=achievementDefs.find(a=>a.reward.name===meta.equipped);
+        slot.innerHTML='<span style="font-size:1.4em;">'+(ad?ad.reward.icon:'🏅')+'</span><span style="color:#ff8888;font-size:.85em;letter-spacing:1px;">'+meta.equipped+'</span>';
+        slot.style.borderColor='#800';slot.style.boxShadow='0 0 12px rgba(200,0,0,.15)';
+    }else{
+        slot.innerHTML='<span style="color:#500;font-size:.75em;font-style:italic;">No heirloom equipped</span>';
+        slot.style.borderColor='';slot.style.boxShadow='';
+    }
+    document.getElementById('uk-title-reputation').textContent=meta.reputation||0;
+    const ds=document.getElementById('uk-diff-select');
+    if(ds)ds.value=selectedDifficulty||'easy';
+    gameState.lastTitleScreen='ultrakill';
+    showScreen('ultrakill');
+}
+function backToTitle(){
+    if(gameState.lastTitleScreen==='ultrakill')showUltrakillMenu();
+    else{showScreen('title');updateTitleScreen();}
+}
 function showWildChoices(){ document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToCamp()">Make Camp</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
 function wildernessShop(){
     const p=gameState.player;
@@ -1625,7 +1783,14 @@ function endRun(cause){
     saveMeta(meta);
     showScreen('gameover');
 }
-function restartGame(){ startGame(); }
+function restartGame(){
+    gameState.ukCrossover=false;document.getElementById('game-container').classList.remove('uk-mode');
+    startGame();
+}
+function goToMainMenu(){
+    gameState.ukCrossover=false;document.getElementById('game-container').classList.remove('uk-mode');
+    gameState.lastTitleScreen='title';showScreen('title');updateTitleScreen();
+}
 function updateHighScore(){ const cur=gameState.player.totalEarned; const h=parseInt(safeGet('dustLeadHighScore','0')); if(cur>h){ safeSet('dustLeadHighScore',String(cur)); document.getElementById('high-score-display').textContent = cur; } }
 function loadHighScore(){ document.getElementById('high-score-display').textContent = safeGet('dustLeadHighScore','0'); }
 function toggleInventory(){ document.getElementById('deck-viewer').classList.toggle('open'); updateInventoryDisplay(); }
@@ -1695,8 +1860,130 @@ function updateInvLoot(){
 function createDustParticles(){ const c=document.getElementById('dust-container');c.innerHTML=''; for(let i=0;i<30;i++){ const p=document.createElement('div'); p.className='dust-particle'; p.style.left=Math.random()*100+'%'; p.style.top=Math.random()*100+'%'; p.style.width=(Math.random()*5+2)+'px'; p.style.height=p.style.width; p.style.animation='floatDust '+(Math.random()*12+8)+'s linear '+(Math.random()*12)+'s infinite'; c.appendChild(p); } }
 function updateDiscardPile(){var cnt=document.getElementById('discard-count');if(cnt)cnt.textContent=gameState.discardPile.length;var dc=document.getElementById('draw-count');if(dc)dc.textContent=gameState.deck.length;}
 function renderCardLibrary(){const list=document.getElementById('card-lib-list');if(!list)return;list.innerHTML='';const entries=Object.entries(cardDefs);entries.sort(function(a,b){return a[0].localeCompare(b[0])});entries.forEach(function(e){var name=e[0],def=e[1];var d=document.createElement('div');d.className='card-lib-item';var icon=iconMap[name]||'?';var cost=def.ammoCost||0;var acc=def.accuracy!==undefined?def.accuracy+'%':'—';var info='';if(def.effect==='shoot'||def.effect==='fan'||def.effect==='doubletap'||def.effect==='ricochet'||def.effect==='aoe'||def.effect==='bulletswarm'||def.effect==='akimbo'||def.effect==='crossfire'||def.effect==='deadeye')info='DMG x'+def.dmgMult+(def.bonusDmg?' +'+def.bonusDmg:'');else if(def.effect==='heal')info='Heal '+def.healAmt;else if(def.effect==='melee')info='DMG '+def.fixedDmg;else if(def.effect==='dynamite'||def.effect==='dynamitebundle')info='DMG x'+def.dmgMult+' self '+def.selfDmg;else if(def.effect==='reload')info='Reloads ammo';else if(def.effect==='dodge')info='Dodge chance';else if(def.effect==='cover')info='Cover +'+def.ammoCost;else if(def.effect==='intimidate'||def.effect==='lasso'||def.effect==='bolas')info='Skip turn';else if(def.effect==='laststand')info='Half missing HP';else if(def.effect==='warcry')info='Heal '+def.healAmt+' +1 card';else if(def.effect==='poison')info='3/turn x3';else if(def.effect==='coinshot')info='Heads x2/Tails -1';else if(def.effect==='fatedraw')info='+2 cards';else if(def.effect==='sloppyreload')info='Reload + Cover';else if(def.effect==='smokebomb')info='Escape';d.innerHTML='<span class="cli-icon">'+icon+'</span><div class="cli-info"><div class="cli-name">'+name+'</div><div class="cli-desc">'+def.desc+'</div></div><div><span class="cli-stats">Ammo: '+cost+'</span><br><span class="cli-stats">Acc: '+acc+'</span>'+(info?'<br><span class="cli-stats">'+info+'</span>':'')+'</div>';list.appendChild(d)});}
-function init(){ createDustParticles(); loadHighScore(); updateTitleScreen(); document.getElementById('diff-select').value='easy'; showScreen('title');
-document.addEventListener('click',function(e){var d=document.getElementById('deck-viewer');if(!d.classList.contains('open'))return;if(!d.contains(e.target)&&e.target.id!=='inv-btn'){d.classList.remove('open');}});}
+// ==================== DEV CONSOLE ====================
+let devBuffer='';
+function toggleDevConsole(){
+    const c=document.getElementById('dev-console');
+    c.classList.toggle('open');
+    if(c.classList.contains('open')){
+        document.getElementById('dev-input').value='';document.getElementById('dev-input').focus();
+        document.getElementById('dev-output').innerHTML='';
+    }
+}
+function devLog(msg,type){
+    const o=document.getElementById('dev-output');
+    const d=document.createElement('div');d.className=type||'ok';
+    d.textContent='> '+msg;o.appendChild(d);o.scrollTop=o.scrollHeight;
+}
+function handleDevCommand(cmd){
+    const parts=cmd.trim().split(/\s+/);if(!parts.length)return;
+    const c=parts[0];const p=gameState.player;const meta=loadMeta();
+    if(c==='help'){
+        devLog('Available commands:','info');
+        ['all items','clear','day set (num)','die','encounter trigger (name)','end fight','fight trigger (name)','food set (num)','help','hp set (num)','inventory add (item)','max hp set (num)','reputation set (num)','set money (num)','unlock all'].forEach(cmd=>devLog('  '+cmd));
+    }else if(c==='all'){
+        if(parts[1]!=='items'){devLog('Usage: all items','info');return;}
+        Object.keys(sellableItemDefs).forEach(k=>{p.sellableInventory.push({name:k,...sellableItemDefs[k]});});
+        devLog(`Added all ${Object.keys(sellableItemDefs).length} sellable items`);
+    }else if(c==='clear'){document.getElementById('dev-output').innerHTML='';return;
+    }else if(c==='die'){
+        p.health=0;devLog('Player killed.');
+        if(gameState.combatActive)endRun('killed');
+        else{endRun('killed');}
+    }else if(c==='day'){
+        if(parts[1]!=='set'){devLog('Usage: day set (number)','info');return;}
+        const amt=parseInt(parts[2]);if(isNaN(amt)){devLog('Usage: day set (number)','err');return;}
+        p.day=Math.max(1,amt);devLog(`Day set to ${p.day}`);
+    }else if(c==='encounter'){
+        if(parts[1]!=='trigger'){devLog('Usage: encounter trigger (name)','info');return;}
+        const enc=parts.slice(2).join(' ');
+        if(!enc){devLog('Available encounters: ultrakill-chasm','info');return;}
+        if(enc==='ultrakill-chasm'){
+            if(gameState.currentScreen!=='wilderness'){devLog('Must be in wilderness','err');return;}
+            devLog('Triggering Ultrakill chasm...');
+            document.getElementById('wild-buttons').innerHTML='';chasmEvent();
+        }else{devLog(`Unknown encounter "${enc}". Available: ultrakill-chasm`,'err');}
+    }else if(c==='end'){
+        if(parts[1]!=='fight'){devLog('Usage: end fight','info');return;}
+        if(!gameState.combatEnemies.length||!gameState.combatActive){devLog('No active fight','err');return;}
+        gameState.combatEnemies.forEach(e=>{e.health=0;});
+        devLog('All enemies killed!');removeDeadEnemies();if(enemiesRemaining()===0)setTimeout(()=>victory(),200);
+    }else if(c==='fight'){
+        if(parts[1]!=='trigger'){devLog('Usage: fight trigger (bounty or boss name)','info');return;}
+        const name=parts.slice(2).join(' ');
+        if(!name){devLog('Usage: fight trigger (bounty or boss name)','info');return;}
+        if(!gameState.combatInWilderness){devLog('Must be in the frontier','err');return;}
+        const bounty=bountyDefs.find(b=>b.name.toLowerCase()===name.toLowerCase());
+        const boss=bossDefs.find(b=>b.name.toLowerCase()===name.toLowerCase());
+        if(bounty){
+            const dc=diffConfig[getCurrentDiffKey()];
+            devLog(`Starting bounty fight: ${bounty.name}`);
+            gameState.combatInWilderness=true;startCombat({name:bounty.name,health:Math.floor(bounty.enemyHp*dc.enemyMult),maxHealth:Math.floor(bounty.enemyHp*dc.enemyMult),damage:Math.max(1,Math.floor(bounty.enemyDmg*dc.enemyMult)),isBounty:true,bountyData:bounty});
+        }else if(boss){
+            const dc=diffConfig[getCurrentDiffKey()];
+            devLog(`Starting boss fight: ${boss.name}`);
+            gameState.combatInWilderness=true;startCombat({name:boss.name,health:Math.floor(boss.hp*dc.enemyMult),maxHealth:Math.floor(boss.hp*dc.enemyMult),damage:Math.max(1,Math.floor(boss.dmg*dc.enemyMult)),isBoss:true,bossReward:boss.reward,desc:boss.desc});
+        }else{devLog(`"${name}" not found. Available: all bounty & boss names`,'err');}
+    }else if(c==='food'){
+        if(parts[1]!=='set'){devLog('Usage: food set (number)','info');return;}
+        const amt=parseInt(parts[2]);if(isNaN(amt)){devLog('Usage: food set (number)','err');return;}
+        p.food=Math.max(0,amt);devLog(`Food set to ${p.food}`);
+    }else if(c==='hp'){
+        if(parts[1]!=='set'){devLog('Usage: hp set (number)','info');return;}
+        const amt=parseInt(parts[2]);if(isNaN(amt)){devLog('Usage: hp set (number)','err');return;}
+        p.health=Math.min(p.maxHealth,Math.max(0,amt));devLog(`HP set to ${p.health}/${p.maxHealth}`);
+    }else if(c==='inventory'){
+        if(parts[1]!=='add'){devLog('Usage: inventory add (item name)','info');return;}
+        const name=parts.slice(2).join(' ');
+        if(!name){devLog('Usage: inventory add (item name)','info');return;}
+        if(sellableItemDefs[name]){
+            p.sellableInventory.push({name,...sellableItemDefs[name]});
+            devLog(`Added ${name} to sellable inventory`);
+        }else if(name==='Food'){p.food=(p.food||0)+1;devLog('Added 1 Food');}
+        else if(name==='Regular Ammo'){p.bullets.regular=(p.bullets.regular||0)+6;devLog('Added 6 Regular Ammo');}
+        else if(name==='Express Ammo'){p.bullets.express=(p.bullets.express||0)+6;devLog('Added 6 Express Ammo');}
+        else if(name==='Trick Ammo'){p.bullets.trick=(p.bullets.trick||0)+6;devLog('Added 6 Trick Ammo');}
+        else if(trinketDefs[name]&&p.trinkets.length<3){
+            p.trinkets.push({name});devLog(`Added trinket: ${name}`);
+        }else if(trinketDefs[name]&&p.trinkets.length>=3){devLog('Trinkets full (max 3)','err');}
+        else if(weaponDefs[name]){
+            if(p.guns.find(g=>g.name===name)){devLog(`Already own ${name}`,'err');return;}
+            const w=weaponDefs[name];
+            p.guns.push({name,damage:w.damage,capacity:w.capacity,loaded:{regular:w.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0,...(w.onKillHeal?{onKillHeal:w.onKillHeal}:{})});
+            devLog(`Added weapon: ${name}`);
+        }else{devLog(`Item "${name}" not found`,'err');}
+    }else if(c==='max'){
+        if(parts[1]!=='hp'||parts[2]!=='set'){devLog('Usage: max hp set (number)','info');return;}
+        const amt=parseInt(parts[3]);if(isNaN(amt)){devLog('Usage: max hp set (number)','err');return;}
+        p.maxHealth=Math.max(1,amt);p.health=p.maxHealth;devLog(`Max HP set to ${p.maxHealth}, fully healed`);
+    }else if(c==='reputation'){
+        if(parts[1]!=='set'){devLog('Usage: reputation set (number)','info');return;}
+        const amt=parseInt(parts[2]);if(isNaN(amt)){devLog('Usage: reputation set (number)','err');return;}
+        meta.reputation=Math.max(0,amt);saveMeta(meta);devLog(`Reputation set to ${meta.reputation}`);
+    }else if(c==='set'){
+        if(parts[1]!=='money'){devLog('Usage: set money (number)','info');return;}
+        const amt=parseInt(parts[2]);if(isNaN(amt)){devLog('Usage: set money (number)','err');return;}
+        p.money=amt;devLog(`Money set to $${amt}`);
+    }else if(c==='unlock'){
+        if(parts[1]!=='all'){devLog('Usage: unlock all','info');return;}
+        achievementDefs.forEach(a=>{meta.unlocked[a.id]=true;if(a.unlockCard&&!meta.cards.includes(a.unlockCard))meta.cards.push(a.unlockCard);});
+        saveMeta(meta);devLog(`Unlocked all ${achievementDefs.length} achievements and cards`);
+    }else{devLog(`Unknown command: ${c}. Type "help" for all commands`,'err');}
+    const s=gameState.currentScreen;
+    if(s==='town')updateTownDisplay();else if(s==='store')updateStoreDisplay();else if(s==='saloon')updateSaloonDisplay();
+    else if(s==='sheriff')updateSheriffDisplay();else if(s==='gunsmith')updateGunsmithDisplay();
+    else if(s==='wilderness')updateWildernessDisplay();else if(s==='combat')updateCombatDisplay();
+}
+function init(){ preloadUK(); createDustParticles(); loadHighScore(); updateTitleScreen(); document.getElementById('diff-select').value='easy'; gameState.lastTitleScreen='title'; showScreen('title');
+document.addEventListener('click',function(e){var d=document.getElementById('deck-viewer');if(!d.classList.contains('open'))return;if(!d.contains(e.target)&&e.target.id!=='inv-btn'){d.classList.remove('open');}});
+document.addEventListener('keydown',function(e){
+    devBuffer=(devBuffer+e.key).slice(-12);
+    if(devBuffer==='developer'||devBuffer.slice(-9)==='developer'){e.preventDefault();toggleDevConsole();devBuffer='';}
+});
+document.getElementById('dev-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){var v=this.value.trim();if(v){devLog('$ '+v,'info');handleDevCommand(v);}this.value='';}
+    else if(e.key==='Escape'){toggleDevConsole();}
+});}
 </script>
 </body>
 </html>
