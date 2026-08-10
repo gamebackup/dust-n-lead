@@ -243,7 +243,7 @@
             <div style="font-size:3em;color:#c9a030;letter-spacing:8px;text-shadow:0 0 30px rgba(201,160,48,.55);">&#9733; &#9733; &#9733;</div>
             <div class="game-title">DUST &amp; LEAD</div>
             <div class="game-subtitle">A Western Roguelike</div>
-            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,.18);border-bottom:1px solid rgba(201,160,48,.18);padding:10px 0;">The frontier is unforgiving. Bounties await, outlaws roam,<br>and every sunset could be your last.</div>
+            <div style="color:#c9a060;text-align:center;max-width:400px;font-size:.85em;line-height:1.8;border-top:1px solid rgba(201,160,48,.18);border-bottom:1px solid rgba(201,160,48,.18);padding:10px 0;">The frontier is unforgiving. Outlaws roam, rivers rush, and every sunset could be your last.</div>
             <div style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;max-width:340px;">
                 <button class="btn wide" onclick="startGame()">Ride Into Town</button>
                 <div style="margin-top:4px;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
@@ -282,13 +282,13 @@
             <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:.78em;text-align:center;"></div>
             <div class="location-grid">
                 <div class="location-row">
-                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
-                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
-                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
+                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="/src/img/general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
+                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="/src/img/gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
+                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="/src/img/saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
                 </div>
                 <div class="location-row">
-                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
-                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
+                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="/src/img/sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
+                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="/src/img/wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
                 </div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
@@ -474,7 +474,7 @@
 })();
 </script>
 <script>
-// ==================== DEFINITIONS ====================
+// item defs
 const sellableItemDefs = {
     'Gold Nugget':       { sellPrice:35, desc:'Pure frontier gold. Worth real money.' },
     'Silver Locket':     { sellPrice:18, desc:'A tarnished locket with a photograph inside.' },
@@ -509,7 +509,7 @@ const weaponDefs = {
 
 const rotatingWeapons = new Set(["Mare's Leg","Double-Action"]);
 
-// ==================== REGIONS & DIFFICULTY ====================
+// regs + difficulty
 const diffConfig = {
     easy:   { regions:3, label:'Easy',   enemyMult:0.8, moneyMult:1.2, labelColor:'#6aaa4a' },
     medium: { regions:5, label:'Medium', enemyMult:1.0, moneyMult:1.0, labelColor:'#c9a030' },
@@ -518,16 +518,16 @@ const diffConfig = {
 };
 const diffOrder = ['easy','medium','hard','extreme'];
 const regionDefs = [
-    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
-    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
-    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
-    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
-    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
-    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
-    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
-    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
-    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
-    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',           },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',              },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         },
 ];
 const bossDefs = [
     { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
@@ -538,10 +538,10 @@ const bossDefs = [
     { name:'Buffalo Bill',     hp:42, dmg:9,  reward:70,  desc:'Showman and buffalo hunter' },
     { name:'Butch Cassidy',    hp:45, dmg:10, reward:80,  desc:'Leader of the Wild Bunch' },
     { name:'Calamity Jane',    hp:48, dmg:11, reward:90,  desc:'Scout and frontierswoman' },
-    { name:'Clint Eastwood',   hp:50, dmg:12, reward:100, desc:'The Man with No Name' },
+    { name:'Rufus Buck',   hp:50, dmg:12, reward:100, desc:'Ruthless crime lord' },
     { name:'El Diablo',        hp:70, dmg:16, reward:150, desc:'The devil himself' },
 ];
-const VENTURES_PER_REGION = 6; // normal ventures before boss
+const VENTURES_PER_REGION = 6; // encounters before boss
 
 const cardDefs = {
     'Quick Shot':    { desc:'Fire once.',                            ammoCost:1, effect:'shoot',      dmgMult:1,   accuracy:90 },
@@ -566,7 +566,7 @@ const cardDefs = {
     'Poison Dart':   { desc:'Poison enemy: 3 dmg/turn for 3 turns.',ammoCost:0, effect:'poison',                 accuracy:85 },
     'Ricochet':      { desc:'Bullet bounces — hits twice at 70% dmg.',ammoCost:1,effect:'ricochet',  dmgMult:0.7, shots:2,     accuracy:72 },
     'Bolas':         { desc:'Entangle: 70% chance enemy skips turn.',ammoCost:0, effect:'bolas',                 accuracy:100 },
-    // Multi-enemy / new cards
+    // multienemy
     'Blunderbuss':   { desc:'Blast all enemies for reduced damage.',  ammoCost:2, effect:'aoe',        dmgMult:0.6, accuracy:80 },
     'Sloppy Reload': { desc:'Reload half cylinder + gain 1 cover.',   ammoCost:0, effect:'sloppyreload',          accuracy:100 },
     'Coin Shot':     { desc:'Heads: double dmg. Tails: self-dmg 1.', ammoCost:1, effect:'coinshot',  dmgMult:1,   accuracy:90 },
@@ -576,7 +576,7 @@ const cardDefs = {
     'Akimbo':        { desc:'Fire both guns at once. Requires 2 guns.',ammoCost:2,effect:'akimbo',    dmgMult:1,   accuracy:80 },
     'Crossfire':     { desc:'Crossfire two enemies. Hits confuse.',   ammoCost:2, effect:'crossfire', dmgMult:0.8, accuracy:75 },
     'Deadeye Duelist':{ desc:'Careful shot from each gun. Kill: draw 2.',ammoCost:2,effect:'deadeye', dmgMult:1.4, accuracy:85 },
-    // Unlockable status effect cards
+    // status cards
     'Bleed Shot':    { desc:'Injure shot: 3 bleed/turn for 3 turns.',     ammoCost:1, effect:'bleed',                  accuracy:80 },
     'Mark Target':   { desc:'Mark a foe: next hit deals +5 bonus dmg.',    ammoCost:0, effect:'mark',                   accuracy:100 },
     'Disarm':        { desc:'85% chance — enemy can\'t attack next turn.',ammoCost:0, effect:'disarm',                accuracy:85 },
@@ -608,13 +608,13 @@ const trinketDefs = {
 const partNames = ['barrel','trigger','grip'];
 const partLabels = { barrel:'Rusty Barrel', trigger:'Bent Trigger', grip:'Cracked Grip' };
 
-// Safe localStorage
+// localstorage
 function safeGet(k,f){ try{ return localStorage.getItem(k) || f; }catch(e){ return f; } }
 function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 function safeGetObj(k,def){try{const d=localStorage.getItem(k);return d?JSON.parse(d):def;}catch(e){return def;}}
 function safeSetObj(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
-// ==================== ACHIEVEMENTS (Meta Progression) ====================
+// achievements
 const achievementDefs = [
     { id:'first_blood',    name:'First Blood',      desc:'Kill your first outlaw',                     icon:'💀', check:s=>s.kills>=1,     reward:{name:'Broken Bottle',icon:'🍾'}, unlockCard:'Ricochet' },
     { id:'kills10',        name:'Gunslinger',        desc:'Kill 10 outlaws',                            icon:'⚔️', check:s=>s.kills>=10,   reward:{name:'Spur Set',icon:'🔔'}, unlockCard:'Double Tap' },
