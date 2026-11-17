@@ -273,7 +273,7 @@
             <div class="meta-equip-slot" id="title-equipped"><span class="meta-equip-empty">No heirloom equipped</span></div>
             <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
                 <button class="btn small" onclick="showScreen('achievements');updateAchievementsScreen()">Achievements</button>
-                <button class="btn small" onclick="showScreen('equipment');updateEquipmentScreen()">Equipment</button>
+                <button class="btn small" onclick="showScreen('equipment');updateEquipmentScreen()">Heirlooms</button>
                 <button class="btn small" onclick="showScreen('upgrades');updateUpgradesScreen()">Archetypes</button>
                 <button class="btn small" onclick="showScreen('cardlibrary');renderCardLibrary()">Card Library</button>
             </div>
@@ -444,7 +444,7 @@
             <button class="btn small" onclick="goToMainMenu()">Back</button>
         </div>
         <div class="screen" id="screen-equipment">
-            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Equipment</div>
+            <div style="font-family:'Rye',serif;font-size:1.6em;color:#f0d080;">Heirlooms</div>
             <div style="color:#c9a060;font-size:.78em;text-align:center;">Equip cosmetic rewards from achievements</div>
             <div style="margin:8px 0;width:100%;max-width:400px;">
                 <div style="color:#a08060;font-size:.75em;letter-spacing:1px;margin-bottom:4px;">— EQUIPPED —</div>
@@ -667,10 +667,10 @@ const achievementDefs = [
 ];
 
 const archetypeDefs=[
-    {id:'gunslinger',name:'Gunslinger',icon:'🎯',cost:0,  desc:'+1 gun damage, +5% accuracy, and an extra Aimed Shot.'},
-    {id:'gambler',   name:'Gambler',   icon:'🎲',cost:60, desc:'+$35 to start, Lucky Dice, and a Coin Shot card.'},
-    {id:'sawbones',  name:'Sawbones',  icon:'🩹',cost:100,desc:'+4 max HP, two Bandage Kits, and a spare Bandage card.'},
-    {id:'drifter',   name:'Drifter',   icon:'🌵',cost:150,desc:'A hideout Derringer, 6 express rounds, and a Slick Hat.'},
+    {id:'gunslinger',name:'Gunslinger',cost:0,  desc:'+1 gun damage, +5% accuracy, and an extra Aimed Shot.'},
+    {id:'gambler',   name:'Gambler',   cost:60, desc:'+$35 to start, Lucky Dice, and a Coin Shot card.'},
+    {id:'sawbones',  name:'Sawbones',  cost:100,desc:'+4 max HP, two Bandage Kits, and a spare Bandage card.'},
+    {id:'drifter',   name:'Drifter',   cost:150,desc:'A hideout Derringer, 6 express rounds, and a Slick Hat.'},
 ];
 const BOSS_TRAITS={
     'Billy the Kid':'quickdraw','Doc Holliday':'gambler','Jesse James':'crew','Wyatt Earp':'armor',
@@ -1803,7 +1803,7 @@ function fleeCombat(){
 // ==================== META PROGRESSION ====================
 function updateTitleScreen(){
     const meta=loadMeta();const slot=document.getElementById('title-equipped');
-    if(meta.equipped){const ad=achievementDefs.find(a=>a.reward.name===meta.equipped);slot.innerHTML=`<span class="meta-equip-icon">${ad?ad.reward.icon:'🏅'}</span><span class="meta-equip-name">${meta.equipped}</span>`;slot.classList.add('equipped');}
+    if(meta.equipped){slot.innerHTML=`<span class="meta-equip-name">${meta.equipped}</span>`;slot.classList.add('equipped');}
     else{slot.innerHTML='<span class="meta-equip-empty">No heirloom equipped</span>';slot.classList.remove('equipped');}
     document.getElementById('title-reputation').textContent=meta.reputation||0;
     const arch=archetypeDefs.find(a=>a.id===(meta.archetype||'gunslinger'))||archetypeDefs[0];
@@ -1852,7 +1852,7 @@ function updateUpgradesScreen(){
         const selected=(meta.archetype||'gunslinger')===a.id;
         const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:6px;border:2px solid '+(selected?'#c9a030':'#4a3020')+';';
         const info=document.createElement('div');info.style.cssText='display:flex;align-items:center;gap:10px;';
-        info.innerHTML=`<span style="font-size:1.4em;">${a.icon}</span><div><div style="color:#f0d080;font-weight:bold;font-size:.85em;">${a.name}</div><div style="color:#a08060;font-size:.72em;">${a.desc}</div><div style="color:#9a7030;font-size:.7em;margin-top:2px;">${selected?'Riding out next run':unlocked?'Unlocked':'Locked — '+a.cost+' reputation'}</div></div>`;
+        info.innerHTML=`<div><div style="color:#f0d080;font-weight:bold;font-size:.85em;">${a.name}</div><div style="color:#a08060;font-size:.72em;">${a.desc}</div><div style="color:#9a7030;font-size:.7em;margin-top:2px;">${selected?'Riding out next run':unlocked?'Unlocked':'Locked — '+a.cost+' reputation'}</div></div>`;
         d.appendChild(info);
         const btn=document.createElement('button');btn.className='btn small';
         if(selected){btn.textContent='Selected';btn.disabled=true;}
