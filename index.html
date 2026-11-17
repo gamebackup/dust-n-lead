@@ -282,13 +282,13 @@
             <div id="gun-parts-display" style="color:#c9a060;margin:4px;font-size:.78em;text-align:center;"></div>
             <div class="location-grid">
                 <div class="location-row">
-                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="/src/img/general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
-                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="/src/img/gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
-                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="/src/img/saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
+                    <div class="location-card" onclick="goToStore()"><span class="location-icon"><img src="src/img/general-store.png" alt="Store"></span><span class="location-name">General Store</span><small style="color:#a08060;">Buy supplies &amp; sell loot</small></div>
+                    <div class="location-card" onclick="goToGunsmith()"><span class="location-icon"><img src="src/img/gunsmith.png" alt="Gunsmith"></span><span class="location-name">Gunsmith</span><small style="color:#a08060;">Upgrade your weapons</small></div>
+                    <div class="location-card" onclick="goToSaloon()"><span class="location-icon"><img src="src/img/saloon.png" alt="Saloon"></span><span class="location-name">Saloon</span><small style="color:#a08060;">Rest, gamble &amp; drink</small></div>
                 </div>
                 <div class="location-row">
-                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="/src/img/sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
-                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="/src/img/wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
+                    <div class="location-card" onclick="goToSheriff()"><span class="location-icon"><img src="src/img/sheriff.png" alt="Sheriff"></span><span class="location-name">Sheriff's Office</span><small style="color:#a08060;">Collect bounties</small></div>
+                    <div class="location-card" onclick="goToWilderness()"><span class="location-icon"><img src="src/img/wilderness.png" alt="Wilderness"></span><span class="location-name">Venture Out</span><small style="color:#a08060;">Into the wild frontier</small></div>
                 </div>
             </div>
             <button class="btn small danger" onclick="endRun('retired')" style="margin-top:8px;">Retire (End Run)</button>
@@ -518,16 +518,16 @@ const diffConfig = {
 };
 const diffOrder = ['easy','medium','hard','extreme'];
 const regionDefs = [
-    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',           },
-    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',              },
-    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          },
-    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             },
-    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            },
-    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              },
-    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          },
-    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            },
-    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             },
-    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         },
+    { name:'Dustwater Plains',   desc:'Endless sagebrush and dry creek beds.',         icon:'🏜️' },
+    { name:'Rattlesnake Canyon', desc:'Red rock walls echoing with howls.',             icon:'⛰️' },
+    { name:'Ghost Town',         desc:'Abandoned buildings creak in the wind.',          icon:'🏚️' },
+    { name:"Dead Man's Pass",    desc:'A narrow gorge with shallow graves.',             icon:'⚰️' },
+    { name:'The Badlands',       desc:'Harsh, barren terrain with no mercy.',            icon:'🌵' },
+    { name:'Whispering Pines',   desc:'Dense forest hiding watchful eyes.',              icon:'🌲' },
+    { name:"Devil's Ridge",      desc:'A high mountain pass shrouded in mist.',          icon:'⛰️' },
+    { name:'Scorched Valley',    desc:'The heat shimmers off cracked earth.',            icon:'🔥' },
+    { name:'Thunder Mesa',       desc:'Ancient plateau under stormy skies.',             icon:'⛈️' },
+    { name:'The Great Divide',   desc:'The final frontier. Beyond lies legend.',         icon:'⭐' },
 ];
 const bossDefs = [
     { name:'Billy the Kid',    hp:30, dmg:6,  reward:40,  desc:'The notorious young outlaw' },
@@ -643,7 +643,7 @@ const upgradeDefs=[
     {id:'cardDraw',name:'Explorer',desc:'Start with +1 card draw on turn 1',icon:'🃏',maxLvl:3,costs:[50,150,400]},
 ];
 function getDefaultMeta(){return{unlocked:{},cards:[],equipped:null,totalKills:0,totalBounties:0,totalEarned:0,bestDay:0,gamblesWon:0,maxTrinkets:0,maxGuns:0,reputation:0,upgrades:{hp:0,cash:0,bandageKit:0,cardDraw:0}};}
-function loadMeta(){return safeGetObj('dustLeadMeta',getDefaultMeta());}
+function loadMeta(){const d=getDefaultMeta();const m=safeGetObj('dustLeadMeta',d);if(!m||typeof m!=='object')return d;m.unlocked=m.unlocked||{};m.cards=Array.isArray(m.cards)?m.cards:[];m.upgrades=Object.assign({},d.upgrades,m.upgrades||{});if(m.equipped===undefined)m.equipped=null;return m;}
 function saveMeta(m){safeSetObj('dustLeadMeta',m);}
 function metaUnlock(aId){const m=loadMeta();m.unlocked=m.unlocked||{};if(!m.unlocked[aId]){m.unlocked[aId]=true;saveMeta(m);return true;}return false;}
 
@@ -654,7 +654,7 @@ const gameState = {
         guns:[], equippedGunIndex:0, inventory:[],
         day:1, bountiesCollected:0, totalEarned:0,
         trinkets:[], consumables:[], gunParts:[],
-        bullets:{regular:0,express:0,trick:0},
+        bullets:{regular:12,express:0,trick:0},
         ponchoDurability:0, hasSnakeFlute:false,
         hasStolenBadge:false, killCount:0,
         sellableInventory:[],
@@ -706,7 +706,7 @@ function dealDamageToEnemy(d,e){
     const a=Math.max(0,d);e.health=Math.max(0,e.health-a);return a;
 }
 function getRandomSellableItem(){const k=Object.keys(sellableItemDefs);const key=k[Math.floor(Math.random()*k.length)];return{name:key,...sellableItemDefs[key]};}
-function cycleAmmoType(){const g=getActualGun();if(!g)return;const t=['regular','express','trick'];const ci=t.indexOf(g.currentType);for(let i=1;i<=3;i++){const nt=t[(ci+i)%3];if(g.loaded[nt]>0){g.currentType=nt;updateCombatDisplay();renderCombatHand();return;}}}
+function cycleAmmoType(){const g=getActualGun();if(!g)return;const p=gameState.player;const t=['regular','express','trick'];const ci=t.indexOf(g.currentType);for(let i=1;i<=3;i++){const nt=t[(ci+i)%3];if((g.loaded[nt]||0)>0||(p.bullets[nt]||0)>0){g.currentType=nt;updateCombatDisplay();renderCombatHand();return;}}}
 function cycleGun(){const p=gameState.player;if(p.guns.length<2)return;p.equippedGunIndex=(p.equippedGunIndex+1)%p.guns.length;const ng=getActualGun();if(ng&&(!ng.currentType||!getAmmoOfType(ng.currentType))){const t=['regular','express','trick'];ng.currentType=t.find(x=>getAmmoOfType(x)>0)||'regular';}updateCombatDisplay();renderCombatHand();document.getElementById('combat-log').textContent=`Switched to ${ng.name}.`;}
 function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const sc=document.getElementById('screen-'+name);if(sc)sc.classList.add('active');gameState.currentScreen=name;}
 
@@ -736,7 +736,7 @@ function selectEnemy(n){gameState.selectedEnemyIndex=Math.max(0,Math.min(n,gameS
 
 // ==================== TOWN ====================
 function goToTown(){
-    gameState.activeBounty=null;gameState.combatActive=false;gameState.cardProcessing=false;gameState.wildDepth=0;gameState.combatEnemies=[];
+    gameState.combatActive=false;gameState.cardProcessing=false;gameState.wildDepth=0;gameState.combatEnemies=[];
     if(gameState.combatInWilderness){gameState.rotatingShopItems=generateRotatingItems();}
     gameState.combatInWilderness=false;updateTownDisplay();showScreen('town');
     checkAchievements();
@@ -783,8 +783,8 @@ function updateStoreDisplay(){
     sellTitle.style.textAlign='center';
     container.appendChild(sellTitle);
     if(p.sellableInventory&&p.sellableInventory.length>0){
-        [...p.sellableInventory].forEach((item,idx)=>{
-            container.appendChild(createStoreItem(`${item.name} — Worth $${item.sellPrice}`,0,()=>{p.money+=item.sellPrice;p.totalEarned+=item.sellPrice;p.sellableInventory.splice(idx,1);updateStoreDisplay();},true,item.desc,'💰 Sell'));
+        [...p.sellableInventory].forEach((item)=>{
+            container.appendChild(createStoreItem(`${item.name} — Worth $${item.sellPrice}`,0,()=>{const _i=p.sellableInventory.indexOf(item);if(_i!==-1)p.sellableInventory.splice(_i,1);p.money+=item.sellPrice;p.totalEarned+=item.sellPrice;updateStoreDisplay();},true,item.desc,'💰 Sell'));
         });
     } else {
         const emptyMsg=document.createElement('div');
@@ -843,11 +843,11 @@ function generateRotatingItems(){
     // Rotating Weapons
     if(!p.guns.find(g=>g.name==="Mare's Leg")){
         const wDef=weaponDefs["Mare's Leg"];
-        tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
+        tryAdd({label:`Mare's Leg — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{if(p.guns.find(g=>g.name==="Mare's Leg"))return;p.money-=d(wDef.cost);p.guns.push({name:"Mare's Leg",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
     }
     if(!p.guns.find(g=>g.name==="Double-Action")){
         const wDef=weaponDefs["Double-Action"];
-        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
+        tryAdd({label:`Double-Action — $${d(wDef.cost)}`,cost:d(wDef.cost),action:()=>{if(p.guns.find(g=>g.name==="Double-Action"))return;p.money-=d(wDef.cost);p.guns.push({name:"Double-Action",damage:wDef.damage,capacity:wDef.capacity,loaded:{regular:wDef.capacity,express:0,trick:0},currentType:'regular',upgdDmg:0,upgdCap:0,upgdAcc:0});updateStoreDisplay();},desc:wDef.desc});
     }
     // Gun parts
     const missing=partNames.filter(pt=>!p.gunParts.includes(pt));
@@ -909,14 +909,12 @@ function updateSheriffDisplay(){
             {name:'Canyon Jack',reward:65,difficulty:'Hard',enemyHp:27,enemyDmg:7},
             {name:'The Preacher',reward:85,difficulty:'Deadly',enemyHp:32,enemyDmg:9},
             {name:'Señor Muerte',reward:95,difficulty:'Deadly',enemyHp:36,enemyDmg:10},
-            {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12},
-            {name:'Minos Prime',reward:200,difficulty:'Prime',enemyHp:55,enemyDmg:15, color: '#00A2FF'},
-            {name:'Sisyphus Prime',reward:300,difficulty:'Prime',enemyHp:75,enemyDmg:20, color: '#FFE100'}
+            {name:"Cotton Eyed Joe",reward:135,difficulty:'Legendary',enemyHp:42,enemyDmg:12}
     ]  
     const diffCfg=diffConfig[getCurrentDiffKey()];
     const mtMult=diffCfg.enemyMult;
     const rewMult=diffCfg.moneyMult;
-    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff',Prime:'#00A2FF'};
+    const diffCol={Easy:'#6aaa4a',Moderate:'#c9a030',Hard:'#e07030',Deadly:'#cc2020',Legendary:'#ff00ff'};
     bounties.forEach(b => {
   const scaled = {
     ...b,
@@ -1065,6 +1063,7 @@ function wildernessEnvironmental(){
     const hasRose=p.trinkets.some(t=>t.name==='Desert Rose');
     if(hasRose)events.push(()=>{const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Desert Rose luck: found ${item.name}!`;});
     events[Math.floor(Math.random()*events.length)]();
+    if(p.health<=0){endRun('killed');return;}
     updateWildernessDisplay();showWildChoices();
 }
 function wildernessLoot(){
@@ -1081,9 +1080,9 @@ function wildernessLoot(){
 }
 function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineShaftEvent]; ev[Math.floor(Math.random()*ev.length)](); }
 function strongboxEvent(){ document.getElementById('wild-result').textContent='You find a sturdy locked strongbox.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="openStrongbox()">Force it (-5 HP)</button><button class="btn small" onclick="showWildChoices()">Leave it</button>'; }
-function openStrongbox(){ const p=gameState.player; p.health=Math.max(0,p.health-5); const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} updateWildernessDisplay(); showWildChoices(); }
+function openStrongbox(){ const p=gameState.player; p.health=Math.max(0,p.health-5); const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} if(p.health<=0){endRun('killed');return;} updateWildernessDisplay(); showWildChoices(); }
 function drifterEvent(){ document.getElementById('wild-result').textContent='An injured drifter asks for food.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="helpDrifter()">Help (-2 food)</button><button class="btn small" onclick="robDrifter()">Rob</button><button class="btn small" onclick="ignoreDrifter()">Ride past</button>'; }
-function helpDrifter(){ const p=gameState.player; if(p.food<2)return; p.food-=2; if(Math.random()<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(Math.random()<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;} else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} updateWildernessDisplay();showWildChoices(); }
+function helpDrifter(){ const p=gameState.player; if(p.food<2)return; p.food-=2; const r=Math.random(); if(r<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(r<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;} else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} updateWildernessDisplay();showWildChoices(); }
 function robDrifter(){ const p=gameState.player; p.money+=12; document.getElementById('wild-result').textContent='You take $12.'; updateWildernessDisplay();showWildChoices(); }
 function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; showWildChoices(); }
 function mineShaftEvent(){ document.getElementById('wild-result').textContent='Abandoned mine shaft.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="enterMine()">Go inside</button><button class="btn small" onclick="showWildChoices()">Leave</button>'; }
@@ -1118,7 +1117,7 @@ function showWinScreen(){
     const curDiff=gameState.difficulty||'easy';
     const diffCfg=diffConfig[curDiff];
     const cIdx=diffOrder.indexOf(curDiff);
-    const region=regionDefs[Math.min(gameState.regionIndex,regionDefs.length-1)];
+    const region=regionDefs[Math.min(Math.max(0,(gameState.regionIndex||0)-1),regionDefs.length-1)];
     document.getElementById('win-title').textContent=`${region.name} Conquered!`;
     document.getElementById('win-desc').textContent=`${diffCfg.label} campaign complete. The frontier trembles.`;
     document.getElementById('win-days').textContent=p.day;
@@ -1130,14 +1129,7 @@ function showWinScreen(){
     if(nextKey){const nextCfg=diffConfig[nextKey];btn.style.display='inline-block';document.getElementById('win-next-diff').textContent=`Next: ${nextCfg.label} (${nextCfg.regions} regions) — difficulty increases`;}
     else{btn.style.display='none';document.getElementById('win-next-diff').textContent='Maximum difficulty reached. You are a legend.';}
     checkAchievements();
-    const meta=loadMeta();
-    meta.totalKills=(meta.totalKills||0)+(p.killCount||0);
-    meta.totalBounties=(meta.totalBounties||0)+(p.bountiesCollected||0);
-    meta.totalEarned=parseInt(safeGet('dustLeadHighScore','0'));
-    if((p.day||0)>meta.bestDay)meta.bestDay=p.day||0;
-    const repEarned=(p.day||0)*2+(p.killCount||0)+(p.bountiesCollected||0)*3;
-    meta.reputation=(meta.reputation||0)+repEarned;
-    saveMeta(meta);
+    updateHighScore();
     showScreen('win');
 }
 function continueRun(){
@@ -1168,12 +1160,12 @@ function setEnemyIntent(e){
 function startCombat(enemies,isBossGroup,isBountyGroup){
     if(!Array.isArray(enemies))enemies=[enemies];
     const now=new Date().getTime();
-            gameState.combatEnemies=enemies.map((e,i)=>({...e,id:now+i,poisoned:0,bleed:0,marked:0,disarmed:0,confused:false,defendActive:false,skipNextTurn:false,nextAction:'attack'}));
+            gameState.combatEnemies=enemies.map((e,i)=>({...e,id:now+i,maxDamage:e.maxDamage||Math.max(2,Math.ceil(e.damage*1.5)),poisoned:0,bleed:0,marked:0,disarmed:0,confused:false,defendActive:false,skipNextTurn:false,nextAction:'attack'}));
     gameState.selectedEnemyIndex=0;
     gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=0;gameState.discardMode=false;gameState.discardTargets=[];
     gameState.deck=buildDeck();gameState.discardPile=[];gameState.combatHand=[];
     gameState._enemyHPPool={};document.getElementById('enemy-container').innerHTML='';
-    const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;
+    const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;p.rattled=0;
     if(p.trinkets.some(t=>t.name==='Iron Horseshoe'))p.coverActive=1;
     const first=enemies[0];
     const isBoss=isBossGroup||first.isBoss;
@@ -1234,10 +1226,10 @@ function confirmDiscard(){
         renderCombatHand();updateDiscardPile();
     },850+count*100);
 }
-function renderCombatHand(){const h=document.getElementById('card-hand');h.innerHTML='';const g=getActualGun();const db=document.getElementById('btn-discard');if(db){if(gameState.discardMode){db.textContent=`Discard (${gameState.discardTargets.length})`;db.style.background='linear-gradient(180deg,#962222,7c1818,#5e1212,#461010)';}else{db.textContent='Discard';db.style.background='';}}gameState.combatHand.forEach((c,i)=>{const el=document.createElement('div');el.className='card';const cost=getCardAmmoCost(c);let dis=false,reason='';if(gameState.cardProcessing){dis=true;reason='Wait...';}else if(!gameState.discardMode&&cost>0&&(!g||getAmmoOfType(g.currentType)<cost)){dis=true;reason=`Need ${cost} ammo`;}else if(!gameState.discardMode&&c.effect==='reload'&&g&&(getTotalLoaded()>=getMaxCapacity()||gameState.player.bullets.regular===0)){dis=true;reason=gameState.player.bullets.regular===0?'No regular ammo':'Already full';}else if(!gameState.discardMode&&c.effect==='heal'&&gameState.player.health>=gameState.player.maxHealth){dis=true;reason='HP full';}else if(!gameState.discardMode&&c.effect==='intimidate'&&gameState.player.intimidateUsed){dis=true;reason='Already used';}else if(!gameState.discardMode&&(c.effect==='akimbo'||c.effect==='crossfire'||c.effect==='deadeye')&&gameState.player.guns.length<2){dis=true;reason='Need 2 guns';}if(gameState.discardMode){const marked=gameState.discardTargets.includes(i);if(marked)el.style.boxShadow='0 0 0 2px #cc2020,0 0 12px rgba(200,20,20,.5)';}if(dis&&!gameState.discardMode)el.classList.add('disabled');el.innerHTML=`<div class="card-name">${c.name}</div><div class="card-icon">${iconMap[c.name]||'?'}</div><div class="card-desc">${c.desc}</div><div class="card-cost">Ammo: ${cost}</div>${dis&&!gameState.discardMode?`<div style="color:#555;font-size:.6em;">${reason}</div>`:''}`;el.addEventListener('click',()=>{if(gameState.discardMode){if(gameState.discardTargets.includes(i)){gameState.discardTargets=gameState.discardTargets.filter(t=>t!==i);}else if(gameState.discardTargets.length<9){gameState.discardTargets.push(i);}renderCombatHand();return;}if(!gameState.combatActive||gameState.cardProcessing)return;playCard(i,el);});h.appendChild(el);});}
+function renderCombatHand(){const h=document.getElementById('card-hand');h.innerHTML='';const g=getActualGun();const db=document.getElementById('btn-discard');if(db){if(gameState.discardMode){db.textContent=`Discard (${gameState.discardTargets.length})`;db.style.background='linear-gradient(180deg,#962222,#7c1818,#5e1212,#461010)';}else{db.textContent='Discard';db.style.background='';}}gameState.combatHand.forEach((c,i)=>{const el=document.createElement('div');el.className='card';const cost=getCardAmmoCost(c);let dis=false,reason='';if(gameState.cardProcessing){dis=true;reason='Wait...';}else if(!gameState.discardMode&&cost>0&&(!g||getAmmoOfType(g.currentType)<cost)){dis=true;reason=`Need ${cost} ammo`;}else if(!gameState.discardMode&&c.effect==='reload'&&g&&(getTotalLoaded()>=getMaxCapacity()||(gameState.player.bullets[g.currentType||'regular']||0)===0)){dis=true;reason=(gameState.player.bullets[g.currentType||'regular']||0)===0?`No ${g.currentType||'regular'} ammo`:'Already full';}else if(!gameState.discardMode&&c.effect==='heal'&&gameState.player.health>=gameState.player.maxHealth){dis=true;reason='HP full';}else if(!gameState.discardMode&&c.effect==='intimidate'&&gameState.player.intimidateUsed){dis=true;reason='Already used';}else if(!gameState.discardMode&&(c.effect==='akimbo'||c.effect==='crossfire'||c.effect==='deadeye')&&gameState.player.guns.length<2){dis=true;reason='Need 2 guns';}if(gameState.discardMode){const marked=gameState.discardTargets.includes(i);if(marked)el.style.boxShadow='0 0 0 2px #cc2020,0 0 12px rgba(200,20,20,.5)';}if(dis&&!gameState.discardMode)el.classList.add('disabled');el.innerHTML=`<div class="card-name">${c.name}</div><div class="card-icon">${iconMap[c.name]||'?'}</div><div class="card-desc">${c.desc}</div><div class="card-cost">Ammo: ${cost}</div>${dis&&!gameState.discardMode?`<div style="color:#555;font-size:.6em;">${reason}</div>`:''}`;el.addEventListener('click',()=>{if(gameState.discardMode){if(gameState.discardTargets.includes(i)){gameState.discardTargets=gameState.discardTargets.filter(t=>t!==i);}else if(gameState.discardTargets.length<9){gameState.discardTargets.push(i);}renderCombatHand();return;}if(!gameState.combatActive||gameState.cardProcessing)return;playCard(i,el);});h.appendChild(el);});}
 function playCard(i,el){if(!gameState.combatActive||gameState.cardProcessing)return;gameState.cardProcessing=true;const card=gameState.combatHand[i];gameState.combatHand.splice(i,1);    if(card.name!=='Smokebomb'){gameState.discardPile.push(card);updateDiscardPile();
         const d=document.getElementById('discard-pile-card');if(d){d.classList.add('receiving');setTimeout(()=>d.classList.remove('receiving'),600);}}
-    el.classList.add('fly-away');const gun=getActualGun();const p=gameState.player;let log='';const hasL=p.trinkets.some(t=>t.name==='Lucky Rabbits Foot');const hasS=p.trinkets.some(t=>t.name==='Sharpshooter');const hasM=p.trinkets.some(t=>t.name==='Magnum Rounds');const hasDD=p.trinkets.some(t=>t.name==='Double Down');const hasBM=p.trinkets.some(t=>t.name==='Blood Moon');const hasG=p.trinkets.some(t=>t.name==='Gunslingers Gloves');const hasB=p.trinkets.some(t=>t.name==='Bowie Knife');const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');const bt=gun?gun.currentType:'regular';const gunAcc=gun?((gun.accuracyBonus)||0):0;let accBase=card.accuracy+(hasL?10:0)+(bt==='express'?10:0)+(hasG?5:0)+gunAcc;if(gameState.firstShotThisCombat&&hasS)accBase=100;const hit=Math.random()*100<accBase;const bmMult=(hasBM&&p.health<p.maxHealth*0.25)?1.5:1;
+    el.classList.add('fly-away');const gun=getActualGun();const p=gameState.player;let log='';const hasL=p.trinkets.some(t=>t.name==='Lucky Rabbits Foot');const hasS=p.trinkets.some(t=>t.name==='Sharpshooter');const hasM=p.trinkets.some(t=>t.name==='Magnum Rounds');const hasDD=p.trinkets.some(t=>t.name==='Double Down');const hasBM=p.trinkets.some(t=>t.name==='Blood Moon');const hasG=p.trinkets.some(t=>t.name==='Gunslingers Gloves');const hasB=p.trinkets.some(t=>t.name==='Bowie Knife');const hasCP=p.trinkets.some(t=>t.name==='Coyote Pelt');const bt=gun?gun.currentType:'regular';const gunAcc=gun?((gun.accuracyBonus)||0):0;let accBase=card.accuracy+(hasL?10:0)+(bt==='express'?10:0)+(hasG?5:0)+gunAcc;if(gameState.firstShotThisCombat&&hasS)accBase=100;if(p.rattled){accBase-=15;p.rattled=0;}const hit=Math.random()*100<accBase;const bmMult=(hasBM&&p.health<p.maxHealth*0.25)?1.5:1;
 const target=getTargetEnemy();
 const calcDmg=(mult,bonus)=>{
     let d=(gun?gun.damage*mult:0)+(bonus||0);
@@ -1247,7 +1239,7 @@ const calcDmg=(mult,bonus)=>{
 if(card.effect==='smokebomb'){gameState.combatActive=false;document.getElementById('combat-log').textContent='Smoke!';setTimeout(()=>goToTown(),1500);return;}
 if(card.effect==='shoot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(hit){let dmg=calcDmg(card.dmgMult,card.bonusDmg);if(hasS&&gameState.firstShotThisCombat)dmg+=5;const actual=dealDamageToEnemy(dmg,target);log=`Hit ${target.name}: ${actual} dmg.`;triggerScreenFlash();}else{if(bt==='trick'){const actual=dealDamageToEnemy(Math.floor((gun.damage+(card.bonusDmg||0))/2),target);log=`Trick half-dmg: ${actual}.`;}else{log='Miss!';showMissIndicator();}}}else log='No ammo!';}
 if(card.effect==='fan'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const shots=card.shots||3;let totalDmg=0;for(let s=0;s<shots;s++){if(Math.random()*100<(accBase-15)){const dmg=calcDmg(card.dmgMult,card.bonusDmg);totalDmg+=dealDamageToEnemy(dmg,target);}}log=`Fan: ${totalDmg} total!`;if(totalDmg>0)triggerScreenFlash();}else log='No ammo!';}
-if(card.effect==='reload'){if(gun){const max=getMaxCapacity();const used=getTotalLoaded();const room=max-used;if(room>0){let toLoad=Math.min(room,6,Math.max(1,p.bullets.regular));if(p.bullets.regular===0){log='No regular ammo!';}else{gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad} round(s).`;if(p.trinkets.some(t=>t.name==='Quick Draw')&&target){let dmg=calcDmg(1,0);const actual=dealDamageToEnemy(dmg,target);log+=` Quick Draw: ${actual}!`;triggerScreenFlash();}}}else log='Already full!';}else log='No gun!';}
+if(card.effect==='reload'){if(gun){const type=gun.currentType||'regular';const reserve=p.bullets[type]||0;const room=getMaxCapacity()-getTotalLoaded();if(room>0){if(reserve<=0){log=`No ${type} ammo!`;}else{const toLoad=Math.min(room,6,reserve);gun.loaded[type]=(gun.loaded[type]||0)+toLoad;p.bullets[type]-=toLoad;log=`Reloaded ${toLoad} ${type} round(s).`;if(p.trinkets.some(t=>t.name==='Quick Draw')&&target){let dmg=calcDmg(1,0);const actual=dealDamageToEnemy(dmg,target);log+=` Quick Draw: ${actual}!`;triggerScreenFlash();}}}else log='Already full!';}else log='No gun!';}
 if(card.effect==='dodge'){p.dodgeActive=true;log='Dodge!';}
 if(card.effect==='cover'){p.coverActive+=4;if(p.coverActive>8)p.coverActive=8;log='Cover +4.';}
 if(card.effect==='heal'){const amt=card.healAmt||6;p.health=Math.min(p.maxHealth,p.health+amt);log=`+${amt} HP.`;}
@@ -1287,7 +1279,7 @@ if(card.effect==='mark'){if(Math.random()*100<accBase&&target){target.marked=(ta
 if(card.effect==='disarm'){if(Math.random()*100<accBase&&target){target.disarmed=(target.disarmed||0)+1;log=`${target.name} disarmed!`;}else log='Disarm failed!';}
 // NEW EFFECTS
 if(card.effect==='aoe'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const es=gameState.combatEnemies;let total=0;es.forEach(e=>{if(e.health>0){if(Math.random()*100<(accBase-10)){total+=dealDamageToEnemy(calcDmg(card.dmgMult,card.bonusDmg),e);}}});log=`Blunderbuss: ${total} total!`;if(total>0)triggerScreenFlash();}else log='No ammo!';}
-if(card.effect==='sloppyreload'){if(gun){const half=Math.floor(getMaxCapacity()/2);const used=getTotalLoaded();const room=getMaxCapacity()-used;const toLoad=Math.min(room,half,Math.max(1,p.bullets.regular));if(toLoad>0&&p.bullets.regular>0){gun.loaded.regular=(gun.loaded.regular||0)+toLoad;p.bullets.regular-=toLoad;log=`Reloaded ${toLoad}.`;}else log='No ammo or full.';p.coverActive=Math.min(8,p.coverActive+1);log+=' +1 Cover.';}else log='No gun!';}
+if(card.effect==='sloppyreload'){if(gun){const type=gun.currentType||'regular';const reserve=p.bullets[type]||0;const room=getMaxCapacity()-getTotalLoaded();const toLoad=Math.min(room,Math.floor(getMaxCapacity()/2),reserve);if(toLoad>0){gun.loaded[type]=(gun.loaded[type]||0)+toLoad;p.bullets[type]-=toLoad;log=`Reloaded ${toLoad} ${type}.`;}else log='No ammo or full.';p.coverActive=Math.min(8,p.coverActive+1);log+=' +1 Cover.';}else log='No gun!';}
 if(card.effect==='coinshot'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;if(Math.random()<0.5){const dmg=calcDmg(card.dmgMult*2,card.bonusDmg);const actual=dealDamageToEnemy(dmg,target);log=`Heads! ${actual} dmg!`;triggerScreenFlash();}else{p.health=Math.max(0,p.health-1);log=`Tails! Self-dmg 1.`;}}else log='No ammo!';}
 if(card.effect==='fatedraw'){gameState.bonusCardDraw=2;log='Fateful Draw: +2 cards!';}
 if(card.effect==='dynamitebundle'){const cost=getCardAmmoCost(card);if(gun&&getAmmoOfType(bt)>=cost){gun.loaded[bt]-=cost;const es=gameState.combatEnemies;const selfDmg=card.selfDmg||2;let total=0;if(hit&&target){const main=calcDmg(card.dmgMult,card.bonusDmg);total+=dealDamageToEnemy(main,target);es.forEach(e=>{if(e!==target&&e.health>0){const splash=Math.floor(calcDmg(card.dmgMult,card.bonusDmg)*0.5);total+=dealDamageToEnemy(splash,e);}});p.health=Math.max(0,p.health-selfDmg);log=`Bundle: ${total} total, self ${selfDmg}!`;triggerScreenFlash();}else log='Miss!';}else log='No ammo!';}
@@ -1334,7 +1326,8 @@ function enemyTurn(){
             p.health=Math.max(0,p.health-dmg);
             msg+=`${e.name} ${action==='heavy'?'HEAVY ':''}hits for ${dmg}! `;
         }else if(action==='defend'){e.defendActive=true;msg+=`${e.name} braces. `;}
-        else if(action==='reload'){e.damage=Math.min((e.maxDamage||e.damage)+2,20);msg+=`${e.name} reloads! `;}
+        else if(action==='reload'){const dmgCap=e.maxDamage||e.damage;if(e.damage<dmgCap){e.damage=Math.min(dmgCap,e.damage+2);msg+=`${e.name} reloads! `;}else{msg+=`${e.name} works the lever. `;}}
+        else if(action==='taunt'){p.rattled=1;msg+=`${e.name} taunts you! Your next shot is off-balance. `;}
         setEnemyIntent(e);
     });
     if(p.health<=0||enemiesRemaining()===0)return;
@@ -1387,7 +1380,7 @@ function updateCombatDisplay(msg){
     document.getElementById('combat-status').textContent='';
     if(msg&&msg.length)document.getElementById('combat-log').textContent=msg;
     const hpE=document.getElementById('combat-hp');if(p&&p.health<=5)hpE.classList.add('low');else if(hpE)hpE.classList.remove('low');
-    const amt=document.getElementById('btn-switch-ammo');if(amt){amt.style.display=(g&&(g.loaded.regular>0)+(g.loaded.express>0)+(g.loaded.trick>0)>1)?'inline-block':'none';}
+    const amt=document.getElementById('btn-switch-ammo');if(amt){const availTypes=g?['regular','express','trick'].filter(t=>(g.loaded[t]||0)>0||(p.bullets[t]||0)>0).length:0;amt.style.display=availTypes>1?'inline-block':'none';}
 }
 function victory(){
     const es=gameState.combatEnemies;const p=gameState.player;
@@ -1590,7 +1583,7 @@ function startGame(){
     try {
         const diff=selectedDifficulty||'easy';
         const diffCfg=diffConfig[diff];
-        gameState.player = { health:20,maxHealth:20,money:50,food:5, guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0},currentType:'regular',accuracyBonus:0,upgdDmg:0,upgdCap:0,upgdAcc:0}], equippedGunIndex:0,inventory:[],day:1,bountiesCollected:0,totalEarned:0, trinkets:[],consumables:[],gunParts:[], bullets:{regular:0,express:0,trick:0}, ponchoDurability:0,hasSnakeFlute:false,hasStolenBadge:false,killCount:0, sellableInventory:[], dodgeActive:false,coverActive:0,intimidateUsed:false,extraCardNextTurn:false, regionsCompleted:0, venturesThisRegion:0 };
+        gameState.player = { health:20,maxHealth:20,money:50,food:5, guns:[{name:'Revolver',damage:5,capacity:6,loaded:{regular:6,express:0,trick:0},currentType:'regular',accuracyBonus:0,upgdDmg:0,upgdCap:0,upgdAcc:0}], equippedGunIndex:0,inventory:[],day:1,bountiesCollected:0,totalEarned:0, trinkets:[],consumables:[],gunParts:[], bullets:{regular:12,express:0,trick:0}, ponchoDurability:0,hasSnakeFlute:false,hasStolenBadge:false,killCount:0, sellableInventory:[], dodgeActive:false,coverActive:0,intimidateUsed:false,extraCardNextTurn:false, regionsCompleted:0, venturesThisRegion:0 };
         // Apply meta upgrades before buildDeck so bandage kits are shuffled into deck
         const _mu=loadMeta();const _upg=_mu.upgrades||{};
         if(_upg.hp){gameState.player.maxHealth+=_upg.hp*2;gameState.player.health=gameState.player.maxHealth;}
@@ -1616,7 +1609,7 @@ function endRun(cause){
     const meta=loadMeta();
     meta.totalKills=(meta.totalKills||0)+(p.killCount||0);
     meta.totalBounties=(meta.totalBounties||0)+(p.bountiesCollected||0);
-    meta.totalEarned=parseInt(safeGet('dustLeadHighScore','0'));
+    meta.totalEarned=(meta.totalEarned||0)+(p.totalEarned||0);
     if((p.day||0)>meta.bestDay)meta.bestDay=p.day||0;
     const repEarned=(p.day||0)*2+(p.killCount||0)+(p.bountiesCollected||0)*3;
     meta.reputation=(meta.reputation||0)+repEarned;
@@ -1693,7 +1686,7 @@ function updateInvLoot(){
 }
 function createDustParticles(){ const c=document.getElementById('dust-container');c.innerHTML=''; for(let i=0;i<30;i++){ const p=document.createElement('div'); p.className='dust-particle'; p.style.left=Math.random()*100+'%'; p.style.top=Math.random()*100+'%'; p.style.width=(Math.random()*5+2)+'px'; p.style.height=p.style.width; p.style.animation='floatDust '+(Math.random()*12+8)+'s linear '+(Math.random()*12)+'s infinite'; c.appendChild(p); } }
 function updateDiscardPile(){var cnt=document.getElementById('discard-count');if(cnt)cnt.textContent=gameState.discardPile.length;var dc=document.getElementById('draw-count');if(dc)dc.textContent=gameState.deck.length;}
-function renderCardLibrary(){const list=document.getElementById('card-lib-list');if(!list)return;list.innerHTML='';const entries=Object.entries(cardDefs);entries.sort(function(a,b){return a[0].localeCompare(b[0])});entries.forEach(function(e){var name=e[0],def=e[1];var d=document.createElement('div');d.className='card-lib-item';var icon=iconMap[name]||'?';var cost=def.ammoCost||0;var acc=def.accuracy!==undefined?def.accuracy+'%':'—';var info='';if(def.effect==='shoot'||def.effect==='fan'||def.effect==='doubletap'||def.effect==='ricochet'||def.effect==='aoe'||def.effect==='bulletswarm'||def.effect==='akimbo'||def.effect==='crossfire'||def.effect==='deadeye')info='DMG x'+def.dmgMult+(def.bonusDmg?' +'+def.bonusDmg:'');else if(def.effect==='heal')info='Heal '+def.healAmt;else if(def.effect==='melee')info='DMG '+def.fixedDmg;else if(def.effect==='dynamite'||def.effect==='dynamitebundle')info='DMG x'+def.dmgMult+' self '+def.selfDmg;else if(def.effect==='reload')info='Reloads ammo';else if(def.effect==='dodge')info='Dodge chance';else if(def.effect==='cover')info='Cover +'+def.ammoCost;else if(def.effect==='intimidate'||def.effect==='lasso'||def.effect==='bolas')info='Skip turn';else if(def.effect==='laststand')info='Half missing HP';else if(def.effect==='warcry')info='Heal '+def.healAmt+' +1 card';else if(def.effect==='poison')info='3/turn x3';else if(def.effect==='coinshot')info='Heads x2/Tails -1';else if(def.effect==='fatedraw')info='+2 cards';else if(def.effect==='sloppyreload')info='Reload + Cover';else if(def.effect==='smokebomb')info='Escape';d.innerHTML='<span class="cli-icon">'+icon+'</span><div class="cli-info"><div class="cli-name">'+name+'</div><div class="cli-desc">'+def.desc+'</div></div><div><span class="cli-stats">Ammo: '+cost+'</span><br><span class="cli-stats">Acc: '+acc+'</span>'+(info?'<br><span class="cli-stats">'+info+'</span>':'')+'</div>';list.appendChild(d)});}
+function renderCardLibrary(){const list=document.getElementById('card-lib-list');if(!list)return;list.innerHTML='';const entries=Object.entries(cardDefs);entries.sort(function(a,b){return a[0].localeCompare(b[0])});entries.forEach(function(e){var name=e[0],def=e[1];var d=document.createElement('div');d.className='card-lib-item';var icon=iconMap[name]||'?';var cost=def.ammoCost||0;var acc=def.accuracy!==undefined?def.accuracy+'%':'—';var info='';if(def.effect==='shoot'||def.effect==='fan'||def.effect==='doubletap'||def.effect==='ricochet'||def.effect==='aoe'||def.effect==='bulletswarm'||def.effect==='akimbo'||def.effect==='crossfire'||def.effect==='deadeye')info='DMG x'+def.dmgMult+(def.bonusDmg?' +'+def.bonusDmg:'');else if(def.effect==='heal')info='Heal '+def.healAmt;else if(def.effect==='melee')info='DMG '+def.fixedDmg;else if(def.effect==='dynamite'||def.effect==='dynamitebundle')info='DMG x'+def.dmgMult+' self '+def.selfDmg;else if(def.effect==='reload')info='Reloads ammo';else if(def.effect==='dodge')info='Dodge chance';else if(def.effect==='cover')info='Cover +4';else if(def.effect==='intimidate'||def.effect==='lasso'||def.effect==='bolas')info='Skip turn';else if(def.effect==='laststand')info='Half missing HP';else if(def.effect==='warcry')info='Heal '+def.healAmt+' +1 card';else if(def.effect==='poison')info='3/turn x3';else if(def.effect==='coinshot')info='Heads x2/Tails -1';else if(def.effect==='fatedraw')info='+2 cards';else if(def.effect==='sloppyreload')info='Reload + Cover';else if(def.effect==='smokebomb')info='Escape';d.innerHTML='<span class="cli-icon">'+icon+'</span><div class="cli-info"><div class="cli-name">'+name+'</div><div class="cli-desc">'+def.desc+'</div></div><div><span class="cli-stats">Ammo: '+cost+'</span><br><span class="cli-stats">Acc: '+acc+'</span>'+(info?'<br><span class="cli-stats">'+info+'</span>':'')+'</div>';list.appendChild(d)});}
 function init(){ createDustParticles(); loadHighScore(); updateTitleScreen(); document.getElementById('diff-select').value='easy'; showScreen('title');
 document.addEventListener('click',function(e){var d=document.getElementById('deck-viewer');if(!d.classList.contains('open'))return;if(!d.contains(e.target)&&e.target.id!=='inv-btn'){d.classList.remove('open');}});}
 </script>
