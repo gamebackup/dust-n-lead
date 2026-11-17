@@ -664,7 +664,7 @@ const gameState = {
     deck:[], discardPile:[], combatHand:[],
     combatEnemies:[], combatActive:false,
     selectedEnemyIndex:0, currentScreen:'title', activeBounty:null,
-    wildDepth:0, firstShotThisCombat:true,
+    wildDepth:0, firstShotThisCombat:true, cookedThisVenture:false, medicineBagPending:false,
     cardProcessing:false, combatInWilderness:false, discardMode:false, discardTargets:[],
     rotatingShopItems:[], bonusCardDraw:0,
     deckViewerOpen: false,
@@ -678,16 +678,26 @@ function buildDeck() {
     add('Aimed Shot',3);add('Reload',2);add('Take Cover',1);add('Quick Shot',3);
     add('Intimidate',1);add('Dynamite Toss',1);add('Last Stand',1);add('Sucker Punch',2);
     add('Bandage',1);add('Lucky Shot',1);add('Fan the Hammer',1);
-    ['Bandage Kit','Bandage Kit','Bandage Kit'].forEach(()=>{
-        const i=gameState.player.inventory.findIndex(x=>x.name==='Bandage Kit');
-        if(i!==-1){deck.push({...cardDefs['Bandage'],name:'Bandage'});gameState.player.inventory.splice(i,1);}
-    });
-    const si=gameState.player.inventory.findIndex(x=>x.name==='Smokebomb');
-    if(si!==-1){deck.push({...cardDefs['Smokebomb'],name:'Smokebomb'});gameState.player.inventory.splice(si,1);}
-    const wi=gameState.player.inventory.findIndex(x=>x.name==='War Cry'&&x.type==='card');
-    if(wi!==-1){deck.push({...cardDefs['War Cry'],name:'War Cry'});gameState.player.inventory.splice(wi,1);}
-    const hi=gameState.player.inventory.findIndex(x=>x.name==='Headshot'&&x.type==='card');
-    if(hi!==-1){deck.push({...cardDefs['Headshot'],name:'Headshot'});gameState.player.inventory.splice(hi,1);}
+    // consume one unit per card so stacked kits/consumables each add a card
+    const _inv=gameState.player.inventory;
+    const _takeOne=(name,type)=>{
+        const i=_inv.findIndex(x=>x.name===name&&(!type||x.type===type));
+        if(i===-1)return false;
+        const q=_inv[i].qty||1;
+        if(q>1)_inv[i].qty=q-1;else _inv.splice(i,1);
+        return true;
+    };
+    for(let _k=0;_k<3;_k++){
+        if(!_takeOne('Bandage Kit'))break;
+        deck.push({...cardDefs['Bandage'],name:'Bandage'});
+    }
+    const _takeAll=(name,type)=>{let c=0;while(_takeOne(name,type))c++;return c;};
+    const _smoke=_takeAll('Smokebomb');
+    for(let _s=0;_s<_smoke;_s++)deck.push({...cardDefs['Smokebomb'],name:'Smokebomb'});
+    const _warcry=_takeAll('War Cry','card');
+    for(let _w=0;_w<_warcry;_w++)deck.push({...cardDefs['War Cry'],name:'War Cry'});
+    const _head=_takeAll('Headshot','card');
+    for(let _h=0;_h<_head;_h++)deck.push({...cardDefs['Headshot'],name:'Headshot'});
     gameState.player.trinkets.forEach(t=>{if(t.name==='Quick Draw')deck.push({...cardDefs['Quick Shot'],name:'Quick Shot'});});
     const metaCards=loadMeta().cards||[];metaCards.forEach(function(n){if(cardDefs[n]&&n!=='War Cry'&&n!=='Headshot'){add(n,1)}});
     return shuffleArray(deck);
@@ -743,7 +753,9 @@ function goToTown(){
 }
 function updateTownDisplay(){
     const p=gameState.player;
-    const diffCfg=diffConfig[getCurrentDiffKey()];
+    // campaign progress is measured against the chosen campaign, not the
+    // auto-escalated scaling key (those thresholds are cumulative totals)
+    const diffCfg=diffConfig[gameState.difficulty||'easy'];
     const ri=gameState.regionIndex;
     const region=regionDefs[Math.min(ri,regionDefs.length-1)];
     const rc=p.regionsCompleted||0;
@@ -1010,8 +1022,8 @@ function ventureOut(){
     updateWildernessDisplay(); document.getElementById('wild-buttons').innerHTML='';
     const vt=p.venturesThisRegion||0;
     if(vt>=VENTURES_PER_REGION){startBossFight();return;}
-    p.venturesThisRegion=(vt||0)+1;
-    if(gameState.wildDepth>=2&&Math.random()<0.1){wildernessShop();return;}
+    p.venturesThisRegion=(vt||0)+1;gameState.cookedThisVenture=false;
+    if(gameState.wildDepth>=2&&Math.random()<0.1){gameState.medicineBagPending=true;wildernessShop();return;}
     if(gameState.activeBounty&&Math.random()<0.38){ const b={...gameState.activeBounty}; if(p.trinkets.some(t=>t.name==='Wanted Poster'))b.enemyHp+=5; gameState.combatInWilderness=true; startCombat({name:b.name,health:b.enemyHp,maxHealth:b.enemyHp,damage:b.enemyDmg,isBounty:true,bountyData:b}); return; }
     const hasScout=p.trinkets.some(t=>t.name==='Frontier Scout');
     const ri=gameState.regionIndex;
@@ -1030,10 +1042,10 @@ function ventureOut(){
             gameState.combatInWilderness=true;startCombat(enemies[Math.floor(Math.random()*enemies.length)]);
         }
     }
-    else if(roll<envEnd){ wildernessEnvironmental(); }
-    else if(roll<lootEnd){ wildernessLoot(); }
-    else if(roll<choiceEnd){ wildernessChoiceEvent(); }
-    else { const q=['The desert is quiet.','A vulture circles.','Tracks in the sand.','The sun beats down.','A coyote howls.']; document.getElementById('wild-result').textContent=q[Math.floor(Math.random()*q.length)]; showWildChoices(); }
+    else if(roll<envEnd){ gameState.medicineBagPending=true; wildernessEnvironmental(); }
+    else if(roll<lootEnd){ gameState.medicineBagPending=true; wildernessLoot(); }
+    else if(roll<choiceEnd){ gameState.medicineBagPending=true; wildernessChoiceEvent(); }
+    else { gameState.medicineBagPending=true; const q=['The desert is quiet.','A vulture circles.','Tracks in the sand.','The sun beats down.','A coyote howls.']; document.getElementById('wild-result').textContent=q[Math.floor(Math.random()*q.length)]; showWildChoices(); }
 }
 function wildernessEnvironmental(){
     const p=gameState.player;
@@ -1074,20 +1086,30 @@ function wildernessLoot(){
     else if(r<0.72){p.food+=3;document.getElementById('wild-result').textContent='Supplies: +3 Food.';}
     else if(r<0.85){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medicine: +5 HP.';}
     else{document.getElementById('wild-result').textContent='Empty saddlebags. Nothing here.';}
-    const medicineBag=p.trinkets.some(t=>t.name==='Medicine Bag');
-    if(medicineBag&&r>=0.85){p.health=Math.min(p.maxHealth,p.health+2);}
     updateWildernessDisplay();showWildChoices();
 }
 function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineShaftEvent]; ev[Math.floor(Math.random()*ev.length)](); }
 function strongboxEvent(){ document.getElementById('wild-result').textContent='You find a sturdy locked strongbox.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="openStrongbox()">Force it (-5 HP)</button><button class="btn small" onclick="showWildChoices()">Leave it</button>'; }
 function openStrongbox(){ const p=gameState.player; p.health=Math.max(0,p.health-5); const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} if(p.health<=0){endRun('killed');return;} updateWildernessDisplay(); showWildChoices(); }
 function drifterEvent(){ document.getElementById('wild-result').textContent='An injured drifter asks for food.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="helpDrifter()">Help (-2 food)</button><button class="btn small" onclick="robDrifter()">Rob</button><button class="btn small" onclick="ignoreDrifter()">Ride past</button>'; }
-function helpDrifter(){ const p=gameState.player; if(p.food<2)return; p.food-=2; const r=Math.random(); if(r<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(r<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;} else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} updateWildernessDisplay();showWildChoices(); }
+function helpDrifter(){ const p=gameState.player; if(p.food<2){document.getElementById('wild-result').textContent='You do not have 2 food to spare.';return;} p.food-=2; const r=Math.random(); if(r<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(r<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;} else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} updateWildernessDisplay();showWildChoices(); }
 function robDrifter(){ const p=gameState.player; p.money+=12; document.getElementById('wild-result').textContent='You take $12.'; updateWildernessDisplay();showWildChoices(); }
 function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; showWildChoices(); }
 function mineShaftEvent(){ document.getElementById('wild-result').textContent='Abandoned mine shaft.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="enterMine()">Go inside</button><button class="btn small" onclick="showWildChoices()">Leave</button>'; }
 function enterMine(){ const p=gameState.player; const r=Math.random(); if(r<0.35){ const n=Math.floor(Math.random()*2)+1; for(let i=0;i<n;i++){p.sellableInventory.push({name:'Gold Nugget',...sellableItemDefs['Gold Nugget']});} document.getElementById('wild-result').textContent=`Found ${n} Gold Nugget(s)!`; updateWildernessDisplay(); showWildChoices(); } else if(r<0.65){ document.getElementById('wild-result').textContent='Ambush!'; gameState.combatInWilderness=true; setTimeout(()=>startCombat({name:'Mine Bandit',health:15,maxHealth:15,damage:5}),800); } else { document.getElementById('wild-result').textContent='Nothing of value.'; showWildChoices(); } }
-function showWildChoices(){ document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToCamp()">Make Camp</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
+function showWildChoices(){
+    // Medicine Bag heals after each completed non-combat wilderness event
+    if(gameState.medicineBagPending){
+        gameState.medicineBagPending=false;
+        const p=gameState.player;
+        if(p.trinkets.some(t=>t.name==='Medicine Bag')&&p.health<p.maxHealth){
+            p.health=Math.min(p.maxHealth,p.health+2);
+            const wr=document.getElementById('wild-result');
+            if(wr)wr.textContent+=' Medicine Bag: +2 HP.';
+            updateWildernessDisplay();
+        }
+    }
+    document.getElementById('wild-buttons').innerHTML='<button class="btn wide" onclick="ventureOut()">Push Deeper</button><button class="btn small" onclick="goToCamp()">Make Camp</button><button class="btn small" onclick="goToTown()">Head Back to Town</button>'; }
 function wildernessShop(){
     const p=gameState.player;
     document.getElementById('wild-result').textContent='A traveling merchant appears!';
@@ -1162,7 +1184,7 @@ function startCombat(enemies,isBossGroup,isBountyGroup){
     const now=new Date().getTime();
             gameState.combatEnemies=enemies.map((e,i)=>({...e,id:now+i,maxDamage:e.maxDamage||Math.max(2,Math.ceil(e.damage*1.5)),poisoned:0,bleed:0,marked:0,disarmed:0,confused:false,defendActive:false,skipNextTurn:false,nextAction:'attack'}));
     gameState.selectedEnemyIndex=0;
-    gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=0;gameState.discardMode=false;gameState.discardTargets=[];
+    gameState.combatActive=true;gameState.cardProcessing=false;gameState.firstShotThisCombat=true;gameState.bonusCardDraw=(gameState.player.startingCardDraw||0);gameState.discardMode=false;gameState.discardTargets=[];
     gameState.deck=buildDeck();gameState.discardPile=[];gameState.combatHand=[];
     gameState._enemyHPPool={};document.getElementById('enemy-container').innerHTML='';
     const p=gameState.player;p.dodgeActive=false;p.coverActive=0;p.intimidateUsed=false;p.rattled=0;
@@ -1423,7 +1445,7 @@ function victory(){
     updateCombatDisplay(msg);
     checkAchievements();
     if(firstBoss){p.regionsCompleted=(p.regionsCompleted||0)+1;gameState.regionIndex=(gameState.regionIndex||0)+1;p.venturesThisRegion=0;gameState.isBossFight=false;
-        setTimeout(()=>{const diffCfg=diffConfig[getCurrentDiffKey()];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();},1500);
+        setTimeout(()=>{const diffCfg=diffConfig[gameState.difficulty||'easy'];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();},1500);
     }else{setTimeout(()=>{goToTown();},1200);}
 }
 function fleeCombat(){
@@ -1545,12 +1567,11 @@ function updateCampDisplay(){
         action:()=>{if(p.food<2){document.getElementById('camp-result').textContent='Not enough food.';return;}p.food-=2;p.health=Math.min(p.maxHealth,p.health+4);document.getElementById('camp-result').textContent='You rest by the fire. +4 HP, -2 food.';updateCampDisplay();},
         en:p.food>=2&&p.health<p.maxHealth
     });
-    // Cook food: 2 food -> 3 food, with cooldown
-    const cookReady=!gameState.cookCooldown||Date.now()>gameState.cookCooldown;
-    const rem=cookReady?0:Math.max(0,Math.ceil((gameState.cookCooldown-Date.now())/1000));
+    // Cook food: once per venture, spend 2 food to make a 3-food meal
+    const cookReady=!gameState.cookedThisVenture;
     buttons.push({
-        label:`Cook a meal (2 food → 3 food)${cookReady?'':` — Cleaning the cast iron - ${rem}s`}`,
-        action:()=>{if(p.food<2){document.getElementById('camp-result').textContent='Need 2 food to cook.';return;}p.food+=1;gameState.cookCooldown=Date.now()+15000;document.getElementById('camp-result').textContent='Hearty meal! +1 food.';updateCampDisplay();startCookCountdown();},
+        label:`Cook a meal (2 food → 3 food)${cookReady?'':' — already cooked this venture'}`,
+        action:()=>{if(p.food<2){document.getElementById('camp-result').textContent='Need 2 food to cook.';return;}if(gameState.cookedThisVenture)return;p.food-=2;p.food+=3;gameState.cookedThisVenture=true;document.getElementById('camp-result').textContent='Hearty meal! -2 food, +3 food.';updateCampDisplay();},
         en:p.food>=2&&cookReady
     });
     // Repair poncho
@@ -1589,7 +1610,8 @@ function startGame(){
         if(_upg.hp){gameState.player.maxHealth+=_upg.hp*2;gameState.player.health=gameState.player.maxHealth;}
         if(_upg.cash){gameState.player.money+=_upg.cash*15;}
         if(_upg.bandageKit){for(let _bi=0;_bi<_upg.bandageKit;_bi++)addToInventory('Bandage Kit','consumable');}
-        gameState.deck=buildDeck(); gameState.discardPile=[]; gameState.combatEnemies=[]; gameState.combatActive=false; gameState.activeBounty=null; gameState.claimableBounty=null; gameState.wildDepth=0; gameState.cardProcessing=false; gameState.combatInWilderness=false; gameState.bonusCardDraw=_upg.cardDraw||0; gameState.rotatingShopItems=generateRotatingItems();
+        gameState.player.startingCardDraw=_upg.cardDraw||0;
+        gameState.deck=buildDeck(); gameState.discardPile=[]; gameState.combatEnemies=[]; gameState.combatActive=false; gameState.activeBounty=null; gameState.claimableBounty=null; gameState.wildDepth=0; gameState.cardProcessing=false; gameState.combatInWilderness=false; gameState.bonusCardDraw=0; gameState.cookedThisVenture=false; gameState.medicineBagPending=false; gameState.rotatingShopItems=generateRotatingItems();
         gameState.difficulty=diff; gameState.regionIndex=0; gameState.isBossFight=false; gameState.wonGame=false;
         goToTown();
     } catch(e){ console.error(e); alert('Error starting game. Check console.'); }

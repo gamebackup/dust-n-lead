@@ -797,6 +797,7 @@ function buyCardUpgrade(name,stat){
     u[stat]=(u[stat]||0)+1;
     p.stats=p.stats||{};p.stats.cardUpgrades=(p.stats.cardUpgrades||0)+1;
     document.getElementById('gunsmith-msg').textContent=`${name}: ${def.label} (${u[stat]}/${def.cap}).`;
+    const gm=document.getElementById('gunsmith-money');if(gm)gm.textContent=p.money;
     showCardUpgradePicker();
 }
 function showCardUpgradePicker(){
@@ -914,6 +915,7 @@ function burnCard(name){
     const xi=(p.extraCards||[]).lastIndexOf(name);
     if(xi!==-1)p.extraCards.splice(xi,1);else{p.removedCards=p.removedCards||[];p.removedCards.push(name);}
     document.getElementById('gunsmith-msg').textContent=`Burned one ${name}.`;
+    const gm=document.getElementById('gunsmith-money');if(gm)gm.textContent=p.money;
     showCardRemovalPicker();
 }
 // ==================== RUN PERSISTENCE ====================
@@ -989,7 +991,9 @@ function goToTown(){
 }
 function updateTownDisplay(){
     const p=gameState.player;
-    const diffCfg=diffConfig[getCurrentDiffKey()];
+    // campaign progress is measured against the chosen campaign, not the
+    // auto-escalated scaling key (those thresholds are cumulative totals)
+    const diffCfg=diffConfig[gameState.difficulty||'easy'];
     const ri=gameState.regionIndex;
     const region=regionDefs[Math.min(ri,regionDefs.length-1)];
     const rc=p.regionsCompleted||0;
@@ -1337,7 +1341,7 @@ function wildernessChoiceEvent(){ const ev=[strongboxEvent, drifterEvent, mineSh
 function strongboxEvent(){ document.getElementById('wild-result').textContent='You find a sturdy locked strongbox.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="openStrongbox()">Force it (-5 HP)</button><button class="btn small" onclick="showWildChoices()">Leave it</button>'; }
 function openStrongbox(){ const p=gameState.player; p.health=Math.max(0,p.health-5); const r=Math.random(); if(r<0.35){p.money+=Math.floor(Math.random()*40)+20;document.getElementById('wild-result').textContent='Jackpot!';} else if(r<0.60){p.food+=4;document.getElementById('wild-result').textContent='Canned goods! +4 Food.';} else if(r<0.78){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`Contains a ${item.name}!`;} else if(r<0.90){p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='Medical supplies! +5 HP.';} else{document.getElementById('wild-result').textContent='Empty.';} if(p.health<=0){endRun('killed');return;} endWildernessEvent(); }
 function drifterEvent(){ document.getElementById('wild-result').textContent='An injured drifter asks for food.'; document.getElementById('wild-buttons').innerHTML='<button class="btn small" onclick="helpDrifter()">Help (-2 food)</button><button class="btn small" onclick="robDrifter()">Rob</button><button class="btn small" onclick="ignoreDrifter()">Ride past</button>'; }
-function helpDrifter(){ const p=gameState.player; if(p.food<2)return; p.food-=2; const r=Math.random(); if(r<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(r<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;}else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} endWildernessEvent(); }
+function helpDrifter(){ const p=gameState.player; if(p.food<2){document.getElementById('wild-result').textContent='You do not have 2 food to spare.';return;} p.food-=2; const r=Math.random(); if(r<0.5){p.money+=25;document.getElementById('wild-result').textContent='He gives you $25.';} else if(r<0.7){const item=getRandomSellableItem();p.sellableInventory.push(item);document.getElementById('wild-result').textContent=`He gives you a ${item.name}.`;}else{p.health=Math.min(p.maxHealth,p.health+5);document.getElementById('wild-result').textContent='He patches you up. +5 HP.';} endWildernessEvent(); }
 function robDrifter(){ const p=gameState.player; p.money+=12; document.getElementById('wild-result').textContent='You take $12.'; endWildernessEvent(); }
 function ignoreDrifter(){ document.getElementById('wild-result').textContent='You ride past.'; endWildernessEvent(); }
 function endWildernessEvent(){
@@ -1456,6 +1460,7 @@ function showWinScreen(){
     else{btn.style.display='none';document.getElementById('win-next-diff').textContent='Maximum difficulty reached. You are a legend.';}
     checkAchievements();
     updateHighScore();
+    clearRun(); // a finished campaign must not be resumable into its pre-boss town
     showScreen('win');
 }
 function continueRun(){
@@ -1784,7 +1789,7 @@ function victory(){
     updateCombatDisplay(msg);
     checkAchievements();
     if(firstBoss){p.regionsCompleted=(p.regionsCompleted||0)+1;gameState.regionIndex=(gameState.regionIndex||0)+1;p.venturesThisRegion=0;gameState.isBossFight=false;}
-    const advance=()=>{if(firstBoss){const diffCfg=diffConfig[getCurrentDiffKey()];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();}else goToTown();};
+    const advance=()=>{if(firstBoss){const diffCfg=diffConfig[gameState.difficulty||'easy'];if((p.regionsCompleted||0)>=diffCfg.regions)showWinScreen();else goToTown();}else goToTown();};
     setTimeout(()=>offerCardReward(advance),firstBoss?1400:1000);
 }
 function fleeCombat(){
